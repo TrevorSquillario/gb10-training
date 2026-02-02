@@ -71,7 +71,7 @@ Focus: High-impact demos that "show" rather than "tell."
 - Lab: Ingest PDF directory (Sales Playbooks) and build a local search bot
 - Playbook: RAG App in AI Workbench
 
-## Phase 4: Enterprise Optimization & Graduation
+## Phase 4: Enterprise Optimization & Advanced Topics
 Focus: Performance tuning and professional customer delivery.
 
 ### [Week 10 — High-Throughput Serving (vLLM / SGLang)](./gb10-10/)

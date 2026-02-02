@@ -10,10 +10,4 @@ The skills you've learned—from Docker optimization to agentic workflows—are 
 
 ---
 
-## Resources for Week 12
-
-- [NVIDIA SE Demo Library](https://nvidia.com) (inspiration gallery)
-- [Course GitHub Repository](https://github.com/your-org/gb10-training) (all lab code)
-- [DGX Spark Community Forum](https://forums.nvidia.com) (peer support)
-
 > **Pro Tip:** The best demos tell a story. Don't just show technology—show transformation. Start with a customer's pain, journey through your solution, and end with measurable impact.
