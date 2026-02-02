@@ -1,20 +1,20 @@
-# Blackwell SE Training Program: Course Overview
+# GB10 Training Program: Course Overview
 
-This curriculum transitions Technical SEs into experts on the Blackwell architecture, moving from foundational Linux workflows to advanced enterprise inference.
+This curriculum transitions Technical SEs into experts on the Blackwell architecture via the GB10, moving from foundational Linux workflows to advanced enterprise inference.
 
 ## Contents
-- [Phase 1 — Week 1](./gb10-01/)
-- [Phase 1 — Week 2](./gb10-02/)
-- [Phase 1 — Week 3](./gb10-03/)
-- [Phase 2 — Week 4](./gb10-04/)
-- [Phase 2 — Week 5](./gb10-05/)
-- [Phase 2 — Week 6](./gb10-06/)
-- [Phase 3 — Week 7](./gb10-07/)
-- [Phase 3 — Week 8](./gb10-08/)
-- [Phase 3 — Week 9](./gb10-09/)
-- [Phase 4 — Week 10](./gb10-10/)
-- [Phase 4 — Week 11](./gb10-11/)
-- [Phase 4 — Week 12](./gb10-12/)
+- [Week 1](./gb10-01/)
+- [Week 2](./gb10-02/)
+- [Week 3](./gb10-03/)
+- [Week 4](./gb10-04/)
+- [Week 5](./gb10-05/)
+- [Week 6](./gb10-06/)
+- [Week 7](./gb10-07/)
+- [Week 8](./gb10-08/)
+- [Week 9](./gb10-09/)
+- [Week 10](./gb10-10/)
+- [Week 11](./gb10-11/)
+- [Week 12](./gb10-12/)
 
 ## Phase 1: Foundations & Local Access
 Focus: Getting comfortable with the Blackwell architecture and Linux-based workflows.
