@@ -20,65 +20,123 @@ Most AI enthusiasts are used to INT4 or GGUF quantization. Blackwell introduces 
 | Hardware | Software-based dequantization.     | Native Tensor Core support.        |
 | Scaling  | Block-wise scaling (usually 128).  | Two-level Micro-block scaling (16).|
 
-**The SE Talking Point:** "NVFP4 allows us to run a 70B model with the speed of a 4-bit model but the intelligence of an 8-bit model. It's the first time we don't have to choose between 'fast' and 'smart'."
+## 3. How do I get NVFP4 models?
 
-## 3. Hands-on Lab: Quantizing Your First Model
+- Use a NIM from the NGC. Models must support the arm64 archeticture for the GB10 
+
+```bash
+docker manifest inspect nvcr.io/nim/qwen/qwen3-32b-dgx-spark:1.0 | grep architecture
+```
+- Nvidia has compatible models at https://huggingface.co/nvidia/models
+- Convert open source models manually
+
+## Hands-on Lab: Quantizing Your First Model
 
 We will use the NVIDIA TensorRT Model Optimizer container to convert a standard Hugging Face model into an NVFP4-optimized engine.
 
 ### Step A: Prepare the environment
 
-In your VS Code terminal, create an output folder:
-
-```bash
-mkdir -p ~/gb10-training/models/nvfp4_output
+1. Login to https://huggingface.co
+2. Click your profile in the top right and select Access Tokens
+3. Click Create New Token
+4. Name the Token (e.g. gb10)
+5. Under User Permissions (username) select
 ```
-
-Set your Hugging Face token (needed to pull gated models like Llama):
-
+- Read access to contents of all repos under your personal namespace
+- View access requests for all gated repos under your personal namespace
+- Read access to contents of all public gated repos you can access
+```
+6. Copy the token and add this line to your `~/.bashrc`. ***This is the only opportunity to copy this token, it will not be available later and you'll have to regenerate a new one.***
 ```bash
 export HF_TOKEN="your_token_here"
 ```
 
+Reload your bash profile by logging out or
+```bash
+source ~/.bashrc
+```
+
 ### Step B: Run the optimizer container
 
-We will pull the TensorRT-LLM Spark Dev container, which contains the specific libraries for the GB10's SM 12.1 architecture.
+We will use the TensorRT-LLM Spark Dev container, which contains the specific libraries for the GB10's SM 12.1 architecture. Then clone the NVIDIA Model Optimizer git repo and execute that against the `Qwen/Qwen3-14B` model to quantanize the model using NVFP4.
 
 ```bash
-docker run --rm -it --gpus all \
-  -v ~/gb10-training/models:/workspace/models \
+docker run --rm -it --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
+  -v "./output_models:/workspace/output_models" \
+  -v "$HOME/.cache/huggingface:/root/.cache/huggingface" \
   -e HF_TOKEN=$HF_TOKEN \
-  nvcr.io/nvidia/tensorrt-llm/release:spark-single-gpu-dev
+  -e ACCELERATE_USE_FSDP=false \
+  -e CUDA_VISIBLE_DEVICES=0 \
+  nvcr.io/nvidia/tensorrt-llm/release:spark-single-gpu-dev \
+  bash -c "
+    git clone -b 0.35.0 --single-branch https://github.com/NVIDIA/Model-Optimizer.git /app/TensorRT-Model-Optimizer && \
+    cd /app/TensorRT-Model-Optimizer && pip install -e '.[dev]' && \
+    export ROOT_SAVE_PATH='/workspace/output_models' && \
+    /app/TensorRT-Model-Optimizer/examples/llm_ptq/scripts/huggingface_example.sh \
+    --model 'Qwen/Qwen3-14B' \
+    --quant nvfp4 \
+    --tp 1 \
+    --export_fmt hf
+  "
+
+
 ```
 
-### Step C: Run the NVFP4 script
+Notes:
+- Ignore error `pynvml.NVMLError_NotSupported: Not Supported`
+- `ACCELERATE_USE_FSDP=false` and `CUDA_VISIBLE_DEVICES=0` are required for certain models. Otherwise the model will be split between CPU and GPU and we don't want that. It's fine to just leave these on for all models but the quant will take a bit longer.
 
-Inside the container, run the optimization script for a mid-sized model (e.g., Llama-3.1-8B):
+### Step C: Validate the quantized model
+After the container completes, verify that the quantized model files were created successfully.
 
 ```bash
-python3 examples/quantization/quantize.py \
-  --model_dir meta-llama/Llama-3.1-8B-Instruct \
-  --output_dir /workspace/models/nvfp4_output \
-  --qformat nvfp4 \
-  --calib_size 128
+# Check output directory contents
+ls -la ./output_models/
+
+# Verify model files are present
+find ./output_models/ -name "*.bin" -o -name "*.safetensors" -o -name "config.json"
 ```
 
-Note: The `--calib_size` tells the AI to "calibrate" its math using 128 sample sentences to ensure it doesn't lose its mind during the shrink.
+### Step D: Serve the model with OpenAI-compatible API
+
+Start the TensorRT-LLM OpenAI-compatible API server with the quantized model. First, set the path to your quantized model:
+
+```bash
+# Set path to quantized model directory
+export MODEL_PATH="/home/trevor/git/output_models/saved_models_Qwen3-14B_nvfp4_hf/"
+
+docker run --rm -it \
+  --name trtllm-server \
+  --gpus all \
+  --ipc=host \
+  --network host \
+  --ulimit memlock=-1 --ulimit stack=67108864 \
+  -e HF_TOKEN=$HF_TOKEN \
+  -v "$MODEL_PATH:/workspace/model" \
+  nvcr.io/nvidia/tensorrt-llm/release:spark-single-gpu-dev \
+  trtllm-serve /workspace/model \
+    --backend pytorch \
+    --max_batch_size 4 \
+    --host 0.0.0.0 \
+    --port 8000
+```
+
+### Step E: Test out your TensorRT-LLM Server
+
+```bash
+curl -X POST http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "Qwen/Qwen3-14B",
+    "messages": [{"role": "user", "content": "What is artificial intelligence?"}],
+    "max_tokens": 100,
+    "temperature": 0.7,
+    "stream": false
+  }'
+```
 
 ---
 
-🌟 **Session 3 Challenge: The Efficiency Audit**
+## Resources for Session 4
 
-**Task:** Compare two models.
-
-1. Download a standard GGUF (Q4_K_M) version of Llama-3-8B and run it in Ollama. Record the TPS (Tokens Per Second).
-2. Run your newly created NVFP4 version of the same model using the `trtllm-python` backend.
-
-**Observation:** You should notice a significantly faster "Time to First Token" (TTFT) on the NVFP4 version. Why? Because Blackwell's 5th-gen Tensor Cores process FP4 math natively without "unpacking" it first.
-
----
-
-## Resources for Session 3
-
-- Playbook: NVFP4 Quantization Guide
-- Deep Dive: Introducing NVFP4 for Efficient Inference
+- https://build.nvidia.com/spark/nvfp4-quantization/instructions

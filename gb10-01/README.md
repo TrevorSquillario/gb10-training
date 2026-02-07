@@ -74,6 +74,14 @@ cd ~/git
 git clone https://github.com/TrevorSquillario/gb10-training
 ```
 
+Setup your Python Virtual Environment
+
+```bash
+mkdir ~/.venv
+python3 -m venv ~/venv/gb10-training
+source ~/venv/gb10-training/bin/activate
+```
+
 Add your user to the docker group:
 
 ```bash
@@ -85,6 +93,7 @@ sudo usermod -aG docker $USER
 ```bash
 vi ~/.bashrc
 
+source ~/venv/gb10-training/bin/activate
 alias gpustats="watch -n 1 nvidia-smi"
 cd ~/git
 ```

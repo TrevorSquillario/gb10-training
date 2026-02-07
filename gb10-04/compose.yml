@@ -1,0 +1,41 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    ports:
+      - "11434:11434" # Ollama API access
+    volumes:
+      - ~/ollama:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - ai-network
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    restart: unless-stopped
+    ports:
+      - "12000:8080" # Access via http://<gb10-ip>:12000
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - WEBUI_AUTH=True # Set to False if you don't want a login screen
+    volumes:
+      - ~/open_webui:/app/backend/data
+    depends_on:
+      - ollama
+    networks:
+      - ai-network
+
+networks:
+  ai-network:
+    name: ai-network
+    driver: bridge

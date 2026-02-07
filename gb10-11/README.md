@@ -18,6 +18,50 @@ We will deploy the Llama-3.1-8B-Instruct NIM, which is officially supported on t
 
 NIMs are hosted on the NVIDIA GPU Cloud (NGC). You will need your API key from Session 9.
 
+Get your NGC API Key
+1. Go to [ngc.nvidia.com](ngc.nvidia.com) and sign in/create an account. 
+2. Confirm your email
+3. Create your Nvidia Cloud account when it prompts you. Select your name when it asks you to select a Team/Organization
+4. Eventually you'll see your name in the top right. Select Setup or go directly to [https://org.ngc.nvidia.com/setup](https://org.ngc.nvidia.com/setup)
+5. Click Generate API Key or go to [https://org.ngc.nvidia.com/setup/api-keys](https://org.ngc.nvidia.com/setup/api-keys)
+```
+  Key Name: gb10 (Name it whatever you want)
+  Expiration: Never
+  Key Permissions: NGC Catalog
+```
+6. Copy the key and save it somewhere. ***This will be the only time you will be able to copy this key***
+
+Now let's start the NIM containers for FP8 and NVFP4 of the `qwen3-32b` model
+
+First login to the `nvcr.io` container registry. Enter `$oauthtoken` as-is, this is important.
+
+```bash
+docker login nvcr.io
+# Username: $oauthtoken
+# Password: <Your-NGC-API-Key>
+```
+
+#### Start the NIM container for the Qwen3-32B model
+*You can add the `export` line to your `~/.bashrc`
+```bash
+export NGC_API_KEY=<Your-NGC-API-Key>
+```
+
+Create the NIM cache directory
+```bash
+sudo mkdir -p /app/cache/nim
+sudo chmod -R 777 /app/cache
+```
+
+```bash
+docker run -it --rm --name qwen3-nim \
+  --gpus all \
+  -e NGC_API_KEY=$NGC_API_KEY \
+  -v "/app/cache/nim:/opt/nim/.cache" \
+  -p 8000:8000 \
+  nvcr.io/nim/mistralai/mistral-7b-instruct-v0.3:1.12.0
+```
+
 ```bash
 # Login to the NVIDIA container registry
 echo $NGC_API_KEY | docker login nvcr.io --username '$oauthtoken' --password-stdin

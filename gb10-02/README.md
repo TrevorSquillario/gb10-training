@@ -14,9 +14,10 @@ Most GB10 systems come with Docker pre-installed, but the "GPU hook" often needs
 
 ### Step A: Permission fix (run without sudo)
 
-Add your user to the `docker` group so you can run Docker commands without `sudo`:
+If your user isn't in the `docker` group, add your user to the group so you can run Docker commands without `sudo`:
 
 ```bash
+groups | grep docker
 sudo usermod -aG docker $USER
 ```
 
@@ -30,49 +31,45 @@ If you don't get a "permission denied" error, you're good to go.
 
 ### Step B: Verifying the GPU bridge
 
-Run a smoke-test container to confirm the runtime can see the Blackwell GPU:
+Run a smoke-test container to confirm the runtime can see the Blackwell GPU. Then see that the container was downloaded and stored locally. You're disk will fill up with container images eventually and you'll need to use the `prune` command to clean them up. 
 
 ```bash
-docker run --rm --gpus all nvidia/cuda:13.0-base-ubuntu24.04 nvidia-smi
+docker run --rm  --gpus all   nvidia/cuda:13.1.1-base-ubuntu24.04 nvidia-smi
+docker image ls
 ```
 
-What to look for: the output should show the NVIDIA GB10 and a CUDA 13.0 driver.
+What to look for: the output should show the NVIDIA GB10 and a CUDA 13..1 driver.
 
-## 3. Mastering the "Big Three" Commands
+#### Troubleshooting
 
-These three Docker patterns cover ~90% of typical AI demo workflows.
+- The GB10 and all DGX systems come preinstalled with the Nvidia Container Toolkit. For other systems see [https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
 
-| Pattern   | Command example                                                       | Use case                                              |
-|-----------|-----------------------------------------------------------------------|--------------------------------------------------------|
-| The Probe | `docker run --rm -it --gpus all [image] /bin/bash`                     | "I want to go inside the container to inspect it."    |
-| The Server| `docker run -d -p 8080:8080 --gpus all [image]`                       | "Run a web-based AI tool in the background."          |
-| The Cleanup| `docker system prune -af`                                            | "Free space after downloading many models."           |
+## 3. Useful Docker Commands
+
+These common Docker commands cover most demo and troubleshooting workflows.
+
+| Pattern       | Command example                                                       | Use case                                              |
+|---------------|-----------------------------------------------------------------------|--------------------------------------------------------|
+| The Probe     | `docker exec -it <container> /bin/bash`                                | Open an interactive shell inside a running container.  |
+| List          | `docker ps -a`                                                         | List running and stopped containers.                   |
+| Logs          | `docker logs -f <container>`                                           | Stream container logs (use `-n` to tail N lines).      |
+| Run           | `docker run --rm -it --gpus all <image> bash`                          | Start an interactive GPU-enabled container.            |
+| Images        | `docker images` (or `docker image ls`)                                 | List local images.                                     |
+| Pull          | `docker pull <image>`                                                  | Download an image from a registry.                     |
+| Inspect       | `docker inspect <container>`                                     | JSON low-level details about containers/images.        |
+| Remove (cont) | `docker rm <container>`                                                 | Remove stopped container(s).                           |
+| Remove (img)  | `docker rmi <image>`                                                   | Remove an image from local cache.                      |
+| Cleanup       | `docker system prune -af`                                              | Remove unused data to free space.                      |
 
 ---
 
-🌟 **Session 2 Challenge: The "Docker Model Runner"**
+🌟 **Session 2 Challenge: Debugging with the DGX Debug Container**
 
-**Task:** Use the Docker AI plugin to pull a coding model optimized for ARM64 and run it locally.
-
-Install the plugin (if not present):
-
-```bash
-sudo apt-get install docker-model-plugin
-```
-
-Pull the Qwen3-Coder model:
-
-```bash
-docker model pull ai/qwen3-coder
-```
-
-Verify the model is running and accessible at http://localhost:12434.
-
----
+**Task:** 
 
 ## Resources for Session 2
 
-- Playbook: Docker Model Runner on DGX Spark
-- Reference: NVIDIA Container Toolkit Docs
+- Playbook: DGX Debug Container (recommended for troubleshooting)
+- Reference: NVIDIA Container Toolkit Docs — https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/overview.html
 
-> **Pro tip:** Always check the **Architecture** field when pulling images from Docker Hub. If it doesn't say `arm64` or `aarch64`, it will not run on your GB10!
+> **Pro tip:** Always check the **Architecture** field when pulling images from registries. If it doesn't say `arm64` or `aarch64`, it will not run on your GB10!
