@@ -1,4 +1,4 @@
-# Week 2: Containerization & The NVIDIA Container Stack
+# Session 2: Containerization & The NVIDIA Container Stack
 
 **Objective:** Master the NVIDIA Container Toolkit and learn how to run GPU-accelerated containers on the GB10. On the GB10 we don't install AI frameworks "on the metal"—we containerize them to keep the DGX OS clean and to switch between CUDA or LLM engine versions quickly.
 
@@ -50,7 +50,7 @@ These three Docker patterns cover ~90% of typical AI demo workflows.
 
 ---
 
-🌟 **Week 2 Challenge: The "Docker Model Runner"**
+🌟 **Session 2 Challenge: The "Docker Model Runner"**
 
 **Task:** Use the Docker AI plugin to pull a coding model optimized for ARM64 and run it locally.
 
@@ -70,7 +70,7 @@ Verify the model is running and accessible at http://localhost:12434.
 
 ---
 
-## Resources for Week 2
+## Resources for Session 2
 
 - Playbook: Docker Model Runner on DGX Spark
 - Reference: NVIDIA Container Toolkit Docs

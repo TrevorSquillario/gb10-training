@@ -1,4 +1,4 @@
-# Week 4: Ollama & The Interactive WebUI
+# Session 4: Ollama & The Interactive WebUI
 
 **Objective:** Move from the command line to a professional-grade interface. Deploy Ollama as the local inference engine and Open WebUI as the "front door" for AI applications, providing "ChatGPT-like" performance while keeping 100% of the data local to the GB10.
 
@@ -53,20 +53,20 @@ Now that your backend is running, you can connect other apps to your GB10's API.
 
 ---
 
-🌟 **Week 4 Challenge: The "Multi-Model" Stress Test**
+🌟 **Session 4 Challenge: The "Multi-Model" Stress Test**
 
 **Task:** Open two different browser tabs.
 
 1. In Tab 1, start a long coding task with `qwen3-coder:32b`.
 2. In Tab 2, start a creative writing task with `llama3.3:70b`.
 
-**Watch the hardware:** Open your VS Code terminal and run `gpustats` (the alias we made in Week 1).
+**Watch the hardware:** Open your VS Code terminal and run `gpustats` (the alias we made in Session 1).
 
 **Observe:** Watch how the GB10 manages the memory pressure. Notice the "Memory Used" jump as the 70B model loads, and check the "Volatile GPU-Util" to see the Blackwell cores in action.
 
 ---
 
-## Resources for Week 4
+## Resources for Session 4
 
 - Playbook: Open WebUI with Ollama on Spark
 - Documentation: Ollama API Reference

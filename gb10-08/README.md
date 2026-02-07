@@ -1,4 +1,4 @@
-# Week 8: Giving the GB10 "Eyes" (Vision-Language Models)
+# Session 8: Giving the GB10 "Eyes" (Vision-Language Models)
 
 **Objective:** Explore Multi-modal AI by moving beyond text and static images to Vision-Language Models (VLMs). Build a live interface that can "see" and describe the world in real-time, showcasing the low-latency inference capabilities of the Blackwell architecture.
 
@@ -55,7 +55,7 @@ ollama run llava "Describe this image in JSON format with keys: 'object', 'color
 
 ---
 
-🌟 **Week 8 Challenge: The "Security Guard" Script**
+🌟 **Session 8 Challenge: The "Security Guard" Script**
 
 **Task:** Create a simple "Security" demo.
 
@@ -67,13 +67,13 @@ ollama run llava "Describe this image in JSON format with keys: 'object', 'color
 
 ---
 
-## Resources for Week 8
+## Resources for Session 8
 
 - Playbook: Live VLM WebUI on DGX Spark
 - Blog: VLM Prompt Engineering Guide
 
 > **Pro Tip:** If the video feed feels choppy, check your browser console. Sometimes the 1GbE network can struggle with high-resolution MJPEG streams. Lowering the resolution to 720p usually fixes the "lag" without hurting the AI's accuracy.
 
-> **Next Step:** Ready for Week 9: Retrieval Augmented Generation (RAG), where we teach the AI to answer questions using your own private company documents?
+> **Next Step:** Ready for Session 9: Retrieval Augmented Generation (RAG), where we teach the AI to answer questions using your own private company documents?
 
 **Video Resource:** Local AI Models with Ollama + NVIDIA DGX Spark. This video demonstrates setting up an Ollama server on the DGX Spark to run large models locally, which is a key component for the VLM and LLM workflows we are building in this course.

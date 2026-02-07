@@ -1,4 +1,4 @@
-# Week 6: "Vibe Coding" & Real-Time IDE Integration
+# Session 6: "Vibe Coding" & Real-Time IDE Integration
 
 **Objective:** Master Vibe Coding—a style of development where you stay in the "flow" by using natural language and real-time AI suggestions. Configure Continue.dev to use your GB10 as a local power source for autocomplete and chat.
 
@@ -11,7 +11,7 @@ Vibe coding is the transition from manually typing every line to curating code g
 
 ## 2. Hands-on Lab: Configuring Continue.dev
 
-Since your GB10 is already running Ollama (from Week 4), we just need to "plug in" VS Code.
+Since your GB10 is already running Ollama (from Session 4), we just need to "plug in" VS Code.
 
 ### Step A: Extension install
 
@@ -67,7 +67,7 @@ Now that it's set up, practice the three core "Vibes":
 
 ---
 
-🌟 **Week 6 Challenge: The "No-Keyboard" Component**
+🌟 **Session 6 Challenge: The "No-Keyboard" Component**
 
 **Task:** Create a new React or HTML component without "writing" any logic manually.
 
@@ -79,7 +79,7 @@ Now that it's set up, practice the three core "Vibes":
 
 ---
 
-## Resources for Week 6
+## Resources for Session 6
 
 - Playbook: Vibe Coding in VS Code
 - Extension Site: Continue.dev Documentation

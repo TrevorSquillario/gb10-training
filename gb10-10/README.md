@@ -1,4 +1,4 @@
-# Week 10: High-Throughput Serving (SGLang & vLLM)
+# Session 10: High-Throughput Serving (SGLang & vLLM)
 
 **Objective:** Move from "One user, one model" to Concurrent Serving. Deploy SGLang, a high-performance serving framework that is currently the throughput champion for the Blackwell architecture. Learn how to handle dozens of simultaneous requests without the latency "choke" typical of simpler engines.
 
@@ -59,7 +59,7 @@ python3 -m sglang.bench_serving --host 0.0.0.0 --port 30000 \
 
 ---
 
-🌟 **Week 10 Challenge: The "Shared Context" Win**
+🌟 **Session 10 Challenge: The "Shared Context" Win**
 
 **Task:** Prove the power of RadixAttention.
 
@@ -72,7 +72,7 @@ python3 -m sglang.bench_serving --host 0.0.0.0 --port 30000 \
 
 ---
 
-## Resources for Week 10
+## Resources for Session 10
 
 - Playbook: SGLang for Inference on DGX Spark
 - Technical Paper: SGLang: Efficient Execution of Structured LLM Programs

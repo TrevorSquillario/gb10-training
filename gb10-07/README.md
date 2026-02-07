@@ -1,6 +1,6 @@
-# Week 7: Visualizing AI with ComfyUI & FLUX.1
+# Session 7: Visualizing AI with ComfyUI & FLUX.1
 
-**Objective:** Master high-fidelity image generation using ComfyUI. While previous weeks focused on text, the GB10's 128GB of Unified Memory makes it a "visual powerhouse," capable of running massive models like FLUX.1-dev and Stable Diffusion 3.5 without the out-of-memory (OOM) errors common on consumer cards.
+**Objective:** Master high-fidelity image generation using ComfyUI. While previous Sessions focused on text, the GB10's 128GB of Unified Memory makes it a "visual powerhouse," capable of running massive models like FLUX.1-dev and Stable Diffusion 3.5 without the out-of-memory (OOM) errors common on consumer cards.
 
 ## 1. Why ComfyUI for Sales Engineers?
 
@@ -62,7 +62,7 @@ Once in ComfyUI, you will load a "Workflow JSON" from our course repo.
 
 ---
 
-🌟 **Week 7 Challenge: The "Product Design" Sprint**
+🌟 **Session 7 Challenge: The "Product Design" Sprint**
 
 **Task:** Use ComfyUI to design a "NVIDIA-themed" mechanical keyboard.
 
@@ -73,13 +73,13 @@ Once in ComfyUI, you will load a "Workflow JSON" from our course repo.
 
 ---
 
-## Resources for Week 7
+## Resources for Session 7
 
 - Playbook: ComfyUI on DGX Spark Instructions
 - Models: FLUX.1-dev on Hugging Face
 
 > **Pro Tip:** If your ComfyUI feels "stuck" on the first run, check the logs with `docker logs -f spark-comfy`. It is likely just initializing the Blackwell-specific kernels, which only happens once!
 
-> **Next Step:** Ready for Week 8: Vision-Language Models (VLM), where we give your GB10 "eyes" to describe images and live video feeds?
+> **Next Step:** Ready for Session 8: Vision-Language Models (VLM), where we give your GB10 "eyes" to describe images and live video feeds?
 
 **Video Resource:** NVIDIA DGX Spark - Comfy UI Image Generation Demo. This video provides a practical walkthrough of setting up ComfyUI and Stable Diffusion on the DGX Spark, which perfectly aligns with our goal of generating high-quality local AI art.

@@ -1,4 +1,4 @@
-# Week 9: RAG (Retrieval-Augmented Generation) & Private Data
+# Session 9: RAG (Retrieval-Augmented Generation) & Private Data
 
 **Objective:** Master RAG, the industry-standard way to eliminate AI hallucinations. Teach your GB10 to answer questions using your private sales playbooks, PDFs, and technical documentation. Unlike cloud RAG, this entire pipeline stays on your local NVMe storage, ensuring customer-sensitive data never touches the internet.
 
@@ -48,7 +48,7 @@ AI Workbench will automatically build the environment, installing the vector DB 
 
 ---
 
-🌟 **Week 9 Challenge: The "Instant Expert"**
+🌟 **Session 9 Challenge: The "Instant Expert"**
 
 **Task:** Build a RAG system for a "Mock Customer Meeting."
 
@@ -60,13 +60,13 @@ AI Workbench will automatically build the environment, installing the vector DB 
 
 ---
 
-## Resources for Week 9
+## Resources for Session 9
 
 - Playbook: RAG App in AI Workbench
 - Blog: Rethinking CPUs for Local RAG on DGX Spark
 
 > **Pro Tip:** If you see an "Authorization Failed" error in the Chat UI, ensure your `NGC_API_KEY` is correctly set in the Workbench "Secrets" section. This key is required to download the optimized embedding models.
 
-> **Next Step:** Ready for Week 10: High-Throughput Serving, where we learn how to make your GB10 handle 50+ simultaneous chat users at once?
+> **Next Step:** Ready for Session 10: High-Throughput Serving, where we learn how to make your GB10 handle 50+ simultaneous chat users at once?
 
-**Video Resource:** Local Multimodal RAG Pipeline End-to-End Tutorial on DGX Spark. This video is a perfect companion to Week 9 as it provides a complete end-to-end tutorial on building a multimodal RAG pipeline specifically on the NVIDIA DGX Spark hardware you are using.
+**Video Resource:** Local Multimodal RAG Pipeline End-to-End Tutorial on DGX Spark. This video is a perfect companion to Session 9 as it provides a complete end-to-end tutorial on building a multimodal RAG pipeline specifically on the NVIDIA DGX Spark hardware you are using.

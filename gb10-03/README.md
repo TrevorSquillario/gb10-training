@@ -1,4 +1,4 @@
-# Week 3: The Model Zoo & The Blackwell "Secret Sauce" (NVFP4)
+# Session 3: The Model Zoo & The Blackwell "Secret Sauce" (NVFP4)
 
 **Objective:** Understand the math that makes the GB10 a "Supercomputer at your desk." Move beyond simply downloading models and start optimizing them for the Blackwell architecture using NVFP4.
 
@@ -67,7 +67,7 @@ Note: The `--calib_size` tells the AI to "calibrate" its math using 128 sample s
 
 ---
 
-🌟 **Week 3 Challenge: The Efficiency Audit**
+🌟 **Session 3 Challenge: The Efficiency Audit**
 
 **Task:** Compare two models.
 
@@ -78,7 +78,7 @@ Note: The `--calib_size` tells the AI to "calibrate" its math using 128 sample s
 
 ---
 
-## Resources for Week 3
+## Resources for Session 3
 
 - Playbook: NVFP4 Quantization Guide
 - Deep Dive: Introducing NVFP4 for Efficient Inference

@@ -1,4 +1,4 @@
-# Week 5: Agentic Coding (Claude Code + Local Ollama)
+# Session 5: Agentic Coding (Claude Code + Local Ollama)
 
 **Objective:** Transition from "Chatting with AI" to "Working with an AI Agent." Set up Claude Code and bridge it to your local Ollama backend to create a private, hyper-fast "AI Pair Programmer" that can read files, run terminal commands, and fix bugs autonomously.
 
@@ -16,7 +16,7 @@ Why the GB10? Agentic loops are "token heavy." They send massive system prompts 
 Since January 2026, Ollama natively supports the Anthropic Messages API, making this setup much simpler than it used to be.
 
 Step A: Install Claude Code
-Run the native installer on your GB10. (Ensure you have Node.js 18+ installed from Week 1).
+Run the native installer on your GB10. (Ensure you have Node.js 18+ installed from Session 1).
 
 Bash
 curl -fsSL https://claude.ai/install.sh | bash
@@ -53,7 +53,7 @@ Common Commands inside Claude Code:
 
 Fix the bug in the login controller: Claude will now search your files, find the error, and ask for permission to edit the file.
 
-🌟 Week 5 Challenge: The "Autonomous Bug Fix"
+🌟 Session 5 Challenge: The "Autonomous Bug Fix"
 Task: Use the Agent to create and fix a project.
 
 Ask Claude: "Create a simple Python FastAPI app with one GET endpoint that returns a random quote. Also, create a unit test for it."
@@ -64,7 +64,7 @@ The Twist: Purposely break the code (e.g., delete a comma) and tell Claude: "The
 
 Observe: Watch the terminal as Claude "loops"—reading the error log, editing the file, and re-running the test automatically.
 
-📚 Resources for Week 5
+📚 Resources for Session 5
 Playbook: Claude Code Local Setup
 
 Documentation: Ollama Anthropic Compatibility
