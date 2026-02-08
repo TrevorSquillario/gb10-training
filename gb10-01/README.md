@@ -34,7 +34,11 @@ Reference [Dell Setup Guide](https://www.dell.com/support/kbdoc/en-us/000398800/
 (Optional) Setup SSH Keys
 
 ```bash
-# Get the SSH Public Key from remote host
+# Get the SSH Public Key from remote host (Windows)
+ssh-keygen
+type ~/.ssh/id_rsa.pub
+
+# Get the SSH Public Key from remote host (Linux)
 cat ~/.ssh/*.pub
 
 # Add SSH Keys to GB10
@@ -166,7 +170,7 @@ Task:
 
 1. Access the DGX Dashboard
 2. Start the Jupyter Notebook container
-3. Wait for the container to start and logs to finish. You should be given a url like `http://localhost:11002/lab?token=ffb0585c28ff0153351b46230ecefc78d6cabf470c36ffd6`
+3. Wait for the container to start and logs to finish. You should be given a url like `http://localhost:11002/lab?token=asdfa234asdfb`
 4. Open the Jupyter Notebook in your browser
 5. Under Notebook click Python 3
 6. Copy the following python code into the notebook

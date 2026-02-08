@@ -9,13 +9,14 @@ Vibe coding is the transition from manually typing every line to curating code g
 - **Zero Data Leakage:** Your proprietary code never leaves the GB10.
 - **Large Context Awareness:** You can feed the AI your entire local folder structure, which the GB10 can process instantly thanks to the Grace-Blackwell high-speed interconnect.
 
+
+
+
+
+
 ## 2. Hands-on Lab: Configuring Continue.dev
 
 Since your GB10 is already running Ollama (from Session 4), we just need to "plug in" VS Code.
-
-### Step A: Extension install
-
-Open VS Code on your laptop (connected via Remote-SSH to the GB10).
 
 Go to the Extensions view (`Ctrl+Shift+X`) and install **Continue**.
 

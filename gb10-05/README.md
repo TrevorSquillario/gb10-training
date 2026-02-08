@@ -2,7 +2,7 @@
 
 **Objective:** Transition from "Chatting with AI" to "Working with an AI Agent." Set up Claude Code and bridge it to your local Ollama backend to create a private, hyper-fast "AI Pair Programmer" that can read files, run terminal commands, and fix bugs autonomously.
 
-## 1. What is an "Agentic" Workflow?
+## What is Claude Code?
 
 Unlike a standard Chatbot that just gives you code snippets, an Agent has "Tools."
 
@@ -12,57 +12,113 @@ Unlike a standard Chatbot that just gives you code snippets, an Agent has "Tools
 
 Why the GB10? Agentic loops are "token heavy." They send massive system prompts and file contexts (often 15k+ tokens). The GB10’s 128GB of VRAM ensures you can maintain these large context windows without the AI "forgetting" the beginning of the task.
 
-2. Hands-on Lab: Setup & Integration
+## Hands-on Lab: Setup & Integration
 Since January 2026, Ollama natively supports the Anthropic Messages API, making this setup much simpler than it used to be.
 
-Step A: Install Claude Code
-Run the native installer on your GB10. (Ensure you have Node.js 18+ installed from Session 1).
+### Install Claude Code
+Run the native installer on your GB10.
 
-Bash
+```bash
 curl -fsSL https://claude.ai/install.sh | bash
-Verify with claude --version.
+```
+Wait for that to finish then run
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc
+```
 
-Step B: Configure the Local Bridge
+Verify with `claude --version`.
+
+### Configure the Local Bridge
 We need to tell Claude Code to stop looking for Anthropic's servers and look at your local Ollama port (11434) instead.
 
-Add these variables to your ~/.bashrc (or ~/.zshrc):
+Add these variables to your `~/.bashrc`:
 
-Bash
+```bash
 export ANTHROPIC_BASE_URL="http://localhost:11434"
 export ANTHROPIC_AUTH_TOKEN="ollama"
 export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
-Reload your shell: source ~/.bashrc.
+```
 
-Step C: Selecting the Right Agentic Model
-Not all models are good at "Tool Use." For the best results on the GB10, we will use Qwen3-Coder or GLM-4.7-Flash, which are specifically trained for agentic loops.
+Reload your shell: `source ~/.bashrc`.
+
+### Selecting the Right Agentic Model
+Not all models are good at "Tool Use." For the best results I recommend, which are specifically trained for agentic loops.
+
+- `qwen3-coder-next`
 
 Pull the model in Ollama:
 
-Bash
-ollama pull qwen3-coder:32b
+```bash
+docker exec -it ollama ollama pull qwen3-coder-next
+```
 3. Launching the Agent
 Navigate to any code project directory on your GB10 and launch:
 
-Bash
-claude --model qwen3-coder:32b
-Common Commands inside Claude Code:
+```bash
+claude --model qwen3-coder-next
+```
 
-/stats: Shows you how many tokens you've used in the session.
+## Setup Claude Code in VSCode
 
-/compact: Clears the "memory" of the conversation to save VRAM while keeping the current file context.
+Since your GB10 is already running Ollama and Claude Code, we just need to "plug in" VS Code.
 
-Fix the bug in the login controller: Claude will now search your files, find the error, and ask for permission to edit the file.
+### Extension install
 
-🌟 Session 5 Challenge: The "Autonomous Bug Fix"
-Task: Use the Agent to create and fix a project.
+1. Open VS Code on your laptop 
+2. Select the Extensions tab on the left or hit Ctrl + Shift + P and search for Install Extension
+3. Search for Remote - SSH and install
+4. Search for Claude Code and install
+6. Hit Ctrl + Shift + P and search for User Settings then select Preferences: Open User Settings
+7. Go to Extensions > Claude Code and select
+```
+- Disable Login Prompt
+- Select Model: qwen3-coder-next
+- Use Terminal
+```
 
-Ask Claude: "Create a simple Python FastAPI app with one GET endpoint that returns a random quote. Also, create a unit test for it."
+## Connect to your GB10 using the Remote SSH Extension
 
-Once created, ask: "Run the tests." (Claude should run the command for you).
+First you need to setup SSH key authentication from your laptop to your GB10. This setup assumes you're on Windows.
 
-The Twist: Purposely break the code (e.g., delete a comma) and tell Claude: "The app is broken, find the error and fix it until the tests pass again."
+1. In VSCode select the Terminal menu at the top, then New Terminal.
+2. A PowerShell terminal window will appear at the bottom. Type `ssh-keygen` then just hit Enter several times to accept the defaults.
+3. Enter `type ~/.ssh/id_rsa.pub | clip`. This will print the SSH public key and copy it to the clipboard in Windows.
+4. SSH to your GB10
+```bash
+vi ~/.ssh/authorized_keys
 
-Observe: Watch the terminal as Claude "loops"—reading the error log, editing the file, and re-running the test automatically.
+o
+# Paste the ssh key
+wq
+```
+
+Then setup the connection in VSCode
+1. Click the Remote Explorer icon in the left bar. Hover over to see the names.
+2. Hover over the SSH section and click the + icon
+3. A box will appear at the top center of the window. Enter `ssh <username>@<gb10-ip>`
+4. It should log you in automatically using passwordless SSH key authentication. If it prompts you for a password, something it's setup properly. You can enter your password but you'll have to do it everytime.
+
+## Using Claude Code
+
+1. Select the Claude Code icon (orange sprite) in the top right
+2. This will open the build-in VSCode Terminal and launch Claude Code in Terminal Mode. As of this writing it seems the extensions chat interface is broke when using a local LLM. We'll expore other options in future lessons.
+3. Ensure the `qwen3-coder-next`is displayed in the top right. If not use `/model qwen3-coder-next` to select the model
+4. 
+
+
+### Useful Commands inside Claude Code
+
+`/stats`: Shows you how many tokens you've used in the session.
+
+`/compact`: Clears the "memory" of the conversation to save VRAM while keeping the current file context.
+
+`/model`: Changes or selects a model to use
+
+`/exit`: Exit session, you can just type `exit` as well
+
+🌟 Session 5 Challenge: Editing and creating local files
+
+Prompt: Create a test directory in the current path and create 3 text files. Fill the files with loren ipsum text
 
 📚 Resources for Session 5
 Playbook: Claude Code Local Setup

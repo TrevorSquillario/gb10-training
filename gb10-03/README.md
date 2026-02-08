@@ -30,11 +30,15 @@ docker manifest inspect nvcr.io/nim/qwen/qwen3-32b-dgx-spark:1.0 | grep architec
 - Nvidia has compatible models at https://huggingface.co/nvidia/models
 - Convert open source models manually
 
+## 4. Important things to remember
+
+1. Ollama only works with GGUF models. When you download a model from within Ollama it hosts it's own GGUF versions of select models. If you see a model on HuggingFace and has `*.safetensors` you need to convert these to a quant format or use vLLM or TensorRT-LLM to host these.
+
 ## Hands-on Lab: Quantizing Your First Model
 
 We will use the NVIDIA TensorRT Model Optimizer container to convert a standard Hugging Face model into an NVFP4-optimized engine.
 
-### Step A: Prepare the environment
+### Prepare the environment
 
 1. Login to https://huggingface.co
 2. Click your profile in the top right and select Access Tokens
@@ -56,7 +60,7 @@ Reload your bash profile by logging out or
 source ~/.bashrc
 ```
 
-### Step B: Run the optimizer container
+### Run the optimizer container
 
 We will use the TensorRT-LLM Spark Dev container, which contains the specific libraries for the GB10's SM 12.1 architecture. Then clone the NVIDIA Model Optimizer git repo and execute that against the `Qwen/Qwen3-14B` model to quantanize the model using NVFP4.
 
@@ -78,26 +82,55 @@ docker run --rm -it --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=671
     --tp 1 \
     --export_fmt hf
   "
-
-
 ```
 
-Notes:
+#### Notes
 - Ignore error `pynvml.NVMLError_NotSupported: Not Supported`
 - `ACCELERATE_USE_FSDP=false` and `CUDA_VISIBLE_DEVICES=0` are required for certain models. Otherwise the model will be split between CPU and GPU and we don't want that. It's fine to just leave these on for all models but the quant will take a bit longer.
 
-### Step C: Validate the quantized model
-After the container completes, verify that the quantized model files were created successfully.
+#### What this command does (step‑by‑step)
+
+- `docker run --rm -it`: start an interactive container and remove it when the command exits.
+- `--gpus all`: gives the container access to all GPUs on the host via the NVIDIA container toolkit.
+- `--ipc=host`: shares the host IPC namespace (large shared memory buffers used by some ML frameworks).
+- `--ulimit memlock=-1 --ulimit stack=67108864`: increase locked memory and stack limits so large models and threads don't fail due to OS limits.
+- `-v "./output_models:/workspace/output_models"`: bind-mounts a host folder for saving the converted/quantized model outputs.
+- `-v "$HOME/.cache/huggingface:/root/.cache/huggingface"`: reuses the host Hugging Face cache so downloads are cached and not re-fetched inside the container.
+- `-e HF_TOKEN=$HF_TOKEN`: passes your Hugging Face token into the container (required only for gated models).
+- `-e ACCELERATE_USE_FSDP=false -e CUDA_VISIBLE_DEVICES=0`: force single-GPU, non-FSDP runs so the optimization runs on the intended device and doesn't split across CPU/GPU.
+- `nvcr.io/nvidia/tensorrt-llm/release:spark-single-gpu-dev`: the TensorRT-LLM developer container with required libs for quantization/optimization; this image includes tooling tuned for NVIDIA hardware.
+
+Inside the container the one-line `bash -c` does:
+
+- Clone a specific Model Optimizer release (`git clone -b 0.35.0`) to ensure a known-good code version.
+- `pip install -e '.[dev]'`: install the optimizer and dev dependencies inside the container.
+- Set `ROOT_SAVE_PATH` to point at the mounted `/workspace/output_models` so results are written back to your host.
+- Run the provided `huggingface_example.sh` script with these flags:
+  - `--model 'Qwen/Qwen3-14B'`: the Hugging Face model to download and convert (gated — needs `HF_TOKEN`).
+  - `--quant nvfp4`: quantize to NVIDIA NVFP4 (the format used on Blackwell/GB10).
+  - `--tp 1`: tensor-parallel degree (1 for single-GPU in this example).
+  - `--export_fmt hf`: export the result in Hugging Face format so downstream tools can consume it.
+
+What you'll find after completion:
+
+- The `./output_models` directory will contain the converted/quantized model files (bins/safetensors/configs). Use the `find` snippet below to verify.
+
+### Quick verification commands (on host):
 
 ```bash
-# Check output directory contents
+# List generated files
 ls -la ./output_models/
 
-# Verify model files are present
+# Find model files
 find ./output_models/ -name "*.bin" -o -name "*.safetensors" -o -name "config.json"
 ```
 
-### Step D: Serve the model with OpenAI-compatible API
+### Serve the model with OpenAI-compatible API
+
+#### Important
+```
+These NVFP4 models can't be run in Ollama. vLLM has some basic support but it's very new. TensorRT-LLM is really it for now. As the industry gets behind them support will improve. 
+```
 
 Start the TensorRT-LLM OpenAI-compatible API server with the quantized model. First, set the path to your quantized model:
 
@@ -121,7 +154,7 @@ docker run --rm -it \
     --port 8000
 ```
 
-### Step E: Test out your TensorRT-LLM Server
+### Test out your TensorRT-LLM Server
 
 ```bash
 curl -X POST http://localhost:8000/v1/chat/completions \

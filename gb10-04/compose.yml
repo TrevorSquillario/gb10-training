@@ -5,10 +5,14 @@ services:
     restart: unless-stopped
     environment:
       - OLLAMA_HOST=0.0.0.0
+      - GGML_CUDA_ENABLE_UNIFIED_MEMORY=1  # Explicitly allow Blackwell Unified Memory
+      - OLLAMA_FLASH_ATTENTION=1 # Enable Flash Attention for supported models
+      - OLLAMA_KV_CACHE_TYPE=q4_0 # Save memory with q4_0 quantization for KV cache
     ports:
       - "11434:11434" # Ollama API access
     volumes:
       - ~/ollama:/root/.ollama
+      - ~/models:/models # Mount local models directory
     deploy:
       resources:
         reservations:
