@@ -1,0 +1,80 @@
+name: Local Config
+version: 1.0.0
+schema: v1
+context:  
+  - provider: code  
+  #- provider: docs  
+  #- provider: diff  
+  #- provider: terminal  
+  #- provider: problems  
+  #- provider: folder  
+  #- provider: codebase
+models:
+  - name: qwen2.5-coder:32b
+    provider: ollama
+    model: qwen2.5-coder:32b
+    apiBase: http://192.168.0.30:11434
+    roles: [chat, edit, apply]
+    # Forced template to prevent "Sure! Here is your code..."
+    promptTemplates:
+      edit: "Output ONLY the raw code. No talk. No markdown backticks. Rewrite this code: {{{ codeToEdit }}} based on these instructions: {{{ input }}}"
+    requestOptions:
+      temperature: 0 # Deterministic code generation
+    capabilities:
+      - tool_use
+
+  - name: qwen3-coder-next
+    provider: ollama
+    model: qwen3-coder-next:latest
+    apiBase: http://192.168.0.30:11434
+    roles: [chat, edit, apply]
+    promptTemplates:
+      edit: "You are a code rewrite engine. Output the final code ONLY. Instructions: {{{ input }}}. Original: {{{ codeToEdit }}}"
+    requestOptions:
+      temperature: 0
+    capabilities:
+      - tool_use
+
+  - name: llama3.3:70b
+    provider: ollama
+    model: llama3.3:70b
+    apiBase: http://192.168.0.30:11434
+    roles: [chat, edit, apply]
+    requestOptions:
+      # Stop the model before it starts explaining itself
+      stop: ["Assistant:", "User:", "###", "```"] 
+    capabilities:
+      - tool_use
+
+  - name: Qwen2.5-Coder 1.5B
+    provider: ollama
+    apiBase: http://192.168.0.30:11434
+    model: qwen2.5-coder:1.5b
+    roles: [autocomplete]
+
+  - name: embeddingsProvider  
+    provider: ollama  
+    apiBase: http://192.168.0.30:11434
+    model: nomic-embed-text:latest
+    roles:  
+      - embed  
+
+  - name: gpt-oss:120b
+    provider: local
+    model: gpt-oss:120b
+    sourceId: a951a23b46a1
+    size: "65 GB"
+    added: "5 minutes ago"
+    roles: [chat]
+    capabilities:
+      - tool_use
+
+  - name: GLM-4.7-Flash-Q8_0
+    provider: huggingface
+    model: hf.co/unsloth/GLM-4.7-Flash-GGUF:Q8_0
+    sourceId: f84117954513
+    size: "31 GB"
+    added: "17 minutes ago"
+    roles: [chat]
+    capabilities:
+      - tool_use

@@ -43,6 +43,11 @@ Open your laptop's browser and go to: `http://<gb10-ip>:12000`
 4. Open a new terminal tab or window and run `nvidia-smi` or use the `gpustats` bash alias to view the GPU and RAM utilization.
 5. How many token/s is the GB10 outputting for the response? 
 
+### Useful commands
+
+- `docker exec -it ollama ollama list`: List models downloaded
+- `sudo sh -c "sync; echo 3 > /proc/sys/vm/drop_caches"`: If you get a message about not enough memory when it's less than 128GB and it should work or did before.
+
 ### Downloading Models
 
 There are 3 ways that you can add models to Ollama
@@ -60,6 +65,9 @@ docker exec -it ollama ollama run hf.co/Qwen/Qwen3-14B-GGUF:Q8_0
 ```
 #### 3. Manually download and copy to container models directory
 The last method is by manually adding the model files and creating the model definition. You don't need to run through this, it is here for future reference if you need it.
+
+*Note: 
+```The Q8 (8-big) quant I selected for this model requires 243GB of RAM so it's not actually going to run on the GB10. If you want to use this model you'll need to choose the IQ4_XS version```
 
 Start by installing the hf cli and download the model.
 
@@ -123,8 +131,6 @@ ollama create minimax-q8 -f Modelfile
 # Verify the model is working with
 ollama run minimax-q8
 ```
-
-*Note: The quant I selected for this model requires 243GB of RAM so it's not actually going to run on the GB10. If you want to use this model you'll need to choose the IQ4_XS quant
 
 ---
 

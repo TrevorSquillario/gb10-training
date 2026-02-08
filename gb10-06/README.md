@@ -9,60 +9,66 @@ Vibe coding is the transition from manually typing every line to curating code g
 - **Zero Data Leakage:** Your proprietary code never leaves the GB10.
 - **Large Context Awareness:** You can feed the AI your entire local folder structure, which the GB10 can process instantly thanks to the Grace-Blackwell high-speed interconnect.
 
-
-
-
-
-
-## 2. Hands-on Lab: Configuring Continue.dev
+## Hands-on Lab: Configuring Continue.dev
 
 Since your GB10 is already running Ollama (from Session 4), we just need to "plug in" VS Code.
 
 Go to the Extensions view (`Ctrl+Shift+X`) and install **Continue**.
 
-### Step B: Configuring the config.json
+### Pull the coding models
 
-Click the gear icon at the bottom of the Continue sidebar to open your configuration. We will set up two models: one for Chat (Deep & Smart) and one for Autocomplete (Small & Fast).
-
-Replace the file contents with this structure:
-
-```json
-{
-  "models": [
-    {
-      "title": "GB10 Chat (Qwen 32B)",
-      "provider": "ollama",
-      "model": "qwen3-coder:32b",
-      "apiBase": "http://localhost:11434"
-    }
-  ],
-  "tabAutocompleteModel": {
-    "title": "GB10 Autocomplete (1.5B)",
-    "provider": "ollama",
-    "model": "qwen3-coder:1.5b",
-    "apiBase": "http://localhost:11434"
-  },
-  "tabAutocompleteOptions": {
-    "multilineCompletions": "always"
-  }
-}
-```
-
-### Step C: Pulling the "fast" model
+The `qwen3-coder-next` doesn't have proper tool calling support in Ollama so we'll use `qwen2.5-coder:32b` instead.
 
 Autocomplete needs to be nearly instant. We use the 1.5B version of Qwen3 for this because it can reside permanently in a tiny corner of the GB10's 128GB memory.
 
 In your terminal, run:
 
 ```bash
-ollama pull qwen3-coder:1.5b
+
+docker exec -it ollama ollama pull nomic-embed-text  
+docker exec -it ollama ollama pull qwen2.5-coder:32b
+docker exec -it ollama ollama pull qwen2.5-coder:1.5b
+docker exec -it ollama ollama pull gpt-oss:120b
+docker exec -it ollama ollama pull llama3.3:70b
 ```
 
-## 3. Vibe Coding Techniques
+### Configuring the config.json
+
+1. Click the Continue icon on the left bar and drag it to the right Chat panel if you'd prefer.
+2. Click the gear icon at the top of the Continue sidebar. 
+3. Click the Configs icon and the gear next to Local Config. 
+4. This yaml config below will use our local Ollama server and configure two models: one for Chat (Deep & Smart) and one for Autocomplete (Small & Fast). 
+
+Replace the file contents with that of the `config.yaml` file in this lesson:
+
+Adding your own models:
+- The model name much match the output from `docker exec -it ollama ollama list` exactly
+- Update the Local Config yaml with your new models
+
+## Hands-on Lab: Configuring Cline
+
+1. Go to the Extensions view (`Ctrl + Shift + X`) and install **Cline**.
+2. Click the Cline icon on the left bar and drag it to the right Chat panel if you'd prefer.
+3. Click the gear icon at the top of the Cline sidebar. Select API Configuration
+```
+API Provider: ollama
+Use custom base URL: http://192.168.0.30:11434
+Model: Select a model
+```
+4. Compare Cline and Continue.dev. 
+
+## Review of Extensions
+
+Neither VSCode extensions are even close to Github Copilot but that was kind of expected. I think with time these open source extensions will improve. Claude Code is a great option but it only supports terminal access which some may prefer. Some promising alternatives to checkout:
+
+- Zed is a local-first code editor with AI built-in: https://zed.dev/
+- Codeium is another AI coding assistant that can be self-hosted: https://codeium.com/
+
+## Hands-on Lab: Vibe Coding Techniques
 
 Now that it's set up, practice the three core "Vibes":
 
-- **The Ghost Write (Tab):** Start typing a function like `def calculate_sales_tax(amount):`. Wait 500ms. The GB10 will suggest the entire function in gray text. Press Tab to accept.
+- **The Ghost Write (Tab):** Create a new `test.py` file. Start typing a function like `def calculate_sales_tax(amount):`. Wait 500ms. The GB10 will suggest the entire function in gray text. Press Tab to accept.
 - **The Highlight (Cmd+L / Ctrl+L):** Highlight a block of code and press `Ctrl+L`. Ask: "Refactor this to be more efficient using a list comprehension."
 - **The Intent (Cmd+I / Ctrl+I):** Press `Ctrl+I` to open the "Edit" box. Type: "Add a docstring to every function in this file." Watch as the GB10 edits the file in real-time.
 

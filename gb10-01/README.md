@@ -92,6 +92,11 @@ Add your user to the docker group:
 sudo usermod -aG docker $USER
 ```
 
+(Optional) Install useful Linux utilities
+```bash
+sudo apt install tree nvtop
+```
+
 (Optional) Customize `~/.bashrc` by adding commands to the end of the file:
 
 ```bash
