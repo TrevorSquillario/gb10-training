@@ -1,10 +1,10 @@
-# Session 11: Enterprise Deployment with NVIDIA NIMs
+# Lesson 11: Enterprise Deployment with NVIDIA NIMs
 
 **Objective:** Move from manual configuration to Enterprise AI. Deploy NVIDIA NIM (Inference Microservices), which are pre-packaged, "one-click" containers that wrap the world's most popular models in production-grade code. On the GB10, NIMs are the "Easy Button" for transitioning a lab project into a scalable customer solution.
 
 ## 1. Why NIMs on the GB10?
 
-Think of NIM as the "Professional Wrapper" for everything we've learned. While SGLang (Session 10) is a raw engine, a NIM is a complete service.
+Think of NIM as the "Professional Wrapper" for everything we've learned. While SGLang (Lesson 10) is a raw engine, a NIM is a complete service.
 
 - **Standardized APIs:** Every NIM exposes an industry-standard OpenAI-compatible API. This means if you build an app using a Llama-3 NIM, you can swap it for a Mistral NIM without changing a single line of your application code.
 - **Architecture-Aware Optimization:** When you launch a NIM on your GB10, it automatically detects the Blackwell architecture and selects the most optimized TensorRT-LLM or vLLM backend specifically for the SM 12.1 instruction set.
@@ -16,7 +16,7 @@ We will deploy the Llama-3.1-8B-Instruct NIM, which is officially supported on t
 
 ### Step A: Authentication (NGC)
 
-NIMs are hosted on the NVIDIA GPU Cloud (NGC). You will need your API key from Session 9.
+NIMs are hosted on the NVIDIA GPU Cloud (NGC). You will need your API key from Lesson 9.
 
 Get your NGC API Key
 1. Go to [ngc.nvidia.com](ngc.nvidia.com) and sign in/create an account. 
@@ -108,7 +108,7 @@ In a production environment, if a service crashes, it must restart.
 
 ---
 
-🌟 **Session 11 Challenge: The "API Switcheroo"**
+🌟 **Lesson 11 Challenge: The "API Switcheroo"**
 
 **Task:** Prove the portability of NIM.
 
@@ -120,11 +120,11 @@ In a production environment, if a service crashes, it must restart.
 
 ---
 
-## Resources for Session 11
+## Resources for Lesson 11
 
 - Playbook: NIM on Spark Documentation
 - Catalogue: Explore the NVIDIA NIM API Inventory
 
-> **Next Step:** Ready for Session 12: The Graduation Showcase, where you'll put all these tools together for a final customer pitch demo?
+> **Next Step:** Ready for Lesson 12: The Graduation Showcase, where you'll put all these tools together for a final customer pitch demo?
 
 **Video Resource:** Deploying Generative AI in Production with NVIDIA NIM. This livestream demonstration covers common use cases and provides a live walkthrough of simplifying AI deployment using the NVIDIA NIM microservice containers.

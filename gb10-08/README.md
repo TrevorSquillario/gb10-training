@@ -1,4 +1,4 @@
-# Session 8: Giving the GB10 "Eyes" (Vision-Language Models)
+# Lesson 8: Giving the GB10 "Eyes" (Vision-Language Models)
 
 **Objective:** Explore Multi-modal AI by moving beyond text and static images to Vision-Language Models (VLMs). Build a live interface that can "see" and describe the world in real-time, showcasing the low-latency inference capabilities of the Blackwell architecture.
 
@@ -15,65 +15,53 @@ While LLMs understand words, VLMs understand spatial relationships and visual co
 
 We will deploy the Live VLM WebUI playbook, which uses a Streamlit interface to pipe a webcam or video file into the model.
 
-### Step A: Launch the VLM container
+### Launch the VLM container
 
 This container comes pre-loaded with the drivers needed to access local video devices.
 
 ```bash
-docker run -d --name spark-vlm --gpus all \
-  -p 8501:8501 \
-  --device /dev/video0:/dev/video0 \
-  nvcr.io/nvidia/dgx-spark/live-vlm-webui:latest
+docker login nvcr.io
+# Username: $oauthtoken
+# Password: <Your-NGC-API-Key>
+
+docker run --name spark-vlm --gpus all \
+  --network host \
+  -p 8090:8090 \
+  ghcr.io/nvidia-ai-iot/live-vlm-webui:0.2.1
 ```
 
-**Note:** If you don't have a webcam plugged into the GB10, you can still use the interface to upload MP4 video files.
+**Note:** If you don't have a webcam plugged into the GB10, you can still use the interface to upload MP4 video files. You are also able to use an IP camera RTSP stream https://github.com/nvidia-ai-iot/live-vlm-webui/blob/main/docs/usage/rtsp-ip-cameras.md
 
-### Step B: Interacting with the "eyes"
+### Interacting with the "eyes"
 
-Open `http://spark-xxxx.local:8501` in your browser.
-
-1. Select **Moondream2** for the fastest response.
-2. Click "Start Camera."
-3. **The Prompt:** In the chat box, type: "What am I holding in my hand?" or "Describe the expression on the person's face."
-
-## 3. Workflow: Automated Image Tagging
-
-SEs often need to show how AI can automate "boring" tasks. We will use a Python script to perform Structured Data Extraction from images.
-
-Use Ollama to pull the vision-capable LLaVA model:
-
+Download the VLM models
 ```bash
-ollama pull llava
+docker exec -it ollama ollama pull gemma3:4b
+docker exec -it ollama ollama pull gemma3:27b
+docker exec -it ollama ollama pull llama3.2-vision:11b
 ```
 
-Run a query that forces a JSON response (perfect for developers):
+Open `http://<gb10-ip>:8090` in your browser.
 
+1. VLM API Configuration
 ```bash
-# Example of asking a VLM to categorize an image for a database
-ollama run llava "Describe this image in JSON format with keys: 'object', 'color', 'estimated_value'" < path/to/photo.jpg
+API Base URL: http://localhost:11434/v1
+API Key: ollama
+Model: llama3.2-vision:11b
 ```
+2. Use your webcam or RTSP stream (e.g. rtsp://192.168.0.100:8554/back_cam)
+3. Click "Connect to Stream and Start VLM Analysis"
 
 ---
 
-🌟 **Session 8 Challenge: The "Security Guard" Script**
+🌟 **Lesson 8 Challenge: Live Object Tracking**
 
-**Task:** Create a simple "Security" demo.
+This demo uses ffmpeg to take a public traffic camera's video stream which is an m3u8 stream and convert it to an RTSP stream using mediamtx. It then uses the ultralytics YOLO (You Only Look Once) model and library to enable object tracking. Then streams the labeled output to a webpage.  
 
-1. Use the Live VLM WebUI with a video of a busy office or a street scene.
-2. **The Goal:** Write a prompt that makes the AI act as an observer.
-3. **Example:** "Alert me if you see a person wearing a red hat."
+```bash
+cd gb10-08/YOLO
+docker compose up
 
-**Observation:** Notice the "Tokens Per Second" vs. "Frames Per Second." On a GB10, you should be able to analyze 2-5 frames per second with Moondream2, which is fast enough for basic motion monitoring.
+# Open a browser to http://<gb10-ip>:5000
+```
 
----
-
-## Resources for Session 8
-
-- Playbook: Live VLM WebUI on DGX Spark
-- Blog: VLM Prompt Engineering Guide
-
-> **Pro Tip:** If the video feed feels choppy, check your browser console. Sometimes the 1GbE network can struggle with high-resolution MJPEG streams. Lowering the resolution to 720p usually fixes the "lag" without hurting the AI's accuracy.
-
-> **Next Step:** Ready for Session 9: Retrieval Augmented Generation (RAG), where we teach the AI to answer questions using your own private company documents?
-
-**Video Resource:** Local AI Models with Ollama + NVIDIA DGX Spark. This video demonstrates setting up an Ollama server on the DGX Spark to run large models locally, which is a key component for the VLM and LLM workflows we are building in this course.

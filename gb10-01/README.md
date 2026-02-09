@@ -1,6 +1,6 @@
-# Session 1: Foundational Setup & The Blackwell Advantage
+# Lesson 1: Foundational Setup & The Blackwell Advantage
 
-The objective of Session 1 is to move your team from "Hardware Enthusiasts" to "Remote Developers." By the end of this Session, every SE will have a professional development environment that feels like they are working on their local laptop, while actually leveraging the petaflop of power inside the GB10.
+The objective of Lesson 1 is to move your team from "Hardware Enthusiasts" to "Remote Developers." By the end of this Lesson, every SE will have a professional development environment that feels like they are working on their local laptop, while actually leveraging the petaflop of power inside the GB10.
 
 ## 1. Hardware & Architecture Overview
 
@@ -169,7 +169,7 @@ wq!
 
 Exit out of your SSH session and start a new one. Type part of a command and press Ctrl + Up to search through history
 
-## Session 1 Challenge: The "First Flight"
+## Lesson 1 Challenge: The "First Flight"
 
 Task: 
 

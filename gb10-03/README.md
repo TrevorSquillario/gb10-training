@@ -1,4 +1,4 @@
-# Session 3: The Model Zoo & The Blackwell "Secret Sauce" (NVFP4)
+# Lesson 3: The Model Zoo & The Blackwell "Secret Sauce" (NVFP4)
 
 **Objective:** Understand the math that makes the GB10 a "Supercomputer at your desk." Move beyond simply downloading models and start optimizing them for the Blackwell architecture using NVFP4.
 
@@ -170,6 +170,6 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 
 ---
 
-## Resources for Session 4
+## Resources for Lesson 4
 
 - https://build.nvidia.com/spark/nvfp4-quantization/instructions

@@ -1,0 +1,20 @@
+services:
+  invokeai:
+    image: "ghcr.io/invoke-ai/invokeai:latest"
+    environment:
+      - INVOKEAI_ROOT=/invokeai
+      - GPU_DRIVER=cuda
+      # - HUGGING_FACE_HUB_TOKEN
+      #- HF_HOME
+    ports:
+      - "9090:9090"
+    volumes:
+      - ~/invokeai:/invokeai
+      #- ${HF_HOME:-~/.cache/huggingface}:${HF_HOME:-/invokeai/.cache/huggingface}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

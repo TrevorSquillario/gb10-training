@@ -1,4 +1,4 @@
-# Session 6: "Vibe Coding" & Real-Time IDE Integration
+# Lesson 6: "Vibe Coding" & Real-Time IDE Integration
 
 **Objective:** Master Vibe Coding—a style of development where you stay in the "flow" by using natural language and real-time AI suggestions. Configure Continue.dev to use your GB10 as a local power source for autocomplete and chat.
 
@@ -9,41 +9,23 @@ Vibe coding is the transition from manually typing every line to curating code g
 - **Zero Data Leakage:** Your proprietary code never leaves the GB10.
 - **Large Context Awareness:** You can feed the AI your entire local folder structure, which the GB10 can process instantly thanks to the Grace-Blackwell high-speed interconnect.
 
-## Hands-on Lab: Configuring Continue.dev
+### Top open weights coding models
 
-Since your GB10 is already running Ollama (from Session 4), we just need to "plug in" VS Code.
+YMMV on these models but they are worth trying out.
 
-Go to the Extensions view (`Ctrl+Shift+X`) and install **Continue**.
-
-### Pull the coding models
-
-The `qwen3-coder-next` doesn't have proper tool calling support in Ollama so we'll use `qwen2.5-coder:32b` instead.
-
-Autocomplete needs to be nearly instant. We use the 1.5B version of Qwen3 for this because it can reside permanently in a tiny corner of the GB10's 128GB memory.
-
-In your terminal, run:
+To add these to Ollama in your terminal, run:
 
 ```bash
-
-docker exec -it ollama ollama pull nomic-embed-text  
+docker exec -it ollama ollama pull qwen3-coder-next
 docker exec -it ollama ollama pull qwen2.5-coder:32b
-docker exec -it ollama ollama pull qwen2.5-coder:1.5b
 docker exec -it ollama ollama pull gpt-oss:120b
 docker exec -it ollama ollama pull llama3.3:70b
 ```
 
-### Configuring the config.json
-
-1. Click the Continue icon on the left bar and drag it to the right Chat panel if you'd prefer.
-2. Click the gear icon at the top of the Continue sidebar. 
-3. Click the Configs icon and the gear next to Local Config. 
-4. This yaml config below will use our local Ollama server and configure two models: one for Chat (Deep & Smart) and one for Autocomplete (Small & Fast). 
-
-Replace the file contents with that of the `config.yaml` file in this lesson:
-
-Adding your own models:
-- The model name much match the output from `docker exec -it ollama ollama list` exactly
-- Update the Local Config yaml with your new models
+unsloth has a lot of GGUF based releases of coding models https://huggingface.co/unsloth/models
+```bash
+docker exec -it ollama ollama pull hf.co/unsloth/gemma-3-27b-it-GGUF
+```
 
 ## Hands-on Lab: Configuring Cline
 
@@ -55,11 +37,21 @@ API Provider: ollama
 Use custom base URL: http://192.168.0.30:11434
 Model: Select a model
 ```
-4. Compare Cline and Continue.dev. 
+4. Follow a similar process for **Roo Code** if you want to try that extension as well. Compare them and see which you prefer. 
 
 ## Review of Extensions
 
-Neither VSCode extensions are even close to Github Copilot but that was kind of expected. I think with time these open source extensions will improve. Claude Code is a great option but it only supports terminal access which some may prefer. Some promising alternatives to checkout:
+None of the VSCode extensions are even close to Github Copilot but that was kind of expected. I think with time these open source extensions will improve.
+
+Review of current VSCode extensions:
+
+- Claude Code: Terminal only, works well
+- Cline: Works okay but limited features
+- Continue.dev: Lots of mention of this on the Internets but I couldn't get it to work properly with any models besides Llama3.
+- Github Copilot: Ollama integration doesn't work, the models are populated but chats fail. There is a free tier for Cloud models. The subscription is $100/year and well worth it if you code a lot.
+- Roo Code: Works okay, need to test more. This is a fork of Cline with more features. 
+
+These are separate IDEs that have better support for AI coding assistants:
 
 - Zed is a local-first code editor with AI built-in: https://zed.dev/
 - Codeium is another AI coding assistant that can be self-hosted: https://codeium.com/
@@ -74,7 +66,7 @@ Now that it's set up, practice the three core "Vibes":
 
 ---
 
-🌟 **Session 6 Challenge: The "No-Keyboard" Component**
+🌟 **Lesson 6 Challenge: The "No-Keyboard" Component**
 
 **Task:** Create a new React or HTML component without "writing" any logic manually.
 
@@ -86,9 +78,5 @@ Now that it's set up, practice the three core "Vibes":
 
 ---
 
-## Resources for Session 6
+## Resources for Lesson 6
 
-- Playbook: Vibe Coding in VS Code
-- Extension Site: Continue.dev Documentation
-
-> **Pro Tip:** If the autocomplete feels sluggish, it's usually because the 1GbE network latency (between your laptop and the GB10) is higher than the AI's generation time. For the snappiest experience, ensure you are on a wired connection rather than Wi-Fi.

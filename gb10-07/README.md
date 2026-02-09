@@ -1,85 +1,166 @@
-# Session 7: Visualizing AI with ComfyUI & FLUX.1
+# Lesson 7: Visualizing AI with ComfyUI & FLUX.1
 
-**Objective:** Master high-fidelity image generation using ComfyUI. While previous Sessions focused on text, the GB10's 128GB of Unified Memory makes it a "visual powerhouse," capable of running massive models like FLUX.1-dev and Stable Diffusion 3.5 without the out-of-memory (OOM) errors common on consumer cards.
+**Objective:** Master high-fidelity image generation using ComfyUI. While previous Sessions focused on text, the GB10's 128GB of Unified Memory makes it a "visual powerhouse," capable of running massive models like FLUX.1-dev and Stable Diffusion 3.5 without the out-of-memory (OOM) errors common on consumer cards. This allows us to build text-to-image, image-to-image, text-to-video and many other workflows using ComfyUI's node based web UI.
 
-## 1. Why ComfyUI for Sales Engineers?
+## Hands-on Lab: Deploying ComfyUI on GB10
 
-ComfyUI is a node-based interface. Instead of just a "chat box," it shows the "plumbing" of how AI works.
+We will use an optimized Docker image designed specifically for the DGX Spark's Blackwell architecture. The official guide is here https://build.nvidia.com/spark/comfy-ui/instructions. So why not just follow that? Installing applications on the host OS is generally a no-no these days. We're in the age of containers, let's embrace it. This makes the application portable, allows us to separate the dependencies from other applications, allows us to specifically define all the storage locations, and easily add environment variables. This also includes NVIDIA SageAttention which adds some performance optimizations for our hardware. In the end we'll have a service that is production-ready (for your home lab). 
 
-- **The Demo Factor:** It allows you to build custom "workflows" (e.g., an SE-specific workflow that generates a LinkedIn banner with your company logo automatically).
-- **Efficiency:** Unlike other UIs, ComfyUI only executes the parts of the graph that changed. On the GB10, this means near-instant iterations once the model is loaded into memory.
-- **The Memory Advantage:** FLUX.1-dev requires significant VRAM to run at full precision. The GB10 handles this natively, allowing for 2K resolution images that look like professional photography.
+### Create model directories
 
-## 2. Hands-on Lab: Deploying ComfyUI on GB10
-
-We will use an optimized Docker image designed specifically for the DGX Spark's Blackwell architecture.
-
-### Step A: Create model directories
-
-We want to keep our large model files on the host system so we don't have to re-download them if the container restarts.
+We want to keep our large model files and other configs on the host system so we don't have to re-download them if the container restarts.
 
 ```bash
-mkdir -p ~/comfyui_models/checkpoints
-mkdir -p ~/comfyui_models/unet
-mkdir -p ~/comfyui_models/clip
+mkdir -p ~/models/comfyui/checkpoints
+mkdir -p ~/models/comfyui/diffusion_models
+mkdir -p ~/models/comfyui/unet
+mkdir -p ~/models/comfyui/clip
+mkdir -p ~/models/comfyui/vae
+mkdir -p ~/comfyui/custom_nodes
+mkdir -p ~/comfyui/output
+mkdir -p ~/comfyui/input
+mkdir -p ~/comfyui/wheels
 ```
 
-### Step B: Launch the ComfyUI container
+You can also create custom model paths https://docs.comfy.org/development/core-concepts/models
 
-Run this command to start the server on port 8188.
+### Launch the ComfyUI container
+
+We are going to build our own container based on a `Dockerfile` that includes optimizations for the Blackwell architecture. Based on https://github.com/ecarmen16/SparkyUI
 
 ```bash
-docker run -d --name spark-comfy --gpus all \
-  -p 8188:8188 \
-  -v ~/comfyui_models:/workspace/ComfyUI/models \
-  knamdar/spark_comfy_ui:v1
+cd gb10-07/comfyui
+# I leave off the -d until I see the container start successfully. Then Ctrl + C and add the -d to run the container in the background.
+docker compose up
+# You should eventually see "[ComfyUI-Manager] All startup tasks have been completed."
+
+# Open a browser to http://<gb10-ip>:8188
 ```
 
-### Step C: Downloading the "heavyweight" (FLUX.1)
 
-FLUX.1 is currently the gold standard for open-weights image generation.
+### Downloading the "heavyweight" (FLUX.1)
 
-Navigate to your checkpoints folder:
+ComfyUI is fine with the `*.safetensors` models. No need to worry about GGUF here. 
+
+Download the FLUX.2-dev model:
 
 ```bash
-cd ~/comfyui_models/checkpoints
+mkdir -p ~/models/comfyui/diffusion_models/FLUX.2-dev
+mkdir -p ~/models/comfyui/vae/FLUX.2-dev
+
+# If don't have the hf cli downloaded
+# Ensure our python venv is started
+source ~/venv/gb10-training/bin/activate
+pip install -U "huggingface_hub[cli]"
+
+hf download black-forest-labs/FLUX.2-dev \
+  --include "*flux2-dev.safetensors" \
+  --local-dir ~/models/comfyui/diffusion_models/FLUX.2-dev
+
+# These are nested in the hf model repo so we download them to /tmp to keep things clean
+hf download Comfy-Org/flux2-dev \
+  --include "*mistral_3_small_flux2_bf16.safetensors" \
+  --local-dir /tmp
+mv /tmp/split_files/text_encoders/*.safetensors ~/models/comfyui/clip/
+
+hf download Comfy-Org/flux2-dev \
+  --include "*flux2-vae.safetensors" \
+  --local-dir /tmp
+mv /tmp/split_files/vae/*.safetensors ~/models/comfyui/vae/
 ```
 
-Download the FP8 (optimized) version to save space while maintaining quality:
 
+Your `~/models/comfyui` directory should look like:
 ```bash
-wget https://huggingface.co/Kijai/flux-fp8/resolve/main/flux1-dev-fp8.safetensors
+(gb10-training) trevor@promaxgb10-4c75:~/models/comfyui$ tree .
+.
+├── checkpoints
+├── clip
+│   └── mistral_3_small_flux2_bf16.safetensors
+├── diffusion_models
+│   └── FLUX.2-dev
+│       └── flux2-dev.safetensors
+├── unet
+└── vae
+    └── flux2-vae.safetensors
+
 ```
 
-Access the UI: Open `http://spark-xxxx.local:8188` in your browser.
+#### Note: 
+- Only the top level folders matter under `~/models/comfyui`. These are used by nodes to populate the models. You can create whatever subdirectories you would like. 
+- When adding models the ComfyUI needs and F5 refresh to see them
 
-## 3. Workflow: The "Professional Headshot" Demo
+Model Types Explained
 
-Once in ComfyUI, you will load a "Workflow JSON" from our course repo.
+- **Diffusion:** The core generative model (checkpoints go in `diffusion_models`). It iteratively denoises a latent to produce images from noise. The "Load Diffusion Model" node will show models from this directory.
+- **CLIP (text encoder):** Converts text prompts into embeddings that guide the diffusion model during generation (store CLIP models in `clip`). The "DualCLIPLoader" node will show models from this directory.
+- **VAE:** The encoder/decoder that maps between image and latent spaces; used to encode images into latents and decode latents back into high-quality images (store VAE files in `vae`). The "Load VAE" node will show models from this directory.
 
-- **The Goal:** Input a prompt like: "A professional cinematic headshot of a software engineer in a modern office, 8k resolution, highly detailed skin texture."
-- **The Secret:** Use the Blackwell-optimized sampling nodes. Because the GB10 supports CUDA 13.0, it can utilize faster cross-attention kernels that reduce generation time for FLUX images from minutes to under 60 seconds.
+## Workflows
+
+In ComfyUI workflows can be complex and difficult to understand so it's best to use existing workflows to understand what nodes are needed, what they do and how others have done it. Some great resources are available at:
+
+*Warning: These sites contain NSFW material and are blocked on the corporate network
+- https://civitai.com
+- https://openart.ai/workflows/home
+
+## Workflow: text-to-image 
+
+Workflows can be loaded by File > Open or dragging dropping them onto the canvas. They can be saved as `json` files or `png` files. We'll start with a simple text-to-image workflow that uses generative AI to create an image from a prompt using our FLUX.2-dev model.
+
+1. Start by loading the `comfyui/workflows/txt2img.json` in the lesson directory
+2. Click Run
+3. Use `nvtop` to monitor GPU usage and RAM
+4. Workflow will take a few minutes to run. The base Flux.2-dev model we're using is BF16, use a smaller quant for more performance at the cost of accuracy. 
+
+#### Knobs and Levers
+
+On the `KSampler` node you have `steps` and `cfg`
+
+***Steps (The "Iterations")***
+
+Think of Steps as the amount of time and effort the AI spends "chiseling" an image out of a block of random static (noise).
+
+How it works: Each step is a pass where the AI tries to remove a little bit of noise and replace it with detail that matches your prompt.
+
+- Low Steps (1–8): Usually results in blurry, "soupy" images with no texture. Only used for "Lightning" or "Schnell" distilled models.
+
+- Medium Steps (20–35): The "Goldilocks Zone" for most models. Details are sharp, and the image is coherent.
+
+- High Steps (50+): Diminishing returns. Beyond 50 steps, you are often just making tiny, unnoticeable changes while burning electricity on your GB10.
+
+***CFG: Classifier Free Guidance (The "Strictness")***
+
+CFG is a multiplier that determines how hard the AI should try to follow your text prompt versus how much it should rely on its "artistic intuition."
+
+- Low CFG (1.0 – 3.0): The AI is "creative" and loose. Colors are often more natural/realistic, but it might ignore parts of your prompt.
+
+- Standard CFG (4.0 – 8.0): This is the classic range for Stable Diffusion. It tries hard to give you exactly what you asked for.
+
+- High CFG (10.0+): The AI becomes "obsessive." Colors get oversaturated, edges get sharp/neon, and the image can "fry" or look over-baked.
+
 
 ---
 
-🌟 **Session 7 Challenge: The "Product Design" Sprint**
+🌟 **Lesson 7 Challenge 1: The "Product Design" Sprint**
 
 **Task:** Use ComfyUI to design a "NVIDIA-themed" mechanical keyboard.
 
-1. Load the `Basic_Flux_Workflow.json`.
-2. **Prompt:** "A top-down view of a mechanical keyboard, neon green LED backlighting, brushed aluminum chassis, high-tech industrial design, 4k."
-3. **The Tweak:** Change the CFG Scale and Steps to see how it affects the "vibe" of the image.
-4. **Benchmark:** Use the "ComfyUI Manager" to time your execution. Compare the speed of a 1024x1024 image vs a 2048x2048 image. On a GB10, the high-res jump is surprisingly small due to the massive memory bandwidth.
+Workflow: `txt2img`
+
+1. **Prompt:** "A top-down view of a mechanical keyboard, neon green LED backlighting, brushed aluminum chassis, high-tech industrial design, 4k."
+2. **The Tweak:** Change the CFG Scale and Steps to see how it affects the image.
+3. **Benchmark:** Use the "ComfyUI Manager" to time your execution. Compare the speed of a 1024x1024 image vs a 2048x2048 image. On a GB10, the high-res jump is surprisingly small due to the massive memory bandwidth.
+
+🌟 **Lesson 7 Challenge 1: Edit an existing image
+
+Workflow: `img_edit`
+
+1. Upload an existing image, modify the prompt and hit Run!
 
 ---
 
-## Resources for Session 7
+## Resources for Lesson 7
 
-- Playbook: ComfyUI on DGX Spark Instructions
-- Models: FLUX.1-dev on Hugging Face
 
-> **Pro Tip:** If your ComfyUI feels "stuck" on the first run, check the logs with `docker logs -f spark-comfy`. It is likely just initializing the Blackwell-specific kernels, which only happens once!
 
-> **Next Step:** Ready for Session 8: Vision-Language Models (VLM), where we give your GB10 "eyes" to describe images and live video feeds?
-
-**Video Resource:** NVIDIA DGX Spark - Comfy UI Image Generation Demo. This video provides a practical walkthrough of setting up ComfyUI and Stable Diffusion on the DGX Spark, which perfectly aligns with our goal of generating high-quality local AI art.

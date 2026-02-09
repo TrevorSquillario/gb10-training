@@ -1,4 +1,4 @@
-# Session 5: Agentic Coding (Claude Code + Local Ollama)
+# Lesson 5: Agentic Coding (Claude Code + Local Ollama)
 
 **Objective:** Transition from "Chatting with AI" to "Working with an AI Agent." Set up Claude Code and bridge it to your local Ollama backend to create a private, hyper-fast "AI Pair Programmer" that can read files, run terminal commands, and fix bugs autonomously.
 
@@ -116,11 +116,11 @@ Then setup the connection in VSCode
 
 `/exit`: Exit session, you can just type `exit` as well
 
-🌟 Session 5 Challenge: Editing and creating local files
+🌟 Lesson 5 Challenge: Editing and creating local files
 
 Prompt: Create a test directory in the current path and create 3 text files. Fill the files with loren ipsum text
 
-📚 Resources for Session 5
+📚 Resources for Lesson 5
 Playbook: Claude Code Local Setup
 
 Documentation: Ollama Anthropic Compatibility

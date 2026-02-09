@@ -1,4 +1,4 @@
-# Session 12: Q & A
+# Lesson 12: Q & A
 
 ## Closing Thoughts
 

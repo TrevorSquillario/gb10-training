@@ -1,4 +1,4 @@
-# Session 4: Ollama & The Interactive WebUI
+# Lesson 4: Ollama & The Interactive WebUI
 
 **Objective:** Move from the command line to a professional-grade interface. Deploy Ollama as the local inference engine and Open WebUI as the "front door" for AI applications, providing "ChatGPT-like" performance while keeping 100% of the data local to the GB10.
 
@@ -40,7 +40,7 @@ Open your laptop's browser and go to: `http://<gb10-ip>:12000`
   - Enter `llama3.3:70b` if you want to test the GB10's reasoning limits.
   - Enter `gpt-oss:20b` if you want to test with a smaller model.
 3. Provide the prompt "What is AI?" and hit Enter
-4. Open a new terminal tab or window and run `nvidia-smi` or use the `gpustats` bash alias to view the GPU and RAM utilization.
+4. Open a new terminal tab or window and run `nvidia-smi` or `nvtop` to view the GPU and RAM utilization.
 5. How many token/s is the GB10 outputting for the response? 
 
 ### Useful commands
@@ -72,6 +72,8 @@ The last method is by manually adding the model files and creating the model def
 Start by installing the hf cli and download the model.
 
 ```bash
+# Ensure our python venv is started
+source ~/venv/gb10-training/bin/activate
 pip install -U "huggingface_hub[cli]"
 # FYI: This model is 268GB. We'll include a specific subdirectory for the the 8-bit quant
 hf download unsloth/MiniMax-M2.1-GGUF \
@@ -179,6 +181,6 @@ Auth: Bearer > tensorrt_llm
 
 ---
 
-## Resources for Session 4
+## Resources for Lesson 4
 
 - https://build.nvidia.com/spark/open-webui

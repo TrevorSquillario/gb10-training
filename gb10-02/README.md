@@ -1,4 +1,4 @@
-# Session 2: Containerization & The NVIDIA Container Stack
+# Lesson 2: Containerization & The NVIDIA Container Stack
 
 **Objective:** Master the NVIDIA Container Toolkit and learn how to run GPU-accelerated containers on the GB10. On the GB10 we don't install AI frameworks "on the metal"—we containerize them to keep the DGX OS clean and to switch between CUDA or LLM engine versions quickly.
 
@@ -63,11 +63,11 @@ These common Docker commands cover most demo and troubleshooting workflows.
 
 ---
 
-🌟 **Session 2 Challenge: Debugging with the DGX Debug Container**
+🌟 **Lesson 2 Challenge: Debugging with the DGX Debug Container**
 
 **Task:** 
 
-## Resources for Session 2
+## Resources for Lesson 2
 
 - Playbook: DGX Debug Container (recommended for troubleshooting)
 - Reference: NVIDIA Container Toolkit Docs — https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/overview.html
