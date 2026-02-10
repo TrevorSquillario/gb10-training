@@ -3,7 +3,7 @@ FROM nvidia/cuda:13.0.2-devel-ubuntu24.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 python3-pip python3-venv ffmpeg libgl1 libsm6 libxext6 libxrender1 \
+    python3 python3-pip python3-venv python3-dev ffmpeg libgl1 libsm6 libxext6 libxrender1 \
     build-essential git ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
@@ -20,15 +20,22 @@ RUN python3 -m pip install --upgrade pip setuptools wheel --no-cache-dir
 RUN python3 -m pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu130 \
     torch torchvision torchaudio
 
-# Then install the remaining Python packages (ultralytics expects torch)
-RUN python3 -m pip install --no-cache-dir ultralytics flask opencv-python-headless
+# Then install the remaining Python packages from requirements
+COPY requirements.txt /app/requirements.txt
+RUN python3 -m pip install --no-cache-dir -r /app/requirements.txt
 
 # Example (commented) - uncomment and adjust to the correct torch wheel for CUDA13
 # RUN python3 -m pip install --index-url https://download.pytorch.org/whl/nightly/cu130 torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly
 
 WORKDIR /app
-COPY track_rtsp.py /app/
+
+# Copy application files
+COPY app.py /app/
+COPY yolo26n.pt /app/
+
+# Copy templates directory for Flask
+COPY templates/ /app/templates/
 
 EXPOSE 5000
 
-CMD ["python3", "track_rtsp.py"]
+CMD ["python3", "app.py"]

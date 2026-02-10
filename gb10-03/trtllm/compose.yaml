@@ -1,0 +1,29 @@
+services:
+  trtllm:
+    image: nvcr.io/nvidia/tensorrt-llm/release:1.2.0rc6
+    container_name: trtllm
+    ipc: host
+    network_mode: host
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+    volumes:
+      - ~/models/Llama-3.3-70B-Instruct-NVFP4:/workspace/model
+      - ./extra-llm-api-config-pytorch.yml:/tmp/extra-llm-api-config.yml
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command: >
+      trtllm-serve /workspace/model 
+      --backend pytorch  
+      --extra_llm_api_options /tmp/extra-llm-api-config.yml
+      --max_batch_size 64 
+      --trust_remote_code 
+      --host 0.0.0.0 
+      --port 8001

@@ -92,6 +92,15 @@ Add your user to the docker group:
 sudo usermod -aG docker $USER
 ```
 
+(Optional) Firmware Update https://www.dell.com/support/kbdoc/en-us/000379162/how-to-upgrade-the-bios-and-the-firmware-on-a-dell-pro-max-with-the-grace-blackwell-system
+```bash
+sudo apt update
+sudo apt upgrade
+sudo fwupdmgr refresh
+sudo fwupdmgr upgrade
+sudo reboot
+```
+
 (Optional) Install useful Linux utilities
 ```bash
 sudo apt install tree nvtop
