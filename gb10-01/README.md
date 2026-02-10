@@ -30,8 +30,7 @@ Reference [Dell Setup Guide](https://www.dell.com/support/kbdoc/en-us/000398800/
 - SSH Key Exchange: NVIDIA Sync will handle the creation of SSH keys so the team never has to type a password again.
 - SSH Tunnels are setup for direct access to the DGX Dashboard and Jupyter Notebook
 
-#### Option 2: SSH to the IP and setup your own ssh keys and ssh tunnel
-Setup SSH Keys
+#### Option 2: SSH to the IP and start the ssh tunnel
 
 Start SSH tunnel from remote port 11000 to local port 11000 for DGX Dashboard and 11002 for Jupyter Notebook
 
