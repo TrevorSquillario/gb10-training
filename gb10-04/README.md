@@ -20,6 +20,9 @@ The `docker compose` command launches the Ollama WebUI interface on port 12000 t
 sudo mkdir -p ~/ollama
 sudo mkdir -p ~/open_webui
 cd ~/git/gb10-training/gb10-04
+docker compose up 
+# Make sure the container starts without error then Ctrl + C and run it in the background (-d)
+
 docker compose up -d
 ```
 
@@ -63,7 +66,7 @@ docker exec -it ollama ollama pull qwen3-coder-next
 # For models on HuggingFace. When on the model page on huggingface.co look for a "Use this model" dropdown on the right, select Ollama and it will give you the proper string. Be sure to select the proper quant. 
 docker exec -it ollama ollama run hf.co/Qwen/Qwen3-14B-GGUF:Q8_0
 ```
-#### 3. Manually download and copy to container models directory
+#### 3. (Advanced) Manually download and copy to container models directory
 The last method is by manually adding the model files and creating the model definition. You don't need to run through this, it is here for future reference if you need it.
 
 *Note: 

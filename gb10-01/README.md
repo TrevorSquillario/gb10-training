@@ -2,7 +2,7 @@
 
 The objective of Lesson 1 is to move your team from "Hardware Enthusiasts" to "Remote Developers." By the end of this Lesson, every SE will have a professional development environment that feels like they are working on their local laptop, while actually leveraging the petaflop of power inside the GB10.
 
-## 1. Hardware & Architecture Overview
+## Hardware & Architecture Overview
 
 Before touching the keyboard, the team needs to understand the "Why" behind the GB10.
 
@@ -10,18 +10,18 @@ Before touching the keyboard, the team needs to understand the "Why" behind the 
 - Unified Memory (128GB): This is the killer feature. The CPU and GPU share this pool, allowing them to run 200-billion parameter models that would normally require a full server rack. You essential get 128GB of VRAM but at a slower speed than the GB200s 8TB/s.
 - The FP4 Precision: Introduce the 2nd Gen Transformer Engine. Blackwell is the first architecture to support 4-bit Floating Point (FP4), which doubles inference speed without losing accuracy.
 
-## 2. Hands-on Lab: Remote Development Setup
+## Hands-on Lab: Remote Development Setup
 
 This lab provides several options for establishing connectivity to your GB10.
 
-### Step A: First Time Setup
+### First Time Setup
 
 Connect your GB10 and perform initial setup using either the HDMI Port with a USB keyboard and mouse or WiFi hotspot and your phone (for headless setup). 
 Reference [Dell Setup Guide](https://www.dell.com/support/kbdoc/en-us/000398800/dell-pro-max-with-gb-10-fcm1253-initial-setup-out-of-the-box-experience) 
 - If using WiFi hotspot turn on Airplane mode, then ensure wifi is on and connect to the hostspot listed on the sticker.
 - Make note of the IP Address or access your ISP Gateway to view the DHCP Clients (e.g., `promaxgb10-a1b2.local`)
 
-### Step B: Connect to the DGX Dashboard
+### Connect to the DGX Dashboard
 
 #### Option 1:  Use NVIDIA Sync
 
@@ -31,22 +31,7 @@ Reference [Dell Setup Guide](https://www.dell.com/support/kbdoc/en-us/000398800/
 - SSH Tunnels are setup for direct access to the DGX Dashboard and Jupyter Notebook
 
 #### Option 2: SSH to the IP and setup your own ssh keys and ssh tunnel
-(Optional) Setup SSH Keys
-
-```bash
-# Get the SSH Public Key from remote host (Windows)
-ssh-keygen
-type ~/.ssh/id_rsa.pub
-
-# Get the SSH Public Key from remote host (Linux)
-cat ~/.ssh/*.pub
-
-# Add SSH Keys to GB10
-ssh <username>@<your-gb10-ip>
-vi ~/.ssh/authorized_keys
-chmod 600 ~/.ssh/authorized_keys
-chown <username>:<username> ~/.ssh/authorized_keys
-```
+Setup SSH Keys
 
 Start SSH tunnel from remote port 11000 to local port 11000 for DGX Dashboard and 11002 for Jupyter Notebook
 
@@ -54,7 +39,7 @@ Start SSH tunnel from remote port 11000 to local port 11000 for DGX Dashboard an
 ssh -L 11000:localhost:11000 -L 11002:localhost:11002 <username>@<your-gb10-ip>
 ```
 
-### Step C: Verification 
+### Verification 
 
 #### Open the terminal SSH to the device and run:
 
@@ -68,7 +53,25 @@ If you see the Blackwell GPU and the Grace CPU listed, you are officially connec
 #### Access the DGX Dashboard
 [http://localhost:11000](http://localhost:11000)
 
-### Step D: Download Course Files Bash Customizations
+### Setup VSCode Remote SSH
+Open VSCode and select Terminal in the top bar. This will open a PowerShell terminal. 
+
+```bash
+# Get the SSH Public Key from your laptop (Windows)
+ssh-keygen
+type ~/.ssh/id_rsa.pub
+
+# Get the SSH Public Key from your laptop (Linux)
+cat ~/.ssh/*.pub
+
+# Add SSH Keys to GB10
+ssh <username>@<your-gb10-ip>
+vi ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+chown <username>:<username> ~/.ssh/authorized_keys
+```
+
+### Download Course Files Bash Customizations
 
 Clone the course repo:
 
