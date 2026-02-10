@@ -20,11 +20,11 @@ curl -X POST http://localhost:8001/v1/chat/completions \
 
 # Ollama Benchmarking
 
-hf download unsloth/Llama-3.3-70B-Instruct-GGUF --include "*Llama-3.3-70B-Instruct-Q8_0*" --local-dir ~/models/Llama-3.3-70B-Instruct-GGUF_Q8_0
+hf download unsloth/Llama-3.3-70B-Instruct-GGUF --include "*Llama-3.3-70B-Instruct-Q8_0*" --local-dir ~/gb10/models/Llama-3.3-70B-Instruct-GGUF_Q8_0
 
 # Run a temporary container to use the llama.cpp tools to merge the split GGUF files into a single GGUF file that Ollama can use.
 docker run --rm \
-  -v ~/models:/models \
+  -v ~/gb10/models:/models \
   --entrypoint /llm/llama-gguf-split \
   amperecomputingai/llama.cpp:latest \
   --merge \

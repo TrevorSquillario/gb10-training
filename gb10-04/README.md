@@ -17,8 +17,8 @@ Ollama simplifies model management by bundling weights, configurations, and data
 The `docker compose` command launches the Ollama WebUI interface on port 12000 the Ollama API on port 11434 and ensures all chat history and models are saved permanently to your GB10 storage. It looks for a `docker-compose.yaml` or `compose.yaml` file by default.
 
 ```bash
-sudo mkdir -p ~/ollama
-sudo mkdir -p ~/open_webui
+sudo mkdir -p ~/gb10/ollama
+sudo mkdir -p ~/gb10/open_webui
 cd ~/git/gb10-training/gb10-04
 docker compose up 
 # Make sure the container starts without error then Ctrl + C and run it in the background (-d)
@@ -29,7 +29,7 @@ docker compose up -d
 #### Docker Compose (compose.yaml) Summary
 - **Services:** ollama (local LLM inference) and open-webui (web frontend).
 - **Ports:** Ollama API: `11434`; WebUI: host `12000` → container `8080`.
-- **Volumes:** Persists data/models to `~/ollama`, `~/models`, and `~/open_webui`.
+- **Volumes:** Persists data/models to `~/gb10/ollama`, `~/gb10/models`, and `~/gb10/open_webui`.
 - **GPU:** `ollama` reserves NVIDIA GPUs via `deploy.resources.reservations.devices` (requires GPU-enabled Docker; `deploy` is swarm-specific).
 - **Networking:** Both attach to `ai-network` (bridge); `open-webui` depends_on `ollama` and uses `OLLAMA_BASE_URL` to talk to it.
 - **Auth:** `WEBUI_AUTH=True` enables a login screen for the WebUI.
@@ -81,14 +81,14 @@ pip install -U "huggingface_hub[cli]"
 # FYI: This model is 268GB. We'll include a specific subdirectory for the the 8-bit quant
 hf download unsloth/MiniMax-M2.1-GGUF \
   --include "*Q8_0*" \
-  --local-dir ~/models/MiniMax-M2.1-GGUF_Q8_0
+  --local-dir ~/gb10/models/MiniMax-M2.1-GGUF_Q8_0
 ```
 For models split into parts Ollama requires that they are merged into one file
 
 ```bash
 # Run a temporary container to use the llama.cpp tools
 docker run --rm \
-  -v ~/models:/models \
+  -v ~/gb10/models:/models \
   --entrypoint /llm/llama-gguf-split \
   amperecomputingai/llama.cpp:latest \
   --merge \
@@ -98,7 +98,7 @@ docker run --rm \
 
 Create the model definition
 ```bash
-cd ~/models/MiniMax-M2.1-GGUF_Q8_0
+cd ~/gb10/models/MiniMax-M2.1-GGUF_Q8_0
 vi Modelfile
 
 FROM ./MiniMax-M2.1-Q8_0-merged.gguf
@@ -129,7 +129,7 @@ PARAMETER num_ctx 32768
 Create the model using the `ollama` command in the container 
 ```bash
 docker exec -it ollama /bin/bash
-# CD to the /models volume mount we specified in the compose.yaml. This corresponds to your ~/models directory on the host.
+# CD to the /models volume mount we specified in the compose.yaml. This corresponds to your ~/gb10/models directory on the host.
 cd /models/MiniMax-M2.1-GGUF_Q8_0
 ollama create minimax-q8 -f Modelfile
 

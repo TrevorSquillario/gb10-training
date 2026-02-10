@@ -12,8 +12,8 @@ services:
     ports:
       - "11434:11434" # Ollama API access
     volumes:
-      - ~/ollama:/root/.ollama
-      - ~/models:/models # Mount local models directory
+      - ~/gb10/ollama:/root/.ollama
+      - ~/gb10/models:/models # Mount local models directory
     deploy:
       resources:
         reservations:
@@ -34,7 +34,7 @@ services:
       - OLLAMA_BASE_URL=http://ollama:11434
       - WEBUI_AUTH=True # Set to False if you don't want a login screen
     volumes:
-      - ~/open_webui:/app/backend/data
+      - ~/gb10/open_webui:/app/backend/data
     depends_on:
       - ollama
     networks:

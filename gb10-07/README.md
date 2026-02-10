@@ -11,15 +11,15 @@ We will use an optimized Docker image designed specifically for the DGX Spark's 
 We want to keep our large model files and other configs on the host system so we don't have to re-download them if the container restarts.
 
 ```bash
-mkdir -p ~/models/comfyui/checkpoints
-mkdir -p ~/models/comfyui/diffusion_models
-mkdir -p ~/models/comfyui/unet
-mkdir -p ~/models/comfyui/clip
-mkdir -p ~/models/comfyui/vae
-mkdir -p ~/comfyui/custom_nodes
-mkdir -p ~/comfyui/output
-mkdir -p ~/comfyui/input
-mkdir -p ~/comfyui/wheels
+mkdir -p ~/gb10/models/comfyui/checkpoints
+mkdir -p ~/gb10/models/comfyui/diffusion_models
+mkdir -p ~/gb10/models/comfyui/unet
+mkdir -p ~/gb10/models/comfyui/clip
+mkdir -p ~/gb10/models/comfyui/vae
+mkdir -p ~/gb10/comfyui/custom_nodes
+mkdir -p ~/gb10/comfyui/output
+mkdir -p ~/gb10/comfyui/input
+mkdir -p ~/gb10/comfyui/wheels
 ```
 
 You can also create custom model paths https://docs.comfy.org/development/core-concepts/models
@@ -45,8 +45,8 @@ ComfyUI is fine with the `*.safetensors` models. No need to worry about GGUF her
 Download the FLUX.2-dev model:
 
 ```bash
-mkdir -p ~/models/comfyui/diffusion_models/FLUX.2-dev
-mkdir -p ~/models/comfyui/vae/FLUX.2-dev
+mkdir -p ~/gb10/models/comfyui/diffusion_models/FLUX.2-dev
+mkdir -p ~/gb10/models/comfyui/vae/FLUX.2-dev
 
 # If don't have the hf cli downloaded
 # Ensure our python venv is started
@@ -55,24 +55,24 @@ pip install -U "huggingface_hub[cli]"
 
 hf download black-forest-labs/FLUX.2-dev \
   --include "*flux2-dev.safetensors" \
-  --local-dir ~/models/comfyui/diffusion_models/FLUX.2-dev
+  --local-dir ~/gb10/models/comfyui/diffusion_models/FLUX.2-dev
 
 # These are nested in the hf model repo so we download them to /tmp to keep things clean
 hf download Comfy-Org/flux2-dev \
   --include "*mistral_3_small_flux2_bf16.safetensors" \
   --local-dir /tmp
-mv /tmp/split_files/text_encoders/*.safetensors ~/models/comfyui/clip/
+mv /tmp/split_files/text_encoders/*.safetensors ~/gb10/models/comfyui/clip/
 
 hf download Comfy-Org/flux2-dev \
   --include "*flux2-vae.safetensors" \
   --local-dir /tmp
-mv /tmp/split_files/vae/*.safetensors ~/models/comfyui/vae/
+mv /tmp/split_files/vae/*.safetensors ~/gb10/models/comfyui/vae/
 ```
 
 
-Your `~/models/comfyui` directory should look like:
+Your `~/gb10/models/comfyui` directory should look like:
 ```bash
-(gb10-training) trevor@promaxgb10-4c75:~/models/comfyui$ tree .
+(gb10-training) trevor@promaxgb10-4c75:~/gb10/models/comfyui$ tree .
 .
 ├── checkpoints
 ├── clip
@@ -87,7 +87,7 @@ Your `~/models/comfyui` directory should look like:
 ```
 
 #### Note: 
-- Only the top level folders matter under `~/models/comfyui`. These are used by nodes to populate the models. You can create whatever subdirectories you would like. 
+- Only the top level folders matter under `~/gb10/models/comfyui`. These are used by nodes to populate the models. You can create whatever subdirectories you would like. 
 - When adding models the ComfyUI needs and F5 refresh to see them
 
 Model Types Explained
@@ -108,7 +108,7 @@ In ComfyUI workflows can be complex and difficult to understand so it's best to 
 
 Workflows can be loaded by File > Open or dragging dropping them onto the canvas. They can be saved as `json` files or `png` files. We'll start with a simple text-to-image workflow that uses generative AI to create an image from a prompt using our FLUX.2-dev model.
 
-1. Start by loading the `comfyui/workflows/txt2img.json` in the lesson directory
+1. Drag and drop the `comfyui/workflows/txt2img.json` in the lesson directory onto the workflow builder
 2. Click Run
 3. Use `nvtop` to monitor GPU usage and RAM
 4. Workflow will take a few minutes to run. The base Flux.2-dev model we're using is BF16, use a smaller quant for more performance at the cost of accuracy. 

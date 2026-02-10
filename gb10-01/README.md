@@ -94,7 +94,7 @@ git pull
 Setup your Python Virtual Environment
 
 ```bash
-mkdir ~/.venv
+mkdir ~/venv
 python3 -m venv ~/venv/gb10-training
 source ~/venv/gb10-training/bin/activate
 ```

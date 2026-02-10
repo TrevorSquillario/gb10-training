@@ -48,19 +48,19 @@ services:
 
     volumes:
       # Models from existing ComfyUI install (read-only)
-      - ~/models/comfyui:/opt/ComfyUI/models:ro
+      - ~/gb10/models/comfyui:/opt/ComfyUI/models:ro
 
       # Custom nodes - comment out to use container-only (fresh) custom_nodes
       # If mounted, ComfyUI-Manager installs persist across container restarts
-      - ~/comfyui/custom_nodes:/opt/ComfyUI/custom_nodes
+      - ~/gb10/comfyui/custom_nodes:/opt/ComfyUI/custom_nodes
 
       # Outputs/inputs/workflows - persistent across restarts
-      - ~/comfyui/output:/opt/ComfyUI/output
-      - ~/comfyui/input:/opt/ComfyUI/input
-      - ~/comfyui/workflows:/opt/ComfyUI/workflows
+      - ~/gb10/comfyui/output:/opt/ComfyUI/output
+      - ~/gb10/comfyui/input:/opt/ComfyUI/input
+      - ~/gb10/comfyui/workflows:/opt/ComfyUI/workflows
 
       # Wheel cache (optional - for prebuilt wheels)
-      - ~/comfyui/wheels:/opt/wheels
+      - ~/gb10/comfyui/wheels:/opt/wheels
 
     networks:
       - ai-network

@@ -12,9 +12,9 @@ Standard LLMs are "frozen" in time based on their training data. RAG gives them 
 ## Hands-on Lab: n8n
 
 ```bash
-mkdir ~/n8n
-sudo chown -R 1000:1000 ~/n8n
-sudo chmod -R 700 ~/n8n
+mkdir ~/gb10/n8n
+sudo chown -R 1000:1000 ~/gb10/n8n
+sudo chmod -R 700 ~/gb10/n8n
 cd gb10-09/n8n
 cp .env.example .env
 docker compose up

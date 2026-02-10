@@ -63,11 +63,11 @@ First ensure our python virtual environment is started. Refer to Lesson 1 if you
 source ~/venv/gb10-training/bin/activate
 pip install -U "huggingface_hub[cli]"
 
-sudo mkdir -p ~/models
+sudo mkdir -p ~/gb10/models
 hf download nvidia/Qwen3-8B-NVFP4 \
-  --local-dir ~/models/Qwen3-8B-NVFP4
+  --local-dir ~/gb10/models/Qwen3-8B-NVFP4
 
-tree ~/models/Qwen3-8B-NVFP4
+tree ~/gb10/models/Qwen3-8B-NVFP4
 ```
 
 ## Hands-on Lab: Serving a model using NVIDIA TensorRT-LLM
@@ -156,7 +156,7 @@ We will use the TensorRT-LLM Spark Dev container, which contains the specific li
 
 ```bash
 docker run --rm -it --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
-  -v "./output_models:/workspace/output_models" \
+  -v "~/gb10/output_models:/workspace/output_models" \
   -v "$HOME/.cache/huggingface:/root/.cache/huggingface" \
   -e HF_TOKEN=$HF_TOKEN \
   -e ACCELERATE_USE_FSDP=false \
@@ -184,7 +184,7 @@ docker run --rm -it --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=671
 - `--gpus all`: gives the container access to all GPUs on the host via the NVIDIA container toolkit.
 - `--ipc=host`: shares the host IPC namespace (large shared memory buffers used by some ML frameworks).
 - `--ulimit memlock=-1 --ulimit stack=67108864`: increase locked memory and stack limits so large models and threads don't fail due to OS limits.
-- `-v "./output_models:/workspace/output_models"`: bind-mounts a host folder for saving the converted/quantized model outputs.
+- `-v "~/gb10/output_models:/workspace/output_models"`: bind-mounts a host folder for saving the converted/quantized model outputs.
 - `-v "$HOME/.cache/huggingface:/root/.cache/huggingface"`: reuses the host Hugging Face cache so downloads are cached and not re-fetched inside the container.
 - `-e HF_TOKEN=$HF_TOKEN`: passes your Hugging Face token into the container (required only for gated models).
 - `-e ACCELERATE_USE_FSDP=false -e CUDA_VISIBLE_DEVICES=0`: force single-GPU, non-FSDP runs so the optimization runs on the intended device and doesn't split across CPU/GPU.
@@ -203,16 +203,16 @@ Inside the container the one-line `bash -c` does:
 
 What you'll find after completion:
 
-- The `./output_models` directory will contain the converted/quantized model files (bins/safetensors/configs). Use the `find` snippet below to verify.
+- The `~/gb10/output_models` directory will contain the converted/quantized model files (bins/safetensors/configs). Use the `find` snippet below to verify.
 
 ### Quick verification commands (on host):
 
 ```bash
 # List generated files
-ls -la ./output_models/
+ls -la ~/gb10/output_models/
 
 # Find model files
-find ./output_models/ -name "*.bin" -o -name "*.safetensors" -o -name "config.json"
+find ~/gb10/output_models/ -name "*.bin" -o -name "*.safetensors" -o -name "config.json"
 ```
 
 ### Serve the model with OpenAI-compatible API

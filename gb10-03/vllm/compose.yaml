@@ -3,7 +3,7 @@ services:
     image: nvcr.io/nvidia/vllm:26.01-py3
     container_name: vllm
     volumes:
-      - ~/models:/models
+      - ~/gb10/models:/models
     ports:
       - "8002:8002"
     shm_size: '4gb'

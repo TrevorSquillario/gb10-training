@@ -18,7 +18,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ~/traefik:/letsencrypt
+      - ~/gb10/traefik:/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - ai-network
@@ -57,7 +57,7 @@ services:
       - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
       - TZ=${GENERIC_TIMEZONE}
     volumes:
-      - ~/n8n:/home/node/.n8n
+      - ~/gb10/n8n:/home/node/.n8n
       - ./local-files:/files
       - ./workflows:/workflows
       - ./custom_nodes:/home/node/.n8n/custom/node_modules/custom_nodes
@@ -72,7 +72,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ~/surreal:/mydata
+      - ~/gb10/surreal:/mydata
     networks:
       - ai-network
 
@@ -97,8 +97,8 @@ services:
       - PYTHONPYCACHEPREFIX=/app/data/.pycache
       - XDG_CACHE_HOME=/app/data/.cache
     volumes:
-      - ~/notebook_data:/app/data
-      - ~/surreal:/mydata
+      - ~/gb10/open_notebook:/app/data
+      - ~/gb10/surreal:/mydata
     depends_on:
       - surrealdb
     restart: always
