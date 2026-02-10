@@ -66,9 +66,13 @@ type ~/.ssh/id_rsa.pub
 # Get the SSH Public Key from your laptop (Linux)
 cat ~/.ssh/*.pub
 
-# Add SSH Keys to GB10
+# Add SSH Key to GB10
 ssh <username>@<your-gb10-ip>
 vi ~/.ssh/authorized_keys
+o
+p
+wq
+
 chmod 600 ~/.ssh/authorized_keys
 chown <username>:<username> ~/.ssh/authorized_keys
 ```
