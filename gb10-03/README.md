@@ -263,3 +263,5 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 ## Resources for Lesson 4
 
 - https://build.nvidia.com/spark/nvfp4-quantization/instructions
+- https://github.com/NVIDIA/dgx-spark-playbooks/tree/main/nvidia/trt-llm
+- https://github.com/NVIDIA/dgx-spark-playbooks/tree/main/nvidia/vllm

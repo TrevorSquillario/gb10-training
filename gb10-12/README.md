@@ -12,6 +12,9 @@ sudo fwupdmgr upgrade
 sudo reboot
 ```
 
+## Prometheus /metrics Endpoint for Ollama
+https://github.com/NorskHelsenett/ollama-metrics
+
 ## Other Self-Hosted Apps Worth Trying
 - Frigate https://frigate.video/
 - Immich https://immich.app/

@@ -2,17 +2,17 @@
 
 **Objective:** Master the NVIDIA Container Toolkit and learn how to run GPU-accelerated containers on the GB10. On the GB10 we don't install AI frameworks "on the metal"—we containerize them to keep the DGX OS clean and to switch between CUDA or LLM engine versions quickly.
 
-## 1. The Container Strategy for Sales Engineers
+## The Container Strategy 
 
 - **Environment drift is the enemy.** Containers ensure that if a demo works on your GB10, it will work on the customer's hardware too.
 - **Why Docker on Blackwell?** The GB10 uses an ARM64 architecture. Standard x86 Docker images won't work—use multi-arch or ARM64-specific images.
 - **The NVIDIA Runtime:** Standard Docker doesn't "see" the GPU. The NVIDIA Container Toolkit (nvidia-container-runtime) maps the Blackwell GPU/CPU into the container so GPU workloads run as expected.
 
-## 2. Hands-on Lab: Configuring the Engine
+## Hands-on Lab: Configuring the Engine
 
 Most GB10 systems come with Docker pre-installed, but the "GPU hook" often needs a quick verification.
 
-### Step A: Permission fix (run without sudo)
+### Permission fix (run without sudo)
 
 If your user isn't in the `docker` group, add your user to the group so you can run Docker commands without `sudo`:
 
@@ -29,7 +29,14 @@ docker ps
 
 If you don't get a "permission denied" error, you're good to go.
 
-### Step B: Verifying the GPU bridge
+### Verifying the GPU bridge
+
+First we'll make sure the NVIDIA Container Runtime is installed. The GB10 and all DGX systems come preinstalled with the Nvidia Container Toolkit. For other systems see [https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+
+```bash
+dpkg -l | grep nvidia-container-toolkit
+docker info | grep -i runtime
+```
 
 Run a smoke-test container to confirm the runtime can see the Blackwell GPU. Then see that the container was downloaded and stored locally. You're disk will fill up with container images eventually and you'll need to use the `prune` command to clean them up. 
 
@@ -40,11 +47,27 @@ docker image ls
 
 What to look for: the output should show the NVIDIA GB10 and a CUDA 13..1 driver.
 
-#### Troubleshooting
+#### Debugging
 
-- The GB10 and all DGX systems come preinstalled with the Nvidia Container Toolkit. For other systems see [https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+Generate debug logs for NVIDIA Support
 
-## 3. Useful Docker Commands
+Wait for completion: It may take 30–60 seconds. Once finished, it will output a file named nvidia-bug-report.log.gz in your current directory.
+
+Note: If the script hangs, it usually means your GPU is in a "frozen" state. You can try running sudo `nvidia-bug-report.sh --safe-mode` to skip the hung components.
+
+```bash
+sudo nvidia-bug-report.sh
+```
+
+Enable debug logs for the Container Runtime. Find the line #debug = "/var/log/nvidia-container-runtime.log" and uncomment it (remove the #). Save and restart Docker/Containerd.
+
+```bash
+sudo vi /etc/nvidia-container-runtime/config.toml
+sudo systemctl restart docker
+journalctl -u docker | grep nvidia
+```
+
+## Useful Docker Commands
 
 These common Docker commands cover most demo and troubleshooting workflows.
 
@@ -63,13 +86,8 @@ These common Docker commands cover most demo and troubleshooting workflows.
 
 ---
 
-🌟 **Lesson 2 Challenge: Debugging with the DGX Debug Container**
-
-**Task:** 
-
 ## Resources for Lesson 2
 
-- Playbook: DGX Debug Container (recommended for troubleshooting)
 - Reference: NVIDIA Container Toolkit Docs — https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/overview.html
 
 > **Pro tip:** Always check the **Architecture** field when pulling images from registries. If it doesn't say `arm64` or `aarch64`, it will not run on your GB10!
