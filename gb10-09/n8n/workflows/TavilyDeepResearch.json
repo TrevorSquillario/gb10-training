@@ -1,0 +1,620 @@
+{
+  "name": "TavilyDeepResearch",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Tavily API Search Endpoint\n\n**Base URL**: `https://api.tavily.com/search`\n**Method**: POST\n\n### Required Parameters\n- `query`: The search query string\n- `api_key`: Your Tavily API key\n\n### Optional Parameters\n- `search_depth`: \"basic\" or \"advanced\" (default: \"basic\")\n- `topic`: \"general\" or \"news\" (default: \"general\") \n- `max_results`: Maximum number of results to return (default: 5)\n- `include_images`: Include query-related images (default: false)\n- `include_answer`: Include AI-generated answer (default: false)\n- `include_raw_content`: Include parsed HTML content (default: false)\n- `include_domains`: List of domains to include\n- `exclude_domains`: List of domains to exclude\n- `time_range`: Filter by time range (\"day\", \"week\", \"month\", \"year\")\n- `days`: Number of days back for news results (default: 3)\n\n### Example Request\n```json\n{\n    \"api_key\": \"tvly-YOUR_API_KEY\",\n    \"query\": \"Who is Leo Messi?\",\n    \"search_depth\": \"basic\",\n    \"include_answer\": false,\n    \"include_images\": true,\n    \"max_results\": 5\n}\n```\n",
+        "height": 940,
+        "width": 520,
+        "color": 4
+      },
+      "id": "ea177ad2-bba2-4ba4-a45f-239231524184",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1424,
+        -16
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Tavily API Extract Endpoint \n\n**Base URL**: `https://api.tavily.com/extract`\n**Method**: POST\n\n### Required Parameters\n- `urls`: Single URL string or array of URLs\n- `api_key`: Your Tavily API key\n\n### Optional Parameters\n- `include_images`: Include extracted images (default: false)\n\n### Example Request\n```json\n{\n    \"api_key\": \"tvly-YOUR_API_KEY\", \n    \"urls\": [\n        \"https://en.wikipedia.org/wiki/Artificial_intelligence\",\n        \"https://en.wikipedia.org/wiki/Machine_learning\"\n    ]\n}\n```",
+        "height": 720,
+        "width": 640,
+        "color": 6
+      },
+      "id": "c0e268ad-1d10-40fb-95f3-d45c8d393dad",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1984,
+        -16
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Tavily API Documentation\n\nThe Tavily REST API provides seamless access to Tavily Search, a powerful search engine for LLM agents, and Tavily Extract, an advanced web scraping solution optimized for LLMs.\n\nhttps://docs.tavily.com/docs/rest-api/examples\n\nhttps://docs.tavily.com/docs/rest-api/api-reference#parameters\n\nThe Tavily API provides two main endpoints for search and data extraction.\n\nThe API returns JSON responses containing:\n\n- Search results with titles, URLs, and content\n- Extracted raw content from specified URLs\n- Response time metrics\n- Any error messages for failed requests\n\n\n**Note**: Error handling should check for failed results in the response before processing.\n",
+        "height": 540,
+        "width": 420,
+        "color": 3
+      },
+      "id": "1db6b4a1-54a9-406e-9df6-0a45a7d1e6b9",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        960,
+        -16
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Tavily Use Cases\n\n📜 Why Use Tavily API for Data Enrichment?\n\nhttps://docs.tavily.com/docs/use-cases/data-enrichment\n\n💡 Why Use Tavily API for Company Research?\n\nhttps://docs.tavily.com/docs/use-cases/company-research\n\n🔍 GPT Researcher\n\nhttps://docs.tavily.com/docs/gpt-researcher/introduction",
+        "height": 360,
+        "width": 420
+      },
+      "id": "e7d44efc-2b25-4563-a70d-6da99799e777",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        960,
+        576
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n    \"api_key\": \"tvly-YOUR_API_KEY\",\n    \"query\": \"What is n8n?\",\n    \"search_depth\": \"basic\",\n    \"include_answer\": false,\n    \"include_images\": true,\n    \"include_image_descriptions\": true,\n    \"include_raw_content\": false,\n    \"max_results\": 5,\n    \"include_domains\": [],\n    \"exclude_domains\": []\n}",
+        "options": {}
+      },
+      "id": "01829162-6217-4a7b-baf7-66e03e363495",
+      "name": "Tavily Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1616,
+        752
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/extract",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n    \"api_key\": \"tvly-YOUR_API_KEY\",\n    \"urls\": [\n        \"https://en.wikipedia.org/wiki/Artificial_intelligence\"\n    ]\n}",
+        "options": {}
+      },
+      "id": "7a43ac70-5d99-4ea8-a0ef-95d18e761d04",
+      "name": "Tavily Extract",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2240,
+        528
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "content": "## Tavily API Overview\nhttps://docs.tavily.com/docs/welcome\n\nThe Tavily API provides a specialized search engine built specifically for AI agents and LLM applications, offering two main endpoints:\n\n## Search Endpoint\n\nThe search endpoint enables intelligent web searching with:\n\n**Key Features**\n- Query-based search with customizable depth (\"basic\" or \"advanced\")\n- Topic filtering for general or news content\n- Control over result quantity and content type\n- Domain inclusion/exclusion capabilities\n- Time range filtering and news date restrictions\n\n## Extract Endpoint\n\nThe extract endpoint focuses on content retrieval:\n\n**Key Features**\n- Single or batch URL processing\n- Raw content extraction\n- Optional image extraction\n- Structured response format\n\n## Implementation Benefits\n\n**For AI Integration**\n- Optimized for RAG (Retrieval Augmented Generation)\n- Single API call handles searching, scraping and filtering\n- Customizable response formats\n- Built-in content relevance scoring\n\n**Technical Advantages**\n- JSON response format\n- Error handling for failed requests\n- Response time metrics\n- Flexible content filtering options\n\n\nThis API is designed to simplify the integration of real-time web data into AI applications while ensuring high-quality, relevant results through intelligent processing and filtering.",
+        "height": 1020,
+        "width": 660,
+        "color": 7
+      },
+      "id": "8261a777-f53b-4e9f-ac38-6b680d6f9f21",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        256,
+        -96
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n    \"api_key\": \"{{ $json.api_key }}\",\n    \"query\": \"{{ $('Provide search topic via Chat window').item.json.chatInput }}\",\n    \"search_depth\": \"basic\",\n    \"include_answer\": false,\n    \"include_images\": false,\n    \"include_image_descriptions\": true,\n    \"include_raw_content\": false,\n    \"max_results\": {{ $json.max_results }},\n    \"include_domains\": [],\n    \"exclude_domains\": []\n}",
+        "options": {}
+      },
+      "id": "5a7da49a-082c-4e9d-ab39-dd6e7f035a01",
+      "name": "Tavily Search Topic",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1056,
+        1072
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Summarize this web content and provide in Markdown format:  \n\nUrl: {{ $json.url }}\nContent: {{ $json.raw_content }}"
+      },
+      "id": "b9f05e6c-3f48-4fa8-a1b5-1dd9702908cc",
+      "name": "Summarize Web Page Content",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        1952,
+        1392
+      ],
+      "typeVersion": 1.5
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "54bf93c6-bdd6-499d-880e-313072032fe5",
+      "name": "Provide search topic via Chat window",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "position": [
+        624,
+        1072
+      ],
+      "webhookId": "72b7dbb2-7838-433f-b798-0180b172a690",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "content": "### Tavily API Key\nhttps://app.tavily.com/home",
+        "height": 80,
+        "color": 7
+      },
+      "id": "bf2c94c4-3297-4cbe-8d98-07a2ed8a63a6",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        784,
+        1248
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "model": "gemma3:4b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        1568
+      ],
+      "id": "486df34f-95cc-4e62-9878-2809a85b44b7",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "TMQYSn32MrlLnd2A",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1904,
+        1072
+      ],
+      "id": "f74aaa81-c8c2-40c3-835a-21a2e031e4d7",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a research and writing assistant.\n\nYour task is to generate a comprehensive and well-structured blog-style report based on the following research topic and raw extracted content. Use professional, clear language suitable for a wide audience. Organize the report using headings and subheadings. Avoid repetition. At the end of the report, include a \"Sources\" section with a list of the URLs used. \n\nThis is the final draft on which you need to create report from given topic and draft: \n[Execute previous nodes for preview]. Try to create final report from this outline and draft.\n\n---\n**Extracted Content**:\n\n{{ $json.data.map(item => `Title:\\n${item.title}\\nSummary:\\n${item.summary}\\nContent:\\n${item.raw_content}`).join('\\n\\n--\\n\\n') }}\n\n---\n\n**Instructions**:\n- Make as detailed report as possible. Include all the useful information.\n- Analyze and synthesize the information from all sources.\n- Structure the report into meaningful sections with headings and subheadings (e.g., Introduction, Key Insights, Challenges, Opportunities, Conclusion, etc.).\n- Do not copy the content verbatim — rewrite and consolidate it into an original, cohesive narrative.\n- Maintain factual accuracy.\n- Make it as as detailed as possible, aim for 3 or more pages, include ALL the learnings from research.\n- Format the report in markdown. Use headings, lists and tables only and where appropriate.\n- At the end of **each paragraph**, insert a superscript source reference in markdown format like this: `[1]`, `[2]`, `[3]`, based on which source(s) the paragraph is derived from.\n- Do not mention the source URL in the paragraph body.\n- Do not include content that cannot be mapped to one of the sources.\n- At the end include sources link with correct url.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2128,
+        1072
+      ],
+      "id": "7326c62f-3ad5-4136-b337-1b486456db58",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama3.3:70b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        2128,
+        1248
+      ],
+      "id": "ed7f4192-2eba-4ed2-a5e5-7ed5da785860",
+      "name": "Ollama Chat Model1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "TMQYSn32MrlLnd2A",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        1072
+      ],
+      "id": "2e0c7cab-86f0-4be5-a091-dbccaf4cdd82",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/extract",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n    \"api_key\": \"{{ $('Tavily API Options').item.json.api_key }}\",\n    \"urls\": [\n        \"{{ $json.url }}\"\n    ]\n}",
+        "options": {}
+      },
+      "id": "28291b5f-7118-437b-90e0-9fcd1c1455b7",
+      "name": "Tavily Extract Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1440,
+        1072
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "notebook_id": "notebook:jlcigiwzqtprvmk3jugn",
+        "title": "={{ $json.chatInput }}",
+        "content": "={{ $json.output }}",
+        "requestOptions": {}
+      },
+      "type": "CUSTOM.openNotebook",
+      "typeVersion": 1,
+      "position": [
+        2624,
+        1072
+      ],
+      "id": "63ddd4d9-bbad-47c8-9929-0910a4fdf9a2",
+      "name": "Create a note",
+      "credentials": {
+        "openNotebookApi": {
+          "id": "9pznv8cZ6xuQW8qN",
+          "name": "Open Notebook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "035660a9-bb58-4ecb-bad3-7f4d017fa69f",
+              "name": "api_key",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "fd2da0bd-4b79-41b7-a330-7dd981a120d4",
+              "name": "max_results",
+              "value": 2,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "14e5b4a8-cf43-456b-a06a-f09597105a61",
+      "name": "Tavily API Options",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        848,
+        1072
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2608,
+        1376
+      ],
+      "id": "028091c5-4fa6-45ae-aff9-e3bc3b35e5c7",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2432,
+        1072
+      ],
+      "id": "fc085d94-a5b9-41ee-8e13-b9cd1cce8390",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6a3fd512-eb29-4106-9b4d-9051f31d5500",
+              "name": "=summary",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2320,
+        1392
+      ],
+      "id": "34218c02-d0e3-4e8e-83aa-4502def771d9",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1648,
+        1392
+      ],
+      "id": "899bf4e1-75d4-43bb-b199-2dac11155003",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1632,
+        1072
+      ],
+      "id": "11791e10-7631-4b5a-b28f-c58a7e330fa3",
+      "name": "Split Out1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Tavily Search Topic": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Provide search topic via Chat window": {
+      "main": [
+        [
+          {
+            "node": "Tavily API Options",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summarize Web Page Content",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize Web Page Content": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Tavily Extract Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily Extract Search": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a note": {
+      "main": [
+        []
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Tavily API Options": {
+      "main": [
+        [
+          {
+            "node": "Tavily Search Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Create a note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Summarize Web Page Content",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "15b7c020-0c1b-4308-acc4-9cc802465ef8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ea8114d2f5d81cbf659d5e9379233ddb92f691cba27ca74573551628f412d831"
+  },
+  "id": "VmgDn61SJopWw68N",
+  "tags": []
+}

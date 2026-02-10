@@ -1,0 +1,112 @@
+services:
+  traefik:
+    image: "traefik"
+    container_name: traefik
+    restart: always
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true"
+      - "--certificatesresolvers.mytlschallenge.acme.email=${SSL_EMAIL}"
+      - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ~/traefik:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - ai-network
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n
+    user: "1000:1000"
+    restart: always
+    ports:
+      - "5678:5678"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.n8n.rule=Host(`${SUBDOMAIN}.${DOMAIN_NAME}`)
+      - traefik.http.routers.n8n.tls=true
+      - traefik.http.routers.n8n.entrypoints=web,websecure
+      - traefik.http.routers.n8n.tls.certresolver=mytlschallenge
+      - traefik.http.middlewares.n8n.headers.SSLRedirect=true
+      - traefik.http.middlewares.n8n.headers.STSSeconds=315360000
+      - traefik.http.middlewares.n8n.headers.browserXSSFilter=true
+      - traefik.http.middlewares.n8n.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.n8n.headers.forceSTSHeader=true
+      - traefik.http.middlewares.n8n.headers.SSLHost=${DOMAIN_NAME}
+      - traefik.http.middlewares.n8n.headers.STSIncludeSubdomains=true
+      - traefik.http.middlewares.n8n.headers.STSPreload=true
+      - traefik.http.routers.n8n.middlewares=n8n@docker
+    environment:
+      - N8N_SECURE_COOKIE=false # ***Set to true if you're exposing this to the internet. It will enable secure cookies (requires HTTPS). 
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_HOST=${SUBDOMAIN}.${DOMAIN_NAME}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - N8N_RUNNERS_ENABLED=true
+      - NODE_ENV=production
+      - WEBHOOK_URL=https://${SUBDOMAIN}.${DOMAIN_NAME}/
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
+      - TZ=${GENERIC_TIMEZONE}
+    volumes:
+      - ~/n8n:/home/node/.n8n
+      - ./local-files:/files
+      - ./workflows:/workflows
+      - ./custom_nodes:/home/node/.n8n/custom/node_modules/custom_nodes
+    networks:
+      - ai-network
+
+  surrealdb:
+    image: surrealdb/surrealdb:v2
+    container_name: surrealdb
+    user: "1000:1000"
+    command: start --user admin --pass admin --bind 0.0.0.0:8000 rocksdb:/mydata
+    ports:
+      - "8000:8000"
+    volumes:
+      - ~/surreal:/mydata
+    networks:
+      - ai-network
+
+  open_notebook:
+    image: lfnovo/open_notebook:v1-latest-single
+    container_name: open_notebook
+    pull_policy: always
+    ports:
+      - "8502:8502"  # Web UI (React frontend)
+      - "5055:5055"  # API (required!)
+    environment:
+      # NO API KEYS NEEDED - Using Ollama (free, local)
+      - OLLAMA_API_BASE=http://ollama:11434
+
+      # Database (required)
+      - SURREAL_URL=ws://surrealdb:8000/rpc
+      - SURREAL_USER=admin
+      - SURREAL_PASSWORD=admin
+      - SURREAL_NAMESPACE=open_notebook
+      - SURREAL_DATABASE=open_notebook
+      - UV_CACHE_DIR=/app/data/.uv_cache
+      - PYTHONPYCACHEPREFIX=/app/data/.pycache
+      - XDG_CACHE_HOME=/app/data/.cache
+    volumes:
+      - ~/notebook_data:/app/data
+      - ~/surreal:/mydata
+    depends_on:
+      - surrealdb
+    restart: always
+    networks:
+      - ai-network
+
+networks:
+  ai-network:
+    name: ai-network
+    driver: bridge
+    external: true # This network was created in gb10-04

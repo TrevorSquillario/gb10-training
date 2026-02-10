@@ -9,7 +9,10 @@ services:
     restart: unless-stopped
     environment:
       - CUDA_VISIBLE_DEVICES=0
-      - DETECT_STREAM_URL=https://publicstreamer2.cotrip.org/rtplive/270W00395CAM1MED/playlist.m3u8
+      # https://www.cotrip.org/list/cameras
+      #- DETECT_STREAM_URL=https://publicstreamer2.cotrip.org/rtplive/270W00395CAM1MED/playlist.m3u8
+      # https://www.nittec.org/cameras/
+      - DETECT_STREAM_URL=https://s58.nysdot.skyvdn.com/rtplive/TA_137/playlist.m3u8
     shm_size: '1gb'
     volumes:
       - ./:/app

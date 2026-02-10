@@ -103,9 +103,41 @@ def detection_loop():
                     xyxy = box.xyxy.cpu().numpy().astype(int)[0]
                     conf = float(box.conf.cpu().numpy()[0])
                     cls = int(box.cls.cpu().numpy()[0])
-                    cv2.rectangle(frame, (xyxy[0], xyxy[1]), (xyxy[2], xyxy[3]), (0,255,0), 2)
-                    cv2.putText(frame, f"{cls}:{conf:.2f}", (xyxy[0], xyxy[1]-6),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1)
+                    # Resolve class name from the model if available
+                    names = None
+                    if hasattr(model, 'names'):
+                        names = model.names
+                    elif hasattr(model, 'model') and hasattr(model.model, 'names'):
+                        names = model.model.names
+
+                    label = str(cls)
+                    if names is not None and cls in names:
+                        label = names[cls]
+
+                    # color-code common vehicle types
+                    if label in ("car", "truck"):
+                        box_color = (0, 0, 255)  # red for vehicles
+                    else:
+                        box_color = (0, 255, 0)  # green otherwise
+
+                    cv2.rectangle(frame, (xyxy[0], xyxy[1]), (xyxy[2], xyxy[3]), box_color, 2)
+
+                    # draw filled label background for readability
+                    text = f"{label}:{conf:.2f}"
+                    font = cv2.FONT_HERSHEY_SIMPLEX
+                    font_scale = 0.5
+                    thickness = 1
+                    (text_w, text_h), baseline = cv2.getTextSize(text, font, font_scale, thickness)
+                    # make a little padding
+                    pad_x, pad_y = 4, 4
+                    y1 = max(0, xyxy[1] - text_h - pad_y)
+                    y2 = xyxy[1]
+                    x1 = xyxy[0]
+                    x2 = xyxy[0] + text_w + pad_x
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, -1)
+                    # put white text on the filled rectangle
+                    text_org = (x1 + 2, y2 - 3)
+                    cv2.putText(frame, text, text_org, font, font_scale, (255,255,255), thickness)
 
         # encode frame as JPEG
         ok, jpeg = cv2.imencode('.jpg', frame)
@@ -136,10 +168,28 @@ def stream():
 if __name__ == '__main__':
     # start ffmpeg to publish the remote HLS to local RTSP
     start_ffmpeg()
-    # allow ffmpeg to warm up
-    time.sleep(1.0)
-    # initialize VideoCapture after ffmpeg is running
-    cap = cv2.VideoCapture(SOURCE, cv2.CAP_FFMPEG)
+    # allow ffmpeg to warm up and retry opening the RTSP source until available
+    cap = None
+    max_retries = 15
+    for attempt in range(1, max_retries + 1):
+        time.sleep(1.0)
+        print(f"Attempting to open VideoCapture (attempt {attempt}/{max_retries})")
+        cap = cv2.VideoCapture(SOURCE, cv2.CAP_FFMPEG)
+        if cap.isOpened():
+            print("VideoCapture opened successfully")
+            break
+        else:
+            try:
+                cap.release()
+            except Exception:
+                pass
+            cap = None
+            print("VideoCapture not open yet, retrying...")
+
+    if cap is None or not cap.isOpened():
+        print(f"Failed to open VideoCapture after {max_retries} attempts. Stopping ffmpeg and exiting.")
+        stop_ffmpeg()
+        raise SystemExit(1)
 
     # start detection thread
     t = threading.Thread(target=detection_loop, daemon=True)

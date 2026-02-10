@@ -1,0 +1,57 @@
+{
+	"name": "n8n-nodes-open-notebook",
+	"version": "1.0.0",
+	"description": "n8n node for Open Notebook API integration",
+	"keywords": [
+		"n8n-community-node-package",
+		"n8n",
+		"open-notebook",
+		"notes"
+	],
+	"license": "MIT",
+	"homepage": "https://github.com/yourusername/n8n-nodes-open-notebook",
+	"author": {
+		"name": "Your Name",
+		"email": "your.email@example.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/yourusername/n8n-nodes-open-notebook.git"
+	},
+	"main": "index.js",
+	"scripts": {
+		"build": "node ./node_modules/typescript/bin/tsc && npx gulp build:icons",
+		"dev": "tsc --watch",
+		"format": "prettier nodes credentials --write",
+		"lint": "eslint nodes credentials package.json",
+		"lintfix": "eslint nodes credentials package.json --fix",
+		"prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json"
+	},
+	"files": [
+		"dist"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"credentials": [
+			"dist/credentials/OpenNotebookApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/OpenNotebook/OpenNotebook.node.js"
+		]
+	},
+	"devDependencies": {
+		"@typescript-eslint/parser": "^5.0.0",
+		"eslint": "^8.0.0",
+		"eslint-plugin-n8n-nodes-base": "^1.11.0",
+		"gulp": "^4.0.2",
+		"n8n-workflow": "~1.0.0",
+		"prettier": "^2.7.1",
+		"typescript": "^4.9.5"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "~1.0.0"
+	},
+	"dependencies": {
+		"tsc": "^2.0.4"
+	}
+}
