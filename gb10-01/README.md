@@ -85,6 +85,10 @@ Clone the course repo:
 mkdir ~/git
 cd ~/git
 git clone https://github.com/TrevorSquillario/gb10-training
+
+# If there are changes to the repo and you want to ensure you are using the latest version run
+cd gb10-training
+git pull
 ```
 
 Setup your Python Virtual Environment
