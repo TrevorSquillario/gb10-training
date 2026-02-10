@@ -8,6 +8,7 @@ Ollama simplifies model management by bundling weights, configurations, and data
 
 - **Architecture:** Ollama runs as a background service that manages the GPU lifecycle. It loads models into VRAM on demand and unloads them after inactivity to save power.
 - **The Unified Advantage:** Because the GB10 has 128GB of memory, Ollama can easily "park" multiple large models (like Llama-3 70B and a Coding model) and swap between them in seconds.
+- **Supported Models** Ollama works with GGUF models by default. When you download a model from within Ollama it hosts it's own GGUF versions of select models. If you see a model on HuggingFace and has `*.safetensors` you can usually find the GGUF variant or import them manually https://docs.ollama.com/import
 
 ## Hands-on Lab: Deploying the Local LLM Stack
 
@@ -16,7 +17,6 @@ Ollama simplifies model management by bundling weights, configurations, and data
 The `docker compose` command launches the Ollama WebUI interface on port 12000 the Ollama API on port 11434 and ensures all chat history and models are saved permanently to your GB10 storage. It looks for a `docker-compose.yaml` or `compose.yaml` file by default.
 
 ```bash
-sudo mkdir -p ~/models
 sudo mkdir -p ~/ollama
 sudo mkdir -p ~/open_webui
 cd ~/git/gb10-training/gb10-04

@@ -10,7 +10,7 @@ services:
     environment:
       - HF_TOKEN=${HF_TOKEN}
     volumes:
-      - ~/models/Llama-3.3-70B-Instruct-NVFP4:/workspace/model
+      - ~/models/Qwen3-8B-NVFP4:/workspace/model
       - ./extra-llm-api-config-pytorch.yml:/tmp/extra-llm-api-config.yml
     deploy:
       resources:

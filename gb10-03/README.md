@@ -2,14 +2,14 @@
 
 **Objective:** Understand the math that makes the GB10 a "Supercomputer at your desk." Move beyond simply downloading models and start optimizing them for the Blackwell architecture using NVFP4.
 
-## 1. The 128GB Unified Memory Challenge
+## The 128GB Unified Memory Challenge
 
 On a standard PC, you are limited by GPU VRAM (e.g., 24GB on a 5090). On the GB10, the 128GB of Unified Memory allows us to run massive models, but we still want to maximize "Tokens Per Second" (TPS).
 
 - **The Bandwidth Bottleneck:** The GB10 uses LPDDR5x RAM (~273 GB/s). While this is plenty of capacity, it is slower than the HBM3 used in data center H100s.
 - **The Solution:** Quantization. By shrinking the model size, we reduce the amount of data moving through the memory bus, directly increasing speed.
 
-## 2. NVFP4: Why Blackwell is Different
+## NVFP4: Why Blackwell is Different
 
 Most AI enthusiasts are used to INT4 or GGUF quantization. Blackwell introduces a new hardware-native format: **NVFP4 (4-bit Floating Point)**.
 
@@ -20,7 +20,7 @@ Most AI enthusiasts are used to INT4 or GGUF quantization. Blackwell introduces 
 | Hardware | Software-based dequantization.     | Native Tensor Core support.        |
 | Scaling  | Block-wise scaling (usually 128).  | Two-level Micro-block scaling (16).|
 
-## 3. How do I get NVFP4 models?
+## How do I get NVFP4 models?
 
 - Use a NIM from the NGC. Models must support the arm64 archeticture for the GB10 
 
@@ -30,11 +30,101 @@ docker manifest inspect nvcr.io/nim/qwen/qwen3-32b-dgx-spark:1.0 | grep architec
 - Nvidia has compatible models at https://huggingface.co/nvidia/models
 - Convert open source models manually
 
-## 4. Important things to remember
+## Model Hosting
 
-1. Ollama only works with GGUF models. When you download a model from within Ollama it hosts it's own GGUF versions of select models. If you see a model on HuggingFace and has `*.safetensors` you need to convert these to a quant format or use vLLM or TensorRT-LLM to host these.
+Common hosting options you'll encounter when deploying models on the GB10:
 
-## Hands-on Lab: Quantizing Your First Model
+- **Ollama** — Local, developer-friendly model runner.
+  - Pros: Extremely simple to install and use for local testing; good for iterating on prompts and small-scale demos.
+  - Cons: Not designed for high concurrency or maximum throughput; limited to supported model formats and runtimes.
+  - Use cases: Local development, demos, single-user testing.
+
+- **TensorRT-LLM** — NVIDIA's production-grade engine optimized for Blackwell/NVFP4.
+  - Pros: Best raw latency and throughput on NVIDIA hardware (supports NVFP4/TensorRT engines); excellent for large models on GB10.
+  - Cons: NVIDIA-only, more complex to build and deploy; requires GPUs, Docker and specific tooling; steeper ops cost.
+  - Use cases: Low-latency, high-throughput production inference on GB10/DGX systems.
+
+- **vLLM** — High-throughput, research-friendly model server.
+  - Pros: Easy OpenAI-compatible API, good batching and memory optimizations; works across GPUs/CPUs for many HF models.
+  - Cons: Not as deeply hardware-optimized for NVFP4/TensorRT as TensorRT-LLM; can be memory-hungry for very large models.
+  - Use cases: Multi-tenant inference, experimentation at scale, mid-tier production serving.
+
+- **SGLang** — A throughput-focused serving framework (lesson 10 discusses this in depth).
+  - Pros: Exceptional concurrent performance (RadixAttention, KV cache sharing), Blackwell-native kernels for top TPS on GB10.
+  - Cons: More specialized and complex; newer ecosystem and tooling than Ollama/vLLM.
+  - Use cases: High-concurrency production serving where many users share similar context or prompts.
+
+
+
+## Hands-on Lab: Download model from huggingface.co
+
+First ensure our python virtual environment is started. Refer to Lesson 1 if you haven't created this venv. Then download the model.
+```bash
+source ~/venv/gb10-training/bin/activate
+pip install -U "huggingface_hub[cli]"
+
+sudo mkdir -p ~/models
+hf download nvidia/Qwen3-8B-NVFP4 \
+  --local-dir ~/models/Qwen3-8B-NVFP4
+
+tree ~/models/Qwen3-8B-NVFP4
+```
+
+## Hands-on Lab: Serving a model using NVIDIA TensorRT-LLM
+
+Now we will use TensorRT-LLM to serve up the model on port `8001`. This will host an OpenAI API compatible endpoint. 
+
+```bash
+cd gb10-03/trtllm
+docker compose up
+```
+
+Test the model endpoint
+
+```bash
+curl -X POST http://localhost:8001/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nvidia/Qwen3-8B-NVFP4",
+    "messages": [{"role": "user", "content": "What is artificial intelligence?"}],
+    "max_tokens": 100,
+    "temperature": 0.7,
+    "stream": false
+  }'
+```
+
+### OpenAI API request fields
+
+- **model**: The model identifier or local model path to use. For TensorRT-LLM this is the model name; for vLLM you can pass a local path to the model directory.
+- **messages**: Array of chat messages in OpenAI-compatible format. Each item should include `role` (e.g., `user`, `assistant`, `system`) and `content` (the prompt text).
+- **max_tokens**: Maximum number of tokens the model will generate in the response. Lower values limit response length.
+- **temperature**: Sampling temperature controlling randomness. `0.0` is deterministic; higher values (e.g., `0.7`) produce more varied replies.
+- **stream**: When `true`, the server sends partial tokens as they are generated (useful for low-latency streaming UIs). When `false`, the full response is returned in one payload.
+
+## Hands-on Lab: Serving a model using vLLM
+
+Now we will use vLLM to serve up the model on port `8002`. This will host an OpenAI API compatible endpoint. 
+
+```bash
+cd gb10-03/vllm
+docker compose up
+```
+
+Test the model endpoint
+
+```bash
+curl -X POST http://localhost:8002/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "/models/Qwen3-8B-NVFP4",
+    "messages": [{"role": "user", "content": "What is artificial intelligence?"}],
+    "max_tokens": 100,
+    "temperature": 0.7,
+    "stream": false
+  }'
+```
+
+## Advanced Hands-on Lab: Quantizing Your First Model
 
 We will use the NVIDIA TensorRT Model Optimizer container to convert a standard Hugging Face model into an NVFP4-optimized engine.
 

@@ -1,0 +1,27 @@
+services:
+  vllm:
+    image: nvcr.io/nvidia/vllm:26.01-py3
+    container_name: vllm
+    volumes:
+      - ~/models:/models
+    ports:
+      - "8002:8002"
+    shm_size: '4gb'
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command: >
+      vllm serve /models/Qwen3-8B-NVFP4
+      --quantization modelopt
+      --host 0.0.0.0
+      --port 8002
+      --trust-remote-code
+
+# Options for GGUF format:
+#--tokenizer nvidia/Qwen3-8B-NVFP4
+#--load-format gguf
+#--dtype half
