@@ -70,7 +70,7 @@ cat ~/.ssh/*.pub
 ssh <username>@<your-gb10-ip>
 vi ~/.ssh/authorized_keys
 o
-p
+# Right click to paste
 wq
 
 chmod 600 ~/.ssh/authorized_keys
