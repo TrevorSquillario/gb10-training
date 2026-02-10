@@ -54,7 +54,10 @@ If you see the Blackwell GPU and the Grace CPU listed, you are officially connec
 [http://localhost:11000](http://localhost:11000)
 
 ### Setup VSCode Remote SSH
-Open VSCode and select Terminal in the top bar. This will open a PowerShell terminal. 
+
+1. Open VSCode and select Terminal in the top bar. This will open a PowerShell terminal. 
+2. Select the Extensions tab on the left or hit Ctrl + Shift + P and search for Install Extension
+3. Search for Remote - SSH and install
 
 ```bash
 # Get the SSH Public Key from your laptop (Windows)
