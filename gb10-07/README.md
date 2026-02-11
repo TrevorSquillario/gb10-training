@@ -1,6 +1,6 @@
-# Lesson 7: Visualizing AI with ComfyUI & FLUX.1
+# Lesson 7: Visualizing AI with ComfyUI & FLUX
 
-**Objective:** Master high-fidelity image generation using ComfyUI. While previous Sessions focused on text, the GB10's 128GB of Unified Memory makes it a "visual powerhouse," capable of running massive models like FLUX.1-dev and Stable Diffusion 3.5 without the out-of-memory (OOM) errors common on consumer cards. This allows us to build text-to-image, image-to-image, text-to-video and many other workflows using ComfyUI's node based web UI.
+**Objective:** Master high-fidelity image generation using ComfyUI. While previous Sessions focused on text, the GB10's 128GB of Unified Memory makes it a "visual powerhouse," capable of running massive models like FLUX.2-dev and Stable Diffusion 3.5 without the out-of-memory (OOM) errors common on consumer cards. This allows us to build text-to-image, image-to-image, text-to-video and many other workflows using ComfyUI's node based web UI.
 
 ## Hands-on Lab: Deploying ComfyUI on GB10
 
@@ -38,7 +38,7 @@ docker compose up
 ```
 
 
-### Downloading the "heavyweight" (FLUX.1)
+### Downloading the "heavyweight" (FLUX.2)
 
 ComfyUI is fine with the `*.safetensors` models. No need to worry about GGUF here. 
 

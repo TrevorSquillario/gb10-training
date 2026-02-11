@@ -19,7 +19,7 @@ This lab provides several options for establishing connectivity to your GB10.
 Connect your GB10 and perform initial setup using either the HDMI Port with a USB keyboard and mouse or WiFi hotspot and your phone (for headless setup). 
 Reference [Dell Setup Guide](https://www.dell.com/support/kbdoc/en-us/000398800/dell-pro-max-with-gb-10-fcm1253-initial-setup-out-of-the-box-experience) 
 - If using WiFi hotspot turn on Airplane mode, then ensure wifi is on and connect to the hostspot listed on the sticker.
-- Make note of the IP Address or access your ISP Gateway to view the DHCP Clients (e.g., `promaxgb10-a1b2.local`)
+- Make note of the IP Address or access your ISP Gateway to view the DHCP Clients
 
 ### Connect to the DGX Dashboard
 
@@ -55,7 +55,7 @@ If you see the Blackwell GPU and the Grace CPU listed, you are officially connec
 ### Setup VSCode Remote SSH
 
 1. Open VSCode and select Terminal in the top bar. This will open a PowerShell terminal. 
-2. Select the Extensions tab on the left or hit Ctrl + Shift + P and search for Install Extension
+2. Select the Extensions tab on the left or hit `Ctrl + Shift + P` and search for Install Extension
 3. Search for Remote - SSH and install
 
 ```bash
@@ -73,11 +73,12 @@ o
 # Right click to paste
 wq
 
+# Shouldn't need the but just in case
 chmod 600 ~/.ssh/authorized_keys
 chown <username>:<username> ~/.ssh/authorized_keys
 ```
 
-### Download Course Files Bash Customizations
+### Download Course Files
 
 Clone the course repo:
 
@@ -87,11 +88,29 @@ cd ~/git
 git clone https://github.com/TrevorSquillario/gb10-training
 
 # If there are changes to the repo and you want to ensure you are using the latest version run
-cd gb10-training
+cd ~/git/gb10-training
 git pull
 ```
 
-Setup your Python Virtual Environment
+### Updating your GB10
+
+*There is a BIOS update from factory version
+
+https://www.dell.com/support/kbdoc/en-us/000379162/how-to-upgrade-the-bios-and-the-firmware-on-a-dell-pro-max-with-the-grace-blackwell-system
+
+```bash
+sudo apt update
+sudo apt upgrade
+sudo fwupdmgr refresh
+sudo fwupdmgr upgrade
+```
+
+### (Optional) Install useful Linux utilities
+```bash
+sudo apt install tree nvtop
+```
+
+### Setup your Python Virtual Environment
 
 ```bash
 mkdir ~/venv
@@ -99,18 +118,7 @@ python3 -m venv ~/venv/gb10-training
 source ~/venv/gb10-training/bin/activate
 ```
 
-Add your user to the docker group:
-
-```bash
-sudo usermod -aG docker $USER
-```
-
-(Optional) Install useful Linux utilities
-```bash
-sudo apt install tree nvtop
-```
-
-(Optional) Customize `~/.bashrc` by adding commands to the end of the file:
+### (Optional) Customize `~/.bashrc` by adding commands to the end of the file:
 
 ```bash
 vi ~/.bashrc
@@ -120,7 +128,7 @@ alias gpustats="watch -n 1 nvidia-smi"
 cd ~/git
 ```
 
-(Optional) Customize `/etc/inputrc` to enable easy history search with Ctrl + Up/Down
+### (Optional) Customize `/etc/inputrc` to enable easy history search with Ctrl + Up/Down
 
 ```bash
 sudo vi /etc/inputrc

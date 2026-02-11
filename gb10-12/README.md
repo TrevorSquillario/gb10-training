@@ -1,17 +1,5 @@
 # Lesson 12: Q & A
 
-## Updating your GB10
-
-https://www.dell.com/support/kbdoc/en-us/000379162/how-to-upgrade-the-bios-and-the-firmware-on-a-dell-pro-max-with-the-grace-blackwell-system
-
-```bash
-sudo apt update
-sudo apt upgrade
-sudo fwupdmgr refresh
-sudo fwupdmgr upgrade
-sudo reboot
-```
-
 ## Prometheus /metrics Endpoint for Ollama
 https://github.com/NorskHelsenett/ollama-metrics
 
@@ -23,6 +11,9 @@ https://github.com/NorskHelsenett/ollama-metrics
 - AudioCraft Plus https://github.com/GrandaddyShmax/audiocraft_plus
 - https://github.com/ace-step/ACE-Step-1.5
 - https://docs.mirobody.ai/
+
+## Performance Optimizations
+- This is interesting. I have yet to test it out. https://github.com/GuigsEvt/dgx_spark_config
 
 ## Closing Thoughts
 

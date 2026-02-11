@@ -30,6 +30,34 @@ docker manifest inspect nvcr.io/nim/qwen/qwen3-32b-dgx-spark:1.0 | grep architec
 - Nvidia has compatible models at https://huggingface.co/nvidia/models
 - Convert open source models manually
 
+## FP4 Model Formats: MXFP4 vs NVFP4
+
+When running quantized models on compatible hardware, you may encounter two main FP4 (4-bit floating point) formats:
+
+### MXFP4 (Mixed eXponent Floating Point 4-bit)
+- **Origin**: Developed by Meta for their Llama series models
+- **Format**: 4-bit floating point with a shared exponent per group
+- **Advantages**:
+  - Better dynamic range due to shared exponent scheme
+  - More balanced precision across values
+  - Open source and well-documented
+- **Use cases**: Llama 3.1 4-bit, Llama 3 4-bit, other non-meta models as well
+
+### NVFP4 (NVIDIA Floating Point 4-bit)
+- **Origin**: NVIDIA's proprietary 4-bit format
+- **Format**: 4-bit floating point optimized for NVIDIA hardware
+- **Advantages**:
+  - Hardware-accelerated on NVIDIA GPUs with FP4 support
+  - Potentially faster inference on compatible GPUs
+  - Optimized for Tensor Core operations
+- **Use cases**: NVIDIA-optimized models, faster inference on RTX 40xx+ and newer GPUs
+
+### Notes
+- Both formats reduce model size to ~25% of original FP16 size
+- Quality differences are typically minimal for most use cases
+- Choice depends on your hardware and inference speed requirements
+- Ollama supports both formats - the model tag usually indicates which is used
+
 ## Model Hosting
 
 Common hosting options you'll encounter when deploying models on the GB10:
@@ -79,7 +107,7 @@ cd gb10-03/trtllm
 docker compose up
 ```
 
-Test the model endpoint
+### Test the model endpoint
 
 ```bash
 curl -X POST http://localhost:8001/v1/chat/completions \
@@ -93,13 +121,32 @@ curl -X POST http://localhost:8001/v1/chat/completions \
   }'
 ```
 
-### OpenAI API request fields
+### Simple LLM Benchmark
 
-- **model**: The model identifier or local model path to use. For TensorRT-LLM this is the model name; for vLLM you can pass a local path to the model directory.
-- **messages**: Array of chat messages in OpenAI-compatible format. Each item should include `role` (e.g., `user`, `assistant`, `system`) and `content` (the prompt text).
-- **max_tokens**: Maximum number of tokens the model will generate in the response. Lower values limit response length.
-- **temperature**: Sampling temperature controlling randomness. `0.0` is deterministic; higher values (e.g., `0.7`) produce more varied replies.
-- **stream**: When `true`, the server sends partial tokens as they are generated (useful for low-latency streaming UIs). When `false`, the full response is returned in one payload.
+See the appendix for step-by-step instructions to set this up: [Simple LLM Benchmark](../appendix/README.md)
+
+Start the benchmark
+```bash
+python ~/git/gb10-training/appendix/llm_benchmark.py
+# Select option 2
+```
+
+### (Optional) Advanced Benchmark/Stress Testing
+```bash
+pip install aiperf
+
+aiperf profile \
+  --model nvidia/Llama-3.3-70B-Instruct-NVFP4 \
+  --url http://localhost:8001 \
+  --endpoint-type chat \
+  --request-rate 1 \
+  --request-count 1 \
+  --streaming
+```
+
+## Stop trtllm container. Due to memory limitations we can only run either TensorRT-LLM or vLLM at the same time. 
+
+`Ctrl + C` in the window it's running or `docker stop ttrtllm`
 
 ## Hands-on Lab: Serving a model using vLLM
 
@@ -122,6 +169,192 @@ curl -X POST http://localhost:8002/v1/chat/completions \
     "temperature": 0.7,
     "stream": false
   }'
+```
+
+### Simple LLM Benchmark
+
+See the appendix for step-by-step instructions to set this up: [Simple LLM Benchmark](../appendix/README.md)
+
+Start the benchmark
+```bash
+python ~/git/gb10-training/appendix/llm_benchmark.py
+# Select option 3
+```
+
+### View the report
+```bash
+python ~/git/gb10-training/appendix/llm_benchmark.py --report
+```
+
+## Hands-on Lab: Generation Parameters & Advanced Prompting
+
+This lab explores how different parameters and prompting techniques affect model behavior. Make sure you have either TensorRT-LLM (port 8001) or vLLM (port 8002) running from the previous labs.
+
+### Part 1: Understanding Generation Parameters
+
+#### OpenAI API request fields
+
+- **model**: The model identifier or local model path to use. For TensorRT-LLM this is the model name; for vLLM you can pass a local path to the model directory.
+- **messages**: Array of chat messages in OpenAI-compatible format. Each item should include `role` (e.g., `user`, `assistant`, `system`) and `content` (the prompt text).
+- **max_tokens**: Maximum number of tokens the model will generate in the response. Lower values limit response length.
+- **temperature**: Sampling temperature controlling randomness. `0.0` is deterministic; higher values (e.g., `0.7`, `1.0`) produce more varied replies.
+- **top_p**: Nucleus sampling threshold (0.0-1.0). Only considers tokens whose cumulative probability is within top_p. Lower values = more focused responses.
+- **top_k**: Only sample from the top K most likely tokens. Limits vocabulary diversity per token generated.
+- **stream**: When `true`, the server sends partial tokens as they are generated (useful for low-latency streaming UIs). When `false`, the full response is returned in one payload.
+
+#### Exercise 1.1: Temperature Comparison
+
+Temperature controls randomness. Run the same prompt with different temperatures to see the effect:
+
+**Temperature = 0.0 (Deterministic, Factual)**
+```bash
+curl -X POST http://localhost:8002/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "/models/Qwen3-8B-NVFP4",
+    "messages": [{"role": "user", "content": "Write a creative story about a robot learning to paint."}],
+    "max_tokens": 150,
+    "temperature": 0.0
+  }' | jq -r '.choices[0].message.content'
+```
+
+**Temperature = 0.7 (Balanced)**
+```bash
+curl -X POST http://localhost:8002/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "/models/Qwen3-8B-NVFP4",
+    "messages": [{"role": "user", "content": "Write a creative story about a robot learning to paint."}],
+    "max_tokens": 150,
+    "temperature": 0.7
+  }' | jq -r '.choices[0].message.content'
+```
+
+**Temperature = 1.2 (Creative, Unpredictable)**
+```bash
+curl -X POST http://localhost:8002/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "/models/Qwen3-8B-NVFP4",
+    "messages": [{"role": "user", "content": "Write a creative story about a robot learning to paint."}],
+    "max_tokens": 150,
+    "temperature": 1.2
+  }' | jq -r '.choices[0].message.content'
+```
+
+**Observation:** Run each command 2-3 times. Temperature 0.0 produces identical output each time, while higher temperatures generate varied creative responses.
+
+#### Exercise 1.2: Top-P (Nucleus Sampling)
+
+Top-P controls the diversity by limiting the token pool based on cumulative probability:
+
+**Top-P = 0.1 (Very Focused)**
+```bash
+curl -X POST http://localhost:8002/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "/models/Qwen3-8B-NVFP4",
+    "messages": [{"role": "user", "content": "Explain quantum computing in simple terms."}],
+    "max_tokens": 100,
+    "temperature": 0.7,
+    "top_p": 0.1
+  }' | jq -r '.choices[0].message.content'
+```
+
+**Top-P = 0.9 (More Diverse)**
+```bash
+curl -X POST http://localhost:8002/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "/models/Qwen3-8B-NVFP4",
+    "messages": [{"role": "user", "content": "Explain quantum computing in simple terms."}],
+    "max_tokens": 100,
+    "temperature": 0.7,
+    "top_p": 0.9
+  }' | jq -r '.choices[0].message.content'
+```
+
+**Observation:** Lower top_p values produce more conservative, predictable language. Higher values allow more vocabulary diversity.
+
+#### Exercise 1.3: Practical Use Cases
+
+**Use Case: Code Generation (Deterministic)**
+```bash
+curl -X POST http://localhost:8002/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "/models/Qwen3-8B-NVFP4",
+    "messages": [
+      {"role": "user", "content": "Write a Python function to calculate fibonacci numbers recursively."}
+    ],
+    "max_tokens": 200,
+    "temperature": 0.0
+  }' | jq -r '.choices[0].message.content'
+```
+
+**Use Case: Creative Writing (High Temperature)**
+```bash
+curl -X POST http://localhost:8002/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "/models/Qwen3-8B-NVFP4",
+    "messages": [
+      {"role": "user", "content": "Write a haiku about artificial intelligence and creativity."}
+    ],
+    "max_tokens": 100,
+    "temperature": 1.0
+  }' | jq -r '.choices[0].message.content'
+```
+
+**Use Case: Factual Q&A (Low Temperature, Low Top-P)**
+```bash
+curl -X POST http://localhost:8002/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "/models/Qwen3-8B-NVFP4",
+    "messages": [
+      {"role": "user", "content": "What is the capital of France and what is its population?"}
+    ],
+    "max_tokens": 100,
+    "temperature": 0.2,
+    "top_p": 0.5
+  }' | jq -r '.choices[0].message.content'
+```
+
+### Part 2: Advanced Prompting Techniques
+
+#### Exercise: System Prompts and Persona Creation
+
+System prompts guide the model's behavior and personality. They are processed before user messages:
+
+**Example: Technical Expert Persona**
+```bash
+curl -X POST http://localhost:8002/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "/models/Qwen3-8B-NVFP4",
+    "messages": [
+      {"role": "system", "content": "You are a senior DevOps engineer with 15 years of experience. You explain concepts clearly with practical examples and best practices. You prefer Kubernetes and Docker for deployments."},
+      {"role": "user", "content": "How should I deploy a Python web application?"}
+    ],
+    "max_tokens": 200,
+    "temperature": 0.7
+  }' | jq -r '.choices[0].message.content'
+```
+
+**Example: Creative Writing Coach Persona**
+```bash
+curl -X POST http://localhost:8002/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "/models/Qwen3-8B-NVFP4",
+    "messages": [
+      {"role": "system", "content": "You are an enthusiastic creative writing coach. You encourage vivid descriptions, show-don'\''t-tell techniques, and character development. Always provide specific actionable feedback."},
+      {"role": "user", "content": "Review this sentence: The man was sad."}
+    ],
+    "max_tokens": 200,
+    "temperature": 0.7
+  }' | jq -r '.choices[0].message.content'
 ```
 
 ## Advanced Hands-on Lab: Quantizing Your First Model

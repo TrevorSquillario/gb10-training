@@ -69,120 +69,58 @@ docker exec -it ollama ollama run hf.co/Qwen/Qwen3-14B-GGUF:Q8_0
 #### 3. (Advanced) Manually download and copy to container models directory
 The last method is by manually adding the model files and creating the model definition. You don't need to run through this, it is here for future reference if you need it.
 
-*Note: 
-```The Q8 (8-big) quant I selected for this model requires 243GB of RAM so it's not actually going to run on the GB10. If you want to use this model you'll need to choose the IQ4_XS version```
+See the appendix for step-by-step instructions: [Manually Add Model to Ollama](../appendix/README.md)
 
-Start by installing the hf cli and download the model.
+### Hands-on Lab: LLM Benchmark
 
-```bash
-# Ensure our python venv is started
-source ~/venv/gb10-training/bin/activate
-pip install -U "huggingface_hub[cli]"
-# FYI: This model is 268GB. We'll include a specific subdirectory for the the 8-bit quant
-hf download unsloth/MiniMax-M2.1-GGUF \
-  --include "*Q8_0*" \
-  --local-dir ~/gb10/models/MiniMax-M2.1-GGUF_Q8_0
-```
-For models split into parts Ollama requires that they are merged into one file
+See the appendix for step-by-step instructions to set this up: [Simple LLM Benchmark](../appendix/README.md)
+
+First download the model
 
 ```bash
-# Run a temporary container to use the llama.cpp tools
-docker run --rm \
-  -v ~/gb10/models:/models \
-  --entrypoint /llm/llama-gguf-split \
-  amperecomputingai/llama.cpp:latest \
-  --merge \
-  /models/MiniMax-M2.1-GGUF_Q8_0/Q8_0/MiniMax-M2.1-Q8_0-00001-of-00005.gguf \
-  /models/MiniMax-M2.1-GGUF_Q8_0/MiniMax-M2.1-Q8_0-merged.gguf
+docker exec -it ollama ollama pull qwen3:8b
 ```
-
-Create the model definition
+Then start the benchmark
 ```bash
-cd ~/gb10/models/MiniMax-M2.1-GGUF_Q8_0
-vi Modelfile
-
-FROM ./MiniMax-M2.1-Q8_0-merged.gguf
-
-# This template handles standard chat AND tool calling for MiniMax
-TEMPLATE """{{ if .System }}<|im_start|>system
-{{ .System }}
-{{- if .Tools }}
-When you need to use a tool, you must respond in JSON format:
-{"name": "function_name", "parameters": {"arg": "value"}}
-Available tools:
-{{ .Tools }}
-{{- end }}<|im_end|>
-{{ end }}{{ if .Prompt }}<|im_start|>user
-{{ .Prompt }}<|im_end|>
-{{ end }}<|im_start|>assistant
-{{ if .Thinking }}<think>
-{{ .Thinking }}</think>
-{{ end }}{{ .Response }}<|im_end|>"""
-
-PARAMETER stop "<|im_end|>"
-PARAMETER stop "<think>"
-PARAMETER stop "</think>"
-PARAMETER temperature 1
-PARAMETER num_ctx 32768
+python ~/git/gb10-training/appendix/llm_benchmark.py
+# Select option 1
 ```
 
-Create the model using the `ollama` command in the container 
+### Hands-on Lab: Model Size Comparison
+
+**Objective:** Compare quality, speed, and memory usage across quantization levels using Qwen3 models at different sizes.
+
+
+#### Choosing Model Size
+
+- **Larger models (e.g. 32B+):** stronger reasoning, better long-form coherence, and higher factual accuracy for complex tasks; require much more VRAM, longer latency, and are costlier to run. Use when quality and deep understanding matter (research, coding, summarization, few-shot tasks).
+- **Medium models (e.g. 8B):** a balance of capability and performance — suitable for many production chatbots and single-host deployments where moderate quality with reasonable latency is desired.
+- **Smaller models (e.g. 4B and below):** fast, low-latency, and memory-efficient. Great for high-throughput services, edge or resource-constrained environments, or when you combine them with retrieval (RAG) for factual accuracy.
+- **Quantization trade-offs:** lower-bit quant (e.g., Q4/Q8) reduces memory and increases speed but can slightly degrade output quality; test quant levels for your task.
+- **Practical tip:** start with a smaller model for iteration and scale up to larger models for evaluation on representative prompts; consider ensemble or retrieval-augmented approaches to get the best of both worlds.
+
+#### Download Models
+
+Pull three Qwen3 models at different sizes:
+
 ```bash
-docker exec -it ollama /bin/bash
-# CD to the /models volume mount we specified in the compose.yaml. This corresponds to your ~/gb10/models directory on the host.
-cd /models/MiniMax-M2.1-GGUF_Q8_0
-ollama create minimax-q8 -f Modelfile
+# 4B model variants
+docker exec -it ollama ollama pull qwen3:4b
 
-# Verify the model is working with
-ollama run minimax-q8
+# 8B model variants  
+docker exec -it ollama ollama pull qwen3:8b
+
+# 32B model variants
+docker exec -it ollama ollama pull qwen3:32b
 ```
 
----
+Open a New Chat, select each model and compare the results. You can use the prompt:
 
-🌟 **Challenge 1: The NVFP4 Difference**
-
-Download the Qwen3-14B-GGUF 8-bit quant model
-```bash
-docker exec -it ollama ollama run hf.co/Qwen/Qwen3-14B-GGUF:Q8_0
+```
+Explain quantum computing in simple terms.
 ```
 
-Start the TensorRT-LLM Server from the previous lab but this time specify the docker network `ai-network` that the Ollama WebUI service is using so they will be able to talk to each other. 
-```bash
-# Set path to quantized model directory
-export MODEL_PATH="/home/trevor/git/output_models/saved_models_Qwen3-14B_nvfp4_hf/"
-
-docker run --rm -it \
-  --name trtllm-server \
-  --gpus all \
-  --ipc=host \
-  --network ai-network \
-  --ulimit memlock=-1 --ulimit stack=67108864 \
-  -e HF_TOKEN=$HF_TOKEN \
-  -v "$MODEL_PATH:/workspace/model" \
-  nvcr.io/nvidia/tensorrt-llm/release:spark-single-gpu-dev \
-  trtllm-serve /workspace/model \
-    --backend pytorch \
-    --max_batch_size 4 \
-    --host 0.0.0.0 \
-    --port 8000
-```
-
-1. Go to the Ollama WebUI `http://<gb10-ip>:12000`
-2. Click your profile icon in the top right, select Admin Panel
-3. Click the Settings tab, select Connections
-4. Under OpenAI API, click the + sign on the right to "Add Connection
-```
-URL: http://trtllm-server:8000/v1
-Auth: Bearer > tensorrt_llm
-```
-5. Click the circle with arrows to test the connection
-6. Click Save
-7. Click New Chat on the left panel
-8. The Local tab will contain models downloaded in Ollama directly. The External tab will show our external connections like the TensorRT-LLM hosted model we just started
-9. Compare the performance of the `Qwen3-14B-GGUF:Q8_0` local model with the NVFP4 quant we created. It will appear as `model`.
-
-
----
+Compare speed and quality of responses.
 
 ## Resources for Lesson 4
 

@@ -38,7 +38,7 @@ dpkg -l | grep nvidia-container-toolkit
 docker info | grep -i runtime
 ```
 
-Run a smoke-test container to confirm the runtime can see the Blackwell GPU. Then see that the container was downloaded and stored locally. You're disk will fill up with container images eventually and you'll need to use the `prune` command to clean them up. 
+Run a smoke-test container to confirm the runtime can see the Blackwell GPU. Then see that the container was downloaded and stored locally. 
 
 ```bash
 docker run --rm  --gpus all   nvidia/cuda:13.1.1-base-ubuntu24.04 nvidia-smi

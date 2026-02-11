@@ -41,6 +41,8 @@ docker login nvcr.io
 # Password: <Your-NGC-API-Key>
 ```
 
+https://www.nvidia.com/en-us/solutions/ai/agentic-ai
+
 #### Start the NIM container for the Qwen3-32B model
 *You can add the `export` line to your `~/.bashrc`
 ```bash
