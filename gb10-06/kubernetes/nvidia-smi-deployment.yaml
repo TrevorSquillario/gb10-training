@@ -1,0 +1,91 @@
+---
+# Simple deployment that runs nvidia-smi and sleeps
+# Demonstrates GPU time-slicing with 4 replicas sharing GPU resources
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nvidia-smi-test
+  labels:
+    app: nvidia-smi-test
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: nvidia-smi-test
+  template:
+    metadata:
+      labels:
+        app: nvidia-smi-test
+    spec:
+      runtimeClassName: nvidia
+      containers:
+      - name: nvidia-smi
+        image: nvidia/cuda:13.0.2-runtime-ubuntu24.04
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "=========================================="
+          echo "Pod: $HOSTNAME"
+          echo "=========================================="
+          nvidia-smi
+          echo ""
+          echo "Sleeping for 3600 seconds..."
+          echo "Pod will stay alive to demonstrate GPU sharing"
+          sleep 3600
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+          requests:
+            nvidia.com/gpu: 1
+        env:
+        - name: NVIDIA_VISIBLE_DEVICES
+          value: "all"
+        - name: NVIDIA_DRIVER_CAPABILITIES
+          value: "compute,utility"
+      restartPolicy: Always
+---
+# Service to group pods (optional, for monitoring)
+apiVersion: v1
+kind: Service
+metadata:
+  name: nvidia-smi-test
+spec:
+  selector:
+    app: nvidia-smi-test
+  ports:
+  - port: 80
+    targetPort: 80
+  clusterIP: None  # Headless service
+---
+# Instructions:
+#
+# 1. Apply this deployment:
+#    kubectl apply -f nvidia-smi-deployment.yaml
+#
+# 2. Check pod status (should see 4 pods running):
+#    kubectl get pods -l app=nvidia-smi-test
+#
+# 3. View nvidia-smi output from each pod:
+#    for pod in $(kubectl get pods -l app=nvidia-smi-test -o name); do
+#      echo "=== $pod ==="
+#      kubectl logs $pod
+#    done
+#
+# 4. Check all pods are using the same GPU:
+#    kubectl get pods -l app=nvidia-smi-test -o wide
+#
+# 5. Execute nvidia-smi in a running pod:
+#    kubectl exec -it $(kubectl get pods -l app=nvidia-smi-test -o name | head -1) -- nvidia-smi
+#
+# 6. Watch GPU usage in real-time:
+#    kubectl exec -it $(kubectl get pods -l app=nvidia-smi-test -o name | head -1) -- watch -n 1 nvidia-smi
+#
+# 7. Clean up:
+#    kubectl delete -f nvidia-smi-deployment.yaml
+#
+# Expected behavior:
+# - All 4 pods should successfully request 1 GPU each
+# - Due to time-slicing, they share the same physical GPU
+# - Each pod's nvidia-smi output shows the same GPU
+# - All 4 processes appear in the nvidia-smi process list
