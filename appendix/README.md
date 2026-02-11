@@ -1,4 +1,8 @@
 
+## How to Reinstall the NVIDIA DGX Operating System
+https://www.dell.com/support/kbdoc/en-bh/000382042/how-to-reinstall-the-nvidia-dgx-operating-system-on-dell-pro-max-with-grace-blackwell-systems
+
+
 ## Simple LLM Benchmark
 ```bash
 cd cd ~/git/gb10-training/appendix

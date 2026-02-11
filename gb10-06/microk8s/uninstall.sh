@@ -36,31 +36,6 @@ microk8s status --wait-ready --timeout 10 || echo "MicroK8s is not responding"
 
 echo ""
 echo "=========================================="
-echo "Step 2: Backing up resources (optional)"
-echo "=========================================="
-
-read -p "Backup current Kubernetes resources? (yes/no): " backup
-if [ "$backup" = "yes" ]; then
-    backup_dir="/tmp/microk8s-backup-$(date +%Y%m%d-%H%M%S)"
-    mkdir -p "$backup_dir"
-    
-    echo "Backing up to $backup_dir..."
-    
-    # Backup all resources
-    for resource in pods deployments services configmaps secrets persistentvolumeclaims; do
-        echo "  Backing up $resource..."
-        microk8s kubectl get $resource --all-namespaces -o yaml > "$backup_dir/$resource.yaml" 2>/dev/null || true
-    done
-    
-    # Backup cluster info
-    microk8s kubectl cluster-info dump --output-directory="$backup_dir/cluster-info" 2>/dev/null || true
-    
-    echo "Backup completed: $backup_dir"
-    echo ""
-fi
-
-echo ""
-echo "=========================================="
 echo "Step 3: Listing deployed workloads"
 echo "=========================================="
 
@@ -82,7 +57,8 @@ echo "=========================================="
 echo "Step 4: Stopping MicroK8s"
 echo "=========================================="
 
-echo "Stopping MicroK8s services..."
+echo "Resetting MicroK8s (unmounting storage and clearing state)..."
+microk8s reset --destroy-storage || true
 microk8s stop || true
 sleep 3
 
@@ -150,7 +126,7 @@ echo "=========================================="
 
 # Remove virtual network interfaces created by MicroK8s
 echo "Cleaning up network interfaces..."
-interfaces=$(ip link show | grep -E 'veth|cni|flannel|calico' | awk -F: '{print $2}' | tr -d ' ' || true)
+interfaces=$(ip link show | grep -E 'veth|cni|flannel|calico|vxlan' | awk -F: '{print $2}' | tr -d ' ' || true)
 if [ -n "$interfaces" ]; then
     for iface in $interfaces; do
         echo "  Removing interface $iface..."
@@ -165,19 +141,40 @@ echo "=========================================="
 echo "Step 9: Cleaning up iptables rules"
 echo "=========================================="
 
-echo "Flushing iptables rules..."
-# Backup current iptables
-iptables-save > /tmp/iptables-backup-$(date +%Y%m%d-%H%M%S).rules 2>/dev/null || true
+echo "Step 9: Surgical cleanup of iptables (Keeping Docker rules)..."
 
-# Remove chains created by Kubernetes/CNI
-chains=("KUBE-FORWARD" "KUBE-SERVICES" "KUBE-EXTERNAL-SERVICES" "KUBE-NODEPORTS" "CNI-FORWARD" "FLANNEL-FWD")
-for chain in "${chains[@]}"; do
-    if iptables -L "$chain" -n &>/dev/null; then
-        echo "  Flushing chain $chain..."
-        iptables -F "$chain" 2>/dev/null || true
-        iptables -X "$chain" 2>/dev/null || true
-    fi
+echo "  Backup iptables to /tmp..."
+iptables-save > /tmp/iptables-backup-$(date +%Y%m%d-%H%M%S).rules 2>/dev/null || true
+iptables-legacy-save > /tmp/iptables-legacy-backup-$(date +%Y%m%d-%H%M%S).rules 2>/dev/null || true
+
+echo "Step 9: Surgical cleanup of MicroK8s networking..."
+
+# 1. Clean the 'nf_tables' (The ones you just dumped)
+# We only want to remove the specific lines mentioning 10.1.0.0/16
+echo "  Removing MicroK8s pod rules from nf_tables..."
+iptables -D FORWARD -s 10.1.0.0/16 -m comment --comment "generated for MicroK8s pods" -j ACCEPT 2>/dev/null || true
+iptables -D FORWARD -d 10.1.0.0/16 -m comment --comment "generated for MicroK8s pods" -j ACCEPT 2>/dev/null || true
+
+# 2. Clean the 'legacy' tables (Where the hidden KUBE/CNI chains live)
+# This is the "ghost" firewall that MicroK8s actually uses
+echo "  Cleaning up legacy Kubernetes/CNI chains..."
+# We use the legacy-specific command to flush and delete
+K8S_CHAINS=$(iptables-legacy-save | grep '^:' | cut -d' ' -f1 | cut -d':' -f2 | grep -E 'KUBE-|CNI-|FLANNEL-' || true)
+
+for chain in $K8S_CHAINS; do
+    echo "    Cleaning legacy chain: $chain"
+    iptables-legacy -F "$chain" 2>/dev/null || true
+    iptables-legacy -X "$chain" 2>/dev/null || true
 done
+
+# 3. Handle the NAT table in legacy mode (NodePorts)
+K8S_NAT_CHAINS=$(iptables-legacy -t nat -S 2>/dev/null | grep -E 'KUBE-|CNI-' | grep '^:' | cut -d' ' -f2 || true)
+for chain in $K8S_NAT_CHAINS; do
+    iptables-legacy -t nat -F "$chain" 2>/dev/null || true
+    iptables-legacy -t nat -X "$chain" 2>/dev/null || true
+done
+
+echo "  ✓ Kubernetes rules removed. Docker rules preserved."
 
 echo ""
 echo "=========================================="
@@ -223,71 +220,7 @@ systemctl reset-failed 2>/dev/null || true
 
 echo ""
 echo "=========================================="
-echo "Step 13: Optional cleanup"
-echo "=========================================="
-
-# Ask about containerd
-read -p "Remove containerd completely? (only if not used by other tools) (yes/no): " remove_containerd
-if [ "$remove_containerd" = "yes" ]; then
-    echo "Stopping containerd..."
-    systemctl stop containerd 2>/dev/null || true
-    systemctl disable containerd 2>/dev/null || true
-    
-    if [ -f /etc/os-release ]; then
-        . /etc/os-release
-        if [ "$ID" = "ubuntu" ] || [ "$ID" = "debian" ]; then
-            apt-get remove -y containerd containerd.io 2>/dev/null || true
-        fi
-    fi
-    
-    rm -rf /var/lib/containerd 2>/dev/null || true
-    rm -rf /etc/containerd 2>/dev/null || true
-fi
-
-# Ask about persistent volumes
-echo ""
-read -p "Search for persistent volume data? (yes/no): " search_pvs
-if [ "$search_pvs" = "yes" ]; then
-    echo "Searching for persistent volume directories..."
-    pv_dirs=$(find /var -type d -name 'pv-*' 2>/dev/null || true)
-    if [ -n "$pv_dirs" ]; then
-        echo "Found persistent volume directories:"
-        echo "$pv_dirs"
-        
-        read -p "Remove these directories? (yes/no): " remove_pvs
-        if [ "$remove_pvs" = "yes" ]; then
-            echo "$pv_dirs" | xargs rm -rf 2>/dev/null || true
-            echo "Persistent volumes removed"
-        fi
-    else
-        echo "No persistent volume directories found"
-    fi
-fi
-
-echo ""
-echo "=========================================="
 echo "MicroK8s Uninstall Complete!"
 echo "=========================================="
 echo ""
-echo "Summary:"
-echo "  ✓ MicroK8s snap removed"
-echo "  ✓ Configuration directories cleaned"
-echo "  ✓ Network interfaces cleaned"
-echo "  ✓ IPtables rules flushed"
-echo "  ✓ CNI configuration removed"
-echo "  ✓ Systemd configuration cleaned"
-echo ""
-if [ "$backup" = "yes" ]; then
-    echo "Backup location: $backup_dir"
-    echo ""
-fi
-echo "Note: Some network configurations may persist until reboot"
-echo "Note: Container images and volumes have been removed"
-echo ""
-echo "Verification commands:"
-echo "  snap list | grep microk8s  # Should show nothing"
-echo "  which kubectl              # Should not find microk8s version"
-echo "  ip link show               # Check for lingering interfaces"
-echo ""
-echo "To reinstall, run: ./setup.sh"
-echo ""
+

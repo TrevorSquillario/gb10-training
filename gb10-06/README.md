@@ -40,24 +40,11 @@ microk8s helm install gpu-operator -n gpu-operator --create-namespace \
     --set toolkit.env[2].name=RUNTIME_CONFIG_SOURCE \
     --set-string toolkit.env[2].value=file=/var/snap/microk8s/current/args/containerd.toml
 
+# Verify
 microk8s kubectl -n gpu-operator get pods
 microk8s kubectl -n gpu-operator logs -l app=nvidia-device-plugin-daemonset
 microk8s kubectl get nodes -o json | jq '.items[].status.allocatable["nvidia.com/gpu"]'
 microk8s kubectl -n gpu-operator describe pod nvidia-device-plugin-daemonset-mmvrc
-```
-
-#### Remove gpu-operator
-```bash
-microk8s helm3 uninstall gpu-operator -n gpu-operator
-microk8s kubectl delete namespace gpu-operator --ignore-not-found
-microk8s kubectl get crds | awk '/nvidia|gpu/ {print $1}' | xargs -r microk8s kubectl delete crd
-microk8s kubectl delete clusterrole nvidia-device-plugin --ignore-not-found
-microk8s kubectl delete clusterrolebinding nvidia-device-plugin --ignore-not-found
-microk8s kubectl delete clusterrole -l app.kubernetes.io/managed-by=gpu-operator --ignore-not-found
-microk8s kubectl delete clusterrolebinding -l app.kubernetes.io/managed-by=gpu-operator --ignore-not-found
-sudo rm -f /etc/containerd/conf.d/00-nvidia.toml
-sudo systemctl restart snap.microk8s.daemon-containerd.service
-sudo microk8s stop && sudo microk8s start
 ```
 
 #### Configure GPU time-slicing
@@ -89,9 +76,8 @@ Notes:
 - Performance depends on workload characteristics
 - Best for burst workloads or development/testing
 
-#### Deploy nvidia-smi test pod
+#### Deploy nvidia-smi test pod to check if the container can see the GPU
 ```bash
-
 kubectl apply -f ../kubernetes/nvidia-smi.yaml
 kubectl logs pod/nvidia-smi
 
@@ -99,11 +85,12 @@ kubectl logs pod/nvidia-smi
 kubectl delete -f ../kubernetes/nvidia-smi.yaml
 ```
 
-#### Deploy test vLLM cluster (4 replicas sharing GPU)
+#### Deploy test vLLM cluster (2 replicas sharing GPU)
 ```bash
 # Make your models available at /mnt/models for Kubernetes HostPath mounting
 sudo ln -s /home/$USER/gb10/models /mnt/models
 
+# Create the deployment
 kubectl apply -f ../kubernetes/vllm-deployment.yaml
 # If you need to restart the deployment
 # kubectl rollout restart deployment  vllm-cluster
@@ -112,7 +99,8 @@ kubectl get deployment  vllm-cluster -n default
 kubectl rollout status deployment/vllm-cluster -n default
 kubectl get pods -l app=vllm-demo -n default -o wide
 
-kubectl logs -l app=vllm-demo -n default --all-containers=true
+# View logs for all pods in deployment
+kubectl logs -l app=vllm-demo -n default 
 
 # Test vLLM service (Wait till you see the message in the logs: "INFO:     Application startup complete.")
 curl -X POST http://localhost:30080/v1/chat/completions \
@@ -131,9 +119,12 @@ curl -X POST http://localhost:30080/v1/chat/completions \
 ```bash
 microk8s enable observability
 microk8s kubectl get svc -n observability
+
+# Add servicemonitor endpoints for prometheus to scrape /metric endpoints
 kubectl apply -f ../kubernetes/dcgm-exporter-servicemonitor.yaml
 kubectl apply -f ../kubernetes/vllm-metrics-servicemonitor.yaml
 kubectl get servicemonitor --all-namespaces
+
 # Fix for microk8s kublet path
 microk8s kubectl patch ds nvidia-dcgm-exporter -n gpu-operator --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/volumes/0/hostPath/path", "value": "/var/snap/microk8s/common/var/lib/kubelet/pod-resources"}]'
 # Verify
@@ -141,6 +132,7 @@ microk8s kubectl get ds nvidia-dcgm-exporter -n gpu-operator -o jsonpath='{.spec
 
 # Expose the grafana service on NodePort 32000
 microk8s kubectl patch svc kube-prom-stack-grafana -n observability -p '{"spec": {"type": "NodePort", "ports": [{"port": 80, "nodePort": 32000}]}}'
+
 # Verify and test
 kubectl get svc -n observability | grep grafana
 # Open a browser to http://<gb10-ip>:32000/login
@@ -148,11 +140,13 @@ kubectl get svc -n observability | grep grafana
 ```
 
 #### Install the NVIDIA DCGM Exporter and vLLM Dashboard
-1. Open Grafana
-2. Hover over the Dashboards icon on the left and select `+ Import`
-3. Click `Upload JSON file` and select the `gb10-06/grafana/dcgm_exporter_grafana.json` 
-4. On the Prometheus dropdown select `Prometheus (default)`
-5. Repeat this for `gb10-06/grafana/vllm_grafana.json`
+1. Download the dashboard `json` files from https://github.com/TrevorSquillario/gb10-training/tree/main/gb10-06/grafana
+2. Open Grafana
+3. Hover over the Dashboards icon on the left and select `+ Import`
+4. Click `Upload JSON file` and select `dcgm_exporter_grafana.json` 
+5. On the Prometheus dropdown select `Prometheus (default)`. Leave others at defaults.
+6. Repeat this for `vllm_grafana.json`
+7. Go to Dashboards > General and look for `NVIDIA DCGM Exporter Dashboard` and `vLLM`
 
 #### Cleanup vLLM cluster deployment
 ```bash

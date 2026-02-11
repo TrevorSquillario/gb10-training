@@ -4,10 +4,10 @@ kind: Deployment
 metadata:
   name: vllm-cluster
 spec:
-  replicas: 2 # Four instances for the class to see load balancing in action
+  replicas: 2 # Two instances 
   selector:
     matchLabels:
-      app: vllm-demo # Changed to be specific
+      app: vllm-demo 
   template:
     metadata:
       labels:
@@ -26,9 +26,9 @@ spec:
         - "--port"
         - "8002"
         - "--gpu-memory-utilization"
-        - "0.2" # CRITICAL: 4 pods * 0.2 = 80% total GPU usage
+        - "0.4" # CRITICAL: 2 pods * 0.4 = 80% total GPU usage
         - "--max-model-len"
-        - "4096" # Limiting context length helps ensure 4 pods fit
+        - "4096" # Limiting context length helps ensure 2 pods fit
         - "--trust-remote-code"
         ports:
         - containerPort: 8002
@@ -55,13 +55,13 @@ kind: Service
 metadata:
   name: vllm-lb-service
   labels:
-    app: vllm-demo # <--- ADD THIS: The ServiceMonitor looks for this label here!
+    app: vllm-demo # The ServiceMonitor looks for this label here!
 spec:
   type: NodePort
   selector:
     app: vllm-demo 
   ports:
-    - name: http   # <--- ADD THIS: Matches the 'port: http' in your ServiceMonitor
+    - name: http   # Matches the 'port: http' in your ServiceMonitor
       port: 8000 
       targetPort: 8002 
       nodePort: 30080
