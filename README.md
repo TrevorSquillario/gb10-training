@@ -43,15 +43,15 @@ Focus: Turning the GB10 into a coding and logic powerhouse.
 - Lab: Deploy Open WebUI for a ChatGPT-like internal experience
 - Playbook: Ollama & Open WebUI
 
-### [Lesson 5 — Agentic Coding (Claude Code)](./gb10-05/)
-- Topics: CLI-based agents, permission-based file editing and terminal execution
-- Lab: Bridge Claude Code to local Ollama; refactor a Python project
-- Goal: Learn how to "code" via conversation
-
-### [Lesson 6 — Vibe Coding & IDE Integration](./gb10-06/)
+### [Lesson 5 — Vibe Coding & IDE Integration](./gb10-05/)
 - Topics: Ghost-text and autocomplete; local vs cloud decisioning
 - Lab: Set up Continue.dev extension in VS Code
 - Playbook: Vibe Coding
+
+### [Lesson 6 — # Lesson 6: GPU Orchestration with Kubernetes and SLURM)](./gb10-06/)
+- Topics: Kubernetes (microk8s) and SLURM
+- Lab: Setup microk8s, install GPU Operator and deploy pods. Setup SLURM and execute GPU compute jobs
+- Goal: Learn about container orchestration using Kuberneted and SLURM
 
 ## Phase 3: Visuals & Multi-Modal Demos
 Focus: High-impact demos that "show" rather than "tell."
