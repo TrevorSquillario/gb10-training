@@ -48,7 +48,7 @@ Focus: Turning the GB10 into a coding and logic powerhouse.
 - Lab: Set up Continue.dev extension in VS Code
 - Playbook: Vibe Coding
 
-### [Lesson 6 — GPU Orchestration with Kubernetes and SLURM)](./gb10-06/)
+### [Lesson 6 — GPU Container Orchestration with Kubernetes and SLURM](./gb10-06/)
 - Topics: Kubernetes (microk8s) and SLURM
 - Lab: Setup microk8s, install GPU Operator and deploy pods. Setup SLURM and execute GPU compute jobs
 - Goal: Learn about container orchestration using Kuberneted and SLURM

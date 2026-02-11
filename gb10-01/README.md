@@ -25,7 +25,7 @@ Reference [Dell Setup Guide](https://www.dell.com/support/kbdoc/en-us/000398800/
 
 #### Option 1:  Use NVIDIA Sync
 
-- Install NVIDIA Sync: Download and install the NVIDIA Sync tool on your laptop.
+- Install NVIDIA Sync: Download (https://build.nvidia.com/spark/connect-to-your-spark/sync) and install the NVIDIA Sync tool on your laptop.
 - Discovery: Launch the app and "Add Device." Use the unique hostname found on the physical sticker of the GB10 (e.g., `promaxgb10-a1b2.local`).
 - SSH Key Exchange: NVIDIA Sync will handle the creation of SSH keys so the team never has to type a password again.
 - SSH Tunnels are setup for direct access to the DGX Dashboard and Jupyter Notebook

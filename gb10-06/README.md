@@ -1,6 +1,6 @@
-# Lesson 6: GPU Orchestration with Kubernetes and SLURM
+# Lesson 6: GPU Container Orchestration with Kubernetes and SLURM
 
-This lesson covers GPU orchestration using two popular frameworks:
+This lesson covers container orchestration using two popular frameworks:
 - **Kubernetes (microk8s)** with NVIDIA GPU Operator and time-slicing
 - **SLURM** workload manager for HPC environments
 
@@ -19,14 +19,17 @@ sudo ./setup.sh
 microk8s kubectl version
 microk8s kubectl get nodes
 microk8s kubectl get pods -A
+microk8s status
 ```
 
 #### Install GPU Operator
+
+Reference: https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/getting-started.html#microk8s
+
 ```bash
 microk8s helm3 repo add nvidia https://helm.ngc.nvidia.com/nvidia
 microk8s helm3 repo update
 
-# https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/getting-started.html#microk8s
 microk8s helm install gpu-operator -n gpu-operator --create-namespace \
   nvidia/gpu-operator $HELM_OPTIONS \
     --version=v25.10.1 \
@@ -86,25 +89,76 @@ Notes:
 - Performance depends on workload characteristics
 - Best for burst workloads or development/testing
 
-#### Deploy nvidia-smi test (4 replicas sharing GPU)
+#### Deploy nvidia-smi test pod
 ```bash
-kubectl apply -f ../kubernetes/nvidia-smi-deployment.yaml
-# If you need to restart the deployment
-# kubectl rollout restart deployment nvidia-smi-test
 
-kubectl get deployment nvidia-smi-test -n default
-kubectl rollout status deployment/nvidia-smi-test -n default
-kubectl get pods -l app=nvidia-smi-test -n default -o wide
+kubectl apply -f ../kubernetes/nvidia-smi.yaml
+kubectl logs pod/nvidia-smi
 
-kubectl logs -l app=nvidia-smi-test -n default --all-containers=true
-
-# or exec into a pod to run nvidia-smi interactively:
-kubectl exec -it $(kubectl get pods -l app=nvidia-smi-test -o name | head -1) -- nvidia-smi
+# Remove the pod
+kubectl delete -f ../kubernetes/nvidia-smi.yaml
 ```
 
-#### Deploy vLLM inference server
+#### Deploy test vLLM cluster (4 replicas sharing GPU)
 ```bash
+# Make your models available at /mnt/models for Kubernetes HostPath mounting
+sudo ln -s /home/$USER/gb10/models /mnt/models
+
 kubectl apply -f ../kubernetes/vllm-deployment.yaml
+# If you need to restart the deployment
+# kubectl rollout restart deployment  vllm-cluster
+
+kubectl get deployment  vllm-cluster -n default
+kubectl rollout status deployment/vllm-cluster -n default
+kubectl get pods -l app=vllm-demo -n default -o wide
+
+kubectl logs -l app=vllm-demo -n default --all-containers=true
+
+# Test vLLM service (Wait till you see the message in the logs: "INFO:     Application startup complete.")
+curl -X POST http://localhost:30080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "/models/Qwen3-8B-NVFP4",
+    "messages": [{"role": "user", "content": "What is artificial intelligence?"}],
+    "max_tokens": 100,
+    "temperature": 0.7,
+    "stream": false
+  }'
+
+```
+
+#### Setup Prometheus and Grafana for DCGM and vLLM Metrics
+```bash
+microk8s enable observability
+microk8s kubectl get svc -n observability
+kubectl apply -f ../kubernetes/dcgm-exporter-servicemonitor.yaml
+kubectl apply -f ../kubernetes/vllm-metrics-servicemonitor.yaml
+kubectl get servicemonitor --all-namespaces
+# Fix for microk8s kublet path
+microk8s kubectl patch ds nvidia-dcgm-exporter -n gpu-operator --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/volumes/0/hostPath/path", "value": "/var/snap/microk8s/common/var/lib/kubelet/pod-resources"}]'
+# Verify
+microk8s kubectl get ds nvidia-dcgm-exporter -n gpu-operator -o jsonpath='{.spec.template.spec.volumes[?(@.name=="pod-gpu-resources")].hostPath.path}'
+
+# Expose the grafana service on NodePort 32000
+microk8s kubectl patch svc kube-prom-stack-grafana -n observability -p '{"spec": {"type": "NodePort", "ports": [{"port": 80, "nodePort": 32000}]}}'
+# Verify and test
+kubectl get svc -n observability | grep grafana
+# Open a browser to http://<gb10-ip>:32000/login
+# Default user/pass: admin/prom-operator
+```
+
+#### Install the NVIDIA DCGM Exporter and vLLM Dashboard
+1. Open Grafana
+2. Hover over the Dashboards icon on the left and select `+ Import`
+3. Click `Upload JSON file` and select the `gb10-06/grafana/dcgm_exporter_grafana.json` 
+4. On the Prometheus dropdown select `Prometheus (default)`
+5. Repeat this for `gb10-06/grafana/vllm_grafana.json`
+
+#### Cleanup vLLM cluster deployment
+```bash
+# Delete the deployment (which will remove the pods)
+kubectl delete -f ../kubernetes/vllm-deployment.yaml
+kubectl delete -f ../kubernetes/vllm-metrics-servicemonitor.yaml
 ```
 
 ### SLURM

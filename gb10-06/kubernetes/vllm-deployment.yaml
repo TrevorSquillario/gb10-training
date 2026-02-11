@@ -1,202 +1,67 @@
 ---
-# vLLM Inference Server Deployment for Kubernetes
-# Based on the Docker Compose configuration
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: models-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 50Gi
-  # If using microk8s, this uses the default storage class
-  # For production, specify storageClassName
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: vllm-config
-data:
-  MODEL_PATH: "/models/Qwen3-8B-NVFP4"
-  VLLM_PORT: "8002"
-  VLLM_HOST: "0.0.0.0"
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vllm
-  labels:
-    app: vllm
+  name: vllm-cluster
 spec:
-  replicas: 1
+  replicas: 2 # Four instances for the class to see load balancing in action
   selector:
     matchLabels:
-      app: vllm
+      app: vllm-demo # Changed to be specific
   template:
     metadata:
       labels:
-        app: vllm
+        app: vllm-demo
     spec:
+      runtimeClassName: nvidia
       containers:
       - name: vllm
         image: nvcr.io/nvidia/vllm:25.09-py3
-        command:
-        - vllm
-        - serve
-        - /models/Qwen3-8B-NVFP4
-        - --quantization
-        - modelopt
-        - --host
+        command: ["vllm", "serve", "/models/Qwen3-8B-NVFP4"]
+        args:
+        - "--quantization"
+        - "modelopt"
+        - "--host"
         - "0.0.0.0"
-        - --port
+        - "--port"
         - "8002"
-        - --trust-remote-code
+        - "--gpu-memory-utilization"
+        - "0.2" # CRITICAL: 4 pods * 0.2 = 80% total GPU usage
+        - "--max-model-len"
+        - "4096" # Limiting context length helps ensure 4 pods fit
+        - "--trust-remote-code"
         ports:
         - containerPort: 8002
-          name: http
-          protocol: TCP
-        env:
-        - name: NVIDIA_VISIBLE_DEVICES
-          value: "all"
-        - name: NVIDIA_DRIVER_CAPABILITIES
-          value: "compute,utility"
+          name: http # This name is what the ServiceMonitor looks for
         resources:
           limits:
-            nvidia.com/gpu: 1
-            memory: 24Gi
-          requests:
-            nvidia.com/gpu: 1
-            memory: 16Gi
+            nvidia.com/gpu: 1 # In time-slicing mode, this is a "logical" GPU
         volumeMounts:
-        - name: models
+        - name: model-volume
           mountPath: /models
-        - name: shm
-          mountPath: /dev/shm
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8002
-          initialDelaySeconds: 300
-          periodSeconds: 30
-          timeoutSeconds: 10
         readinessProbe:
           httpGet:
             path: /health
             port: 8002
-          initialDelaySeconds: 60
+          initialDelaySeconds: 45
           periodSeconds: 10
-          timeoutSeconds: 5
       volumes:
-      - name: models
-        persistentVolumeClaim:
-          claimName: models-pvc
-      - name: shm
-        emptyDir:
-          medium: Memory
-          sizeLimit: 4Gi
+      - name: model-volume
+        hostPath:
+          path: /mnt/models
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: vllm
+  name: vllm-lb-service
   labels:
-    app: vllm
+    app: vllm-demo # <--- ADD THIS: The ServiceMonitor looks for this label here!
 spec:
   type: NodePort
   selector:
-    app: vllm
+    app: vllm-demo 
   ports:
-  - port: 8002
-    targetPort: 8002
-    nodePort: 30802
-    protocol: TCP
-    name: http
----
-# Optional: Ingress for external access
-# Uncomment if you have an ingress controller installed
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: vllm
-#   annotations:
-#     nginx.ingress.kubernetes.io/proxy-body-size: "0"
-#     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
-#     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
-# spec:
-#   rules:
-#   - host: vllm.local
-#     http:
-#       paths:
-#       - path: /
-#         pathType: Prefix
-#         backend:
-#           service:
-#             name: vllm
-#             port:
-#               number: 8002
----
-# Instructions:
-#
-# 1. Download the model to your host first:
-#    mkdir -p ~/gb10/models
-#    # Download Qwen3-8B-NVFP4 model to ~/gb10/models/
-#
-# 2. Create a PV pointing to the host path (for microk8s):
-#    cat <<EOF | kubectl apply -f -
-#    apiVersion: v1
-#    kind: PersistentVolume
-#    metadata:
-#      name: models-pv
-#    spec:
-#      capacity:
-#        storage: 50Gi
-#      accessModes:
-#        - ReadWriteOnce
-#      hostPath:
-#        path: /home/$USER/gb10/models
-#        type: Directory
-#      storageClassName: ""
-#    EOF
-#
-# 3. Apply this deployment:
-#    kubectl apply -f vllm-deployment.yaml
-#
-# 4. Check pod status:
-#    kubectl get pods -l app=vllm
-#
-# 5. View logs:
-#    kubectl logs -f -l app=vllm
-#
-# 6. Once ready, test the service:
-#    # Get node IP
-#    NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
-#    
-#    # Test health endpoint
-#    curl http://$NODE_IP:30802/health
-#    
-#    # Test inference
-#    curl http://$NODE_IP:30802/v1/completions \
-#      -H "Content-Type: application/json" \
-#      -d '{
-#        "model": "/models/Qwen3-8B-NVFP4",
-#        "prompt": "What is AI?",
-#        "max_tokens": 100
-#      }'
-#
-# 7. Port forward for local access:
-#    kubectl port-forward svc/vllm 8002:8002
-#    # Then access at http://localhost:8002
-#
-# 8. Scale deployment:
-#    kubectl scale deployment vllm --replicas=2
-#
-# 9. Clean up:
-#    kubectl delete -f vllm-deployment.yaml
-#
-# Notes:
-# - Adjust memory limits based on your model size
-# - The model must be pre-downloaded to the PV
-# - For production, use proper ingress and load balancing
-# - Consider using HPA for auto-scaling based on load
+    - name: http   # <--- ADD THIS: Matches the 'port: http' in your ServiceMonitor
+      port: 8000 
+      targetPort: 8002 
+      nodePort: 30080

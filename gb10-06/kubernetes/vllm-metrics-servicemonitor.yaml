@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: vllm-metrics-monitor
+  namespace: default # Where your vLLM deployment lives
+  labels:
+    release: kube-prom-stack # Matches your MicroK8s observability label
+spec:
+  selector:
+    matchLabels:
+      app: vllm-demo # Matches the label in your Deployment
+  namespaceSelector:
+    matchNames:
+      - default
+  endpoints:
+  - port: http # This refers to the name of the port in your Deployment
+    path: /metrics
+    interval: 15s
