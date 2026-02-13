@@ -60,12 +60,9 @@ If you see the Blackwell GPU and the Grace CPU listed, you are officially connec
 4. Search for Remote - SSH and install
 
 ```bash
-# Get the SSH Public Key from your laptop (Windows)
+# Generate and retrieve SSH Public Key from your Windows laptop (Run this in a PowerShell or Command window)
 ssh-keygen
 type ~/.ssh/id_rsa.pub
-
-# Get the SSH Public Key from your laptop (Linux)
-cat ~/.ssh/*.pub
 
 # Add SSH Key to GB10
 ssh <username>@<your-gb10-ip>
@@ -97,7 +94,7 @@ You don't NEED this but there are a few benefits:
 
 ### Download Course Files
 
-Clone the course repo:
+Clone the course repo. This is performed on the GB10.
 
 ```bash
 mkdir ~/git
