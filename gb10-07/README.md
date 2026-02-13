@@ -147,6 +147,10 @@ git submodule update --init --recursive
 
 This workflow will allow you to upload an audio file of someone speaking and transcribe the voice to text using the Whisper model. The transcribed text will be in the `Voice to Text` node. It will then clone the voice and use the text in the `Audio Sample Text (Must match audio exactly)` node to generate speech based on the clone. The reason for 2 text nodes is sometimes the transcribed text will be off slightly. It must match exactly for this to work properly
 
+## Workflow: FLUX.2
+
+There are also some workflows that use the FLUX.2 model. This is the state-of-the-art open source image model. They take a long time to run.
+
 
 ## Resources for Lesson 7
 

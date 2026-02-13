@@ -54,9 +54,10 @@ If you see the Blackwell GPU and the Grace CPU listed, you are officially connec
 
 ### Setup VSCode Remote SSH
 
-1. Open VSCode and select Terminal in the top bar. This will open a PowerShell terminal. 
-2. Select the Extensions tab on the left or hit `Ctrl + Shift + P` and search for Install Extension
-3. Search for Remote - SSH and install
+1. Install VSCode https://code.visualstudio.com/download
+2. Open VSCode and select Terminal in the top bar. This will open a PowerShell terminal. 
+3. Select the Extensions tab on the left or hit `Ctrl + Shift + P` and search for Install Extension
+4. Search for Remote - SSH and install
 
 ```bash
 # Get the SSH Public Key from your laptop (Windows)
@@ -105,7 +106,7 @@ sudo fwupdmgr refresh
 sudo fwupdmgr upgrade
 ```
 
-### (Optional) Install useful Linux utilities
+### Install useful Linux utilities
 ```bash
 sudo apt install tree nvtop htop
 ```
