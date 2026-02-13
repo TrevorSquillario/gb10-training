@@ -1,0 +1,46 @@
+services:
+  sglang-server:
+    image: lmsysorg/sglang:spark
+    container_name: sglang-server
+    #restart: unless-stopped
+    shm_size: 32g
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    ipc: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ports:
+      - "30000:30000"
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface:rw
+      - ~/gb10/models:/models:rw
+      - ~/gb10/sglang_cache:/root/.cache:rw
+    environment:
+      # - HF_TOKEN=<secret> # If you provide a Hugging Face model instead of the local model path this is requried
+      - TORCHINDUCTOR_CACHE_DIR=/root/.cache/torch/inductor
+      #- SGLANG_USE_CUDA_GRAPH_CACHE=1
+      - TRITON_CACHE_DIR=/root/.cache/triton
+    command: >
+      python3 -m sglang.launch_server
+      --model-path /models/MiniMax-M2.1-GGUF_Q8_0/UD-IQ3_XXS
+      --host 0.0.0.0
+      --port 30000
+      --mem-fraction-static 0.8
+      --enable-torch-compile
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:30000/health || exit 1"]
+
+# Defines the fraction of total GPU VRAM that SGLang is allowed to reserve for its "static" memory pool. 
+# --mem-fraction-static 
+# Required for FP4 models
+# --quantization modelopt_fp4
+
+#--quantization fp8 
+#--kv-cache-dtype fp8_e4m3

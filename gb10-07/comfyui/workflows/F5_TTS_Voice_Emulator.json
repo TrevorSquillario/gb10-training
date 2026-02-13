@@ -1,0 +1,385 @@
+{
+  "id": "836df6e9-fcf4-4cbd-8dc5-0487c409b31c",
+  "revision": 0,
+  "last_node_id": 43,
+  "last_link_id": 45,
+  "nodes": [
+    {
+      "id": 41,
+      "type": "Apply Whisper",
+      "pos": [
+        -793.3122045381966,
+        -488.37287627561335
+      ],
+      "size": [
+        270,
+        146
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 40
+        }
+      ],
+      "outputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "links": [
+            43
+          ]
+        },
+        {
+          "name": "segments_alignment",
+          "type": "whisper_alignment",
+          "links": null
+        },
+        {
+          "name": "words_alignment",
+          "type": "whisper_alignment",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI-Whisper",
+        "ver": "74aa5a217b1c4da906d7ee8bf5c1efd555ff257e",
+        "Node name for S&R": "Apply Whisper"
+      },
+      "widgets_values": [
+        "large-v3-turbo",
+        "auto",
+        ""
+      ]
+    },
+    {
+      "id": 32,
+      "type": "Textbox",
+      "pos": [
+        -273.5123118596305,
+        7.6454359916167824
+      ],
+      "size": [
+        852.230204842604,
+        330.2679304353692
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "passthrough",
+          "shape": 7,
+          "type": "STRING",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "slot_index": 0,
+          "links": [
+            36
+          ]
+        }
+      ],
+      "title": "Text to Read",
+      "properties": {
+        "cnr_id": "ComfyUI-Chibi-Nodes",
+        "ver": "424d5fc68bd3b82fe3c491f27b0c37bb3de1d123",
+        "Node name for S&R": "Textbox",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "I've seen things you people wouldn't believe. Attack ships on fire off the shoulder of Orion. I've watched c-beams glitter in the dark near the Tannhauser Gate. \n\nAll those ... \nmoments will be lost in time, \nlike tears ... in rain."
+      ]
+    },
+    {
+      "id": 40,
+      "type": "F5TTSAudioInputs",
+      "pos": [
+        -267.29134301736343,
+        -309.07703822177007
+      ],
+      "size": [
+        400,
+        256
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "sample_audio",
+          "type": "AUDIO",
+          "link": 42
+        },
+        {
+          "name": "sample_text",
+          "type": "STRING",
+          "widget": {
+            "name": "sample_text"
+          },
+          "link": 45
+        },
+        {
+          "name": "speech",
+          "type": "STRING",
+          "widget": {
+            "name": "speech"
+          },
+          "link": 36
+        }
+      ],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            38
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-f5-tts",
+        "ver": "6478664f834bb43b0d63e85f8fd0bb46eea62ca1",
+        "Node name for S&R": "F5TTSAudioInputs"
+      },
+      "widgets_values": [
+        "Text of sample_audio",
+        "This is what I want to say",
+        668,
+        "fixed",
+        "F5v1",
+        "auto",
+        1,
+        "F5TTS_Base"
+      ]
+    },
+    {
+      "id": 42,
+      "type": "Textbox",
+      "pos": [
+        -1164.1015595854176,
+        -268.21920241098667
+      ],
+      "size": [
+        711.1070491421941,
+        475.8268683116361
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "passthrough",
+          "shape": 7,
+          "type": "STRING",
+          "link": 43
+        }
+      ],
+      "outputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "title": "Voice to Text",
+      "properties": {
+        "cnr_id": "ComfyUI-Chibi-Nodes",
+        "ver": "9a9734f9c17bab3b4775c04291d26f48cbff2791",
+        "Node name for S&R": "Textbox"
+      },
+      "widgets_values": [
+        "But you see then, once we are up against this possibility that the distinction between what we do You"
+      ]
+    },
+    {
+      "id": 43,
+      "type": "Textbox",
+      "pos": [
+        -265.46189901166264,
+        -572.8742548467444
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "passthrough",
+          "shape": 7,
+          "type": "STRING",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "links": [
+            45
+          ]
+        }
+      ],
+      "title": "Audio Sample Text (Must match audio exactly)",
+      "properties": {
+        "cnr_id": "ComfyUI-Chibi-Nodes",
+        "ver": "9a9734f9c17bab3b4775c04291d26f48cbff2791",
+        "Node name for S&R": "Textbox"
+      },
+      "widgets_values": [
+        "But you see then, once we are up against this possibility that the distinction between what we do"
+      ]
+    },
+    {
+      "id": 38,
+      "type": "PreviewAudio",
+      "pos": [
+        191.65205732040496,
+        -360.21178473153174
+      ],
+      "size": [
+        270,
+        88
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 38
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.40",
+        "Node name for S&R": "PreviewAudio",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 39,
+      "type": "LoadAudio",
+      "pos": [
+        -1149.1421179212234,
+        -474.88239794970514
+      ],
+      "size": [
+        282.798828125,
+        136
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            40,
+            42
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.12.3",
+        "Node name for S&R": "LoadAudio"
+      },
+      "widgets_values": [
+        "alanwatts01.mp3",
+        null,
+        null
+      ]
+    }
+  ],
+  "links": [
+    [
+      36,
+      32,
+      0,
+      40,
+      2,
+      "STRING"
+    ],
+    [
+      38,
+      40,
+      0,
+      38,
+      0,
+      "AUDIO"
+    ],
+    [
+      40,
+      39,
+      0,
+      41,
+      0,
+      "AUDIO"
+    ],
+    [
+      42,
+      39,
+      0,
+      40,
+      0,
+      "AUDIO"
+    ],
+    [
+      43,
+      41,
+      0,
+      42,
+      0,
+      "STRING"
+    ],
+    [
+      45,
+      43,
+      0,
+      40,
+      1,
+      "STRING"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.7730325250800547,
+      "offset": [
+        1300.6625868093975,
+        742.8017803653219
+      ]
+    },
+    "node_versions": {
+      "ComfyUI-F5-TTS": "39981dafa1bdff3d0021f0a68b1330071989f775",
+      "ComfyUI-Chibi-Nodes": "290ccef2a8c1bc3917e1c00dbe5c206b66fb8ded",
+      "comfyui-web-viewer": "93daa27bd76f869eb88bafda6e621abe460c8d59"
+    },
+    "ue_links": [],
+    "links_added_by_ue": [],
+    "frontendVersion": "1.38.13",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true,
+    "workflowRendererVersion": "LG"
+  },
+  "version": 0.4
+}

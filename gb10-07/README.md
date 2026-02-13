@@ -53,6 +53,11 @@ mkdir -p ~/gb10/models/comfyui/vae/FLUX.2-dev
 source ~/venv/gb10-training/bin/activate
 pip install -U "huggingface_hub[cli]"
 
+wget -P  ~/gb10/models/comfyui/vae https://huggingface.co/stabilityai/sdxl-vae/resolve/main/sdxl_vae.safetensors
+wget -P  ~/gb10/models/comfyui/checkpoints https://huggingface.co/stabilityai/stable-diffusion-xl-refiner-1.0/resolve/main/sd_xl_refiner_1.0.safetensors
+wget -P  ~/gb10/models/comfyui/checkpoints https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0_0.9vae.safetensors
+
+# If you want to try the FLUX.2 image generation model. Requires submitting your into on Hugging Face. Other models like Llama require this as well. 
 hf download black-forest-labs/FLUX.2-dev \
   --include "*flux2-dev.safetensors" \
   --local-dir ~/gb10/models/comfyui/diffusion_models/FLUX.2-dev
@@ -67,23 +72,6 @@ hf download Comfy-Org/flux2-dev \
   --include "*flux2-vae.safetensors" \
   --local-dir /tmp
 mv /tmp/split_files/vae/*.safetensors ~/gb10/models/comfyui/vae/
-```
-
-
-Your `~/gb10/models/comfyui` directory should look like:
-```bash
-(gb10-training) trevor@promaxgb10-4c75:~/gb10/models/comfyui$ tree .
-.
-├── checkpoints
-├── clip
-│   └── mistral_3_small_flux2_bf16.safetensors
-├── diffusion_models
-│   └── FLUX.2-dev
-│       └── flux2-dev.safetensors
-├── unet
-└── vae
-    └── flux2-vae.safetensors
-
 ```
 
 #### Note: 
@@ -141,22 +129,21 @@ CFG is a multiplier that determines how hard the AI should try to follow your te
 
 
 ---
+## Workflow: F5_TTS_Voice_Emulator_Record
 
-🌟 **Lesson 7 Challenge 1: The "Product Design" Sprint**
+This workflow will allow you to record your voice. Read the
 
-**Task:** Use ComfyUI to design a "NVIDIA-themed" mechanical keyboard.
+You'll need to add this flag to Chrome
+chrome://flags/#unsafely-treat-insecure-origin-as-secure
+http://<gb10-ip>:8188
 
-Workflow: `txt2img`
+```bash
+cd ~/gb10/comfyui/custom_nodes
+git clone https://github.com/niknah/ComfyUI-F5-TTS
+cd ComfyUI-F5-TTS
+git submodule update --init --recursive
+```
 
-1. **Prompt:** "A top-down view of a mechanical keyboard, neon green LED backlighting, brushed aluminum chassis, high-tech industrial design, 4k."
-2. **The Tweak:** Change the CFG Scale and Steps to see how it affects the image.
-3. **Benchmark:** Use the "ComfyUI Manager" to time your execution. Compare the speed of a 1024x1024 image vs a 2048x2048 image. On a GB10, the high-res jump is surprisingly small due to the massive memory bandwidth.
-
-🌟 **Lesson 7 Challenge 1: Edit an existing image
-
-Workflow: `img_edit`
-
-1. Upload an existing image, modify the prompt and hit Run!
 
 ---
 

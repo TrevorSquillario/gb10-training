@@ -231,6 +231,7 @@ simpleCoeffs
     delta           0.001;
 }
 
+# Submit batch job to SLURM
 sbatch ~/git/gb10-training/gb10-06/slurm/cfd_job/run_gintonic.sh
 # This will output a job number, replace that in the tail command
 tail -f /tmp/lab_hpc_28.log

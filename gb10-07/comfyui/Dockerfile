@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git curl ca-certificates \
     python3 python3-pip python3-venv python3-dev \
     build-essential ninja-build cmake pkg-config \
+    libavcodec-dev libavformat-dev libavutil-dev libswresample-dev libswscale-dev ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Create venv (keeps python deps isolated inside container)
@@ -26,7 +27,7 @@ RUN pip install -U pip setuptools wheel
 # PyTorch cu130 wheels work with CUDA 13.0.x runtime.
 # ARM64 wheels available: torch-2.9.1+cu130, torchvision-0.24.1
 RUN pip install --index-url https://download.pytorch.org/whl/cu130 \
-    torch torchvision
+    torch torchvision torchcodec
 
 # ---- ComfyUI ----
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /opt/ComfyUI && \

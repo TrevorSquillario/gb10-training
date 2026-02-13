@@ -191,6 +191,7 @@ if __name__ == "__main__":
         {"name": "Ollama", "url": "http://localhost:11434/v1", "model": "qwen3:8b"},
         {"name": "TensorRT-LLM", "url": "http://localhost:8001/v1", "model": "nvidia/Qwen3-8B-NVFP4"},
         {"name": "vLLM", "url": "http://localhost:8002/v1", "model": "/models/Qwen3-8B-NVFP4"},
+        {"name": "SGLang", "url": "http://localhost:30000/v1", "model": "/models/Qwen3-8B-NVFP4"},
     ]
 
     # If a model or URL override was provided on the CLI, apply them to all endpoints

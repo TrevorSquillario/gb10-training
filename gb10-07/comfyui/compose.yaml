@@ -28,7 +28,7 @@ services:
       COMFYUI_PORT: "8188"
       # Optimized for Grace-Blackwell unified memory architecture
       # Key insight: DON'T use --gpu-only - let the unified memory fabric work naturally
-      COMFYUI_FLAGS: "--listen 0.0.0.0 --port 8188 --disable-pinned-memory --force-fp16 --fp16-unet --fp16-vae --fp16-text-enc --dont-upcast-attention"
+      COMFYUI_FLAGS: "--listen 0.0.0.0 --port 8188 --bf16-unet --bf16-vae --bf16-text-enc --disable-pinned-memory --dont-upcast-attention"
       NVIDIA_VISIBLE_DEVICES: "all"
       NVIDIA_DRIVER_CAPABILITIES: "compute,utility"
 
@@ -42,13 +42,13 @@ services:
       CUDA_DEVICE_MAX_CONNECTIONS: "1"
       CUDA_DEVICE_MAX_COPY_CONNECTIONS: "4"
       CUDA_MODULE_LOADING: "EAGER"
-      CUDA_MANAGED_FORCE_DEVICE_ALLOC: "1"
+      #CUDA_MANAGED_FORCE_DEVICE_ALLOC: "1"
       OMP_NUM_THREADS: "20"
       CUBLAS_WORKSPACE_CONFIG: ":0:0"
 
     volumes:
       # Models from existing ComfyUI install (read-only)
-      - ~/gb10/models/comfyui:/opt/ComfyUI/models:ro
+      - ~/gb10/models/comfyui:/opt/ComfyUI/models
 
       # Custom nodes - comment out to use container-only (fresh) custom_nodes
       # If mounted, ComfyUI-Manager installs persist across container restarts
@@ -57,7 +57,7 @@ services:
       # Outputs/inputs/workflows - persistent across restarts
       - ~/gb10/comfyui/output:/opt/ComfyUI/output
       - ~/gb10/comfyui/input:/opt/ComfyUI/input
-      - ~/gb10/comfyui/workflows:/opt/ComfyUI/workflows
+      - ./workflows:/opt/ComfyUI/user/default/workflows
 
       # Wheel cache (optional - for prebuilt wheels)
       - ~/gb10/comfyui/wheels:/opt/wheels

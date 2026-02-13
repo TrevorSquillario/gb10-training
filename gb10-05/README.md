@@ -46,6 +46,7 @@ hf download unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF \
   --include "*UD-Q8_K_XL*" \
   --local-dir ~/gb10/models/Qwen3-Next-80B-A3B-Instruct-GGUF
 
+hf download unsloth/Qwen3-Coder-Next-FP8-Dynamic  --local-dir ~/gb10/models/Qwen3-Coder-Next-FP8-Dynamic
 
 ```
 
