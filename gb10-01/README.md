@@ -79,6 +79,8 @@ chmod 600 ~/.ssh/authorized_keys
 chown <username>:<username> ~/.ssh/authorized_keys
 ```
 
+I would also recommend installing MobaXTerm for SSH access https://mobaxterm.mobatek.net
+
 ### Download Course Files
 
 Clone the course repo:
@@ -130,6 +132,8 @@ cd ~/git
 ```
 
 ### (Optional) Customize `/etc/inputrc` to enable easy history search with Ctrl + Up/Down
+
+This doesn't work with the built-in Terminal in VSCode
 
 ```bash
 sudo vi /etc/inputrc
