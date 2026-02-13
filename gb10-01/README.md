@@ -79,7 +79,21 @@ chmod 600 ~/.ssh/authorized_keys
 chown <username>:<username> ~/.ssh/authorized_keys
 ```
 
-I would also recommend installing MobaXTerm for SSH access https://mobaxterm.mobatek.net
+### (Optional but Recommended) Setup MobaXterm
+
+You don't NEED this but there are a few benefits:
+
+- The built-in terminal in VSCode is kind of janky sometimes.
+- MobaXterm has a build-in X11 server which let's you open GUI application remotely over SSH. You can also just RDP to your GB10 to launch GUI tools https://linuxconfig.org/ubuntu-20-04-remote-desktop-access-from-windows-10
+- It has a built-in SFTP file browser to upload/download files to your GB10
+
+1. Install MobaXTerm https://mobaxterm.mobatek.net
+2. Click the Star icon on the left, right click User Sessions, New Session
+3. Select SSH, add your GB10 IP to the Remote Host field
+4. Click the icon next to Specify Username, click New, add your GB10 credentials, click OK
+5. Click the checkbox next to Specify Username and select the user
+6. Click Bookmark Settings and set the Session name to gb10 or whatever you'd like
+7. Double click the Session name in the left pane to connect. It should auto log you in. The SFTP file transfer window will be on the left pane.
 
 ### Download Course Files
 
@@ -92,7 +106,11 @@ git clone https://github.com/TrevorSquillario/gb10-training
 
 # If there are changes to the repo and you want to ensure you are using the latest version run
 cd ~/git/gb10-training
+# This will pull the latest code from the git repo. If you edited any of the existing files you will get a merge conflict. 
 git pull
+
+# To reset all the changes and restore the originals. ***THIS IS DESCRUCTIVE AND WILL DELETE ANY FILES YOU ADDED TO ~/git/gb10-training***
+git reset --hard HEAD
 ```
 
 ### Updating your GB10
