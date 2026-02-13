@@ -52,9 +52,9 @@ If you see the Blackwell GPU and the Grace CPU listed, you are officially connec
 #### Access the DGX Dashboard
 [http://localhost:11000](http://localhost:11000)
 
-### Setup VSCode Remote SSH
+### Setup Visual Studio Code with Remote SSH to your GB10
 
-1. Install VSCode https://code.visualstudio.com/download
+1. Install Visual Studio Code from the Company Portal or https://code.visualstudio.com/download
 2. Open VSCode and select Terminal in the top bar. This will open a PowerShell terminal. 
 3. Select the Extensions tab on the left or hit `Ctrl + Shift + P` and search for Install Extension
 4. Search for Remote - SSH and install
