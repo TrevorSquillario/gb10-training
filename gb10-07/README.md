@@ -94,16 +94,17 @@ In ComfyUI workflows can be complex and difficult to understand so it's best to 
 
 ## Workflow: text-to-image 
 
-Workflows can be loaded by File > Open or dragging dropping them onto the canvas. They can be saved as `json` files or `png` files. We'll start with a simple text-to-image workflow that uses generative AI to create an image from a prompt using our FLUX.2-dev model.
+Workflows can be loaded by File > Open or dragging dropping them onto the canvas. They can be saved as `json` files or `png` files. We'll start with a simple text-to-image workflow that uses generative AI to create an image from a prompt using the SDXL model.
 
-1. Drag and drop the `comfyui/workflows/txt2img.json` in the lesson directory onto the workflow builder
+1. From the Workflows panel on the left pane select `txt2img_sdxl_refiner`
 2. Click Run
 3. Use `nvtop` to monitor GPU usage and RAM
-4. Workflow will take a few minutes to run. The base Flux.2-dev model we're using is BF16, use a smaller quant for more performance at the cost of accuracy. 
+4. Workflow will take a few minutes to run. 
 
 #### Knobs and Levers
 
-On the `KSampler` node you have `steps` and `cfg`
+On the `KSampler (Advanced)` node you have `cfg`
+On the `total steps` and `steps spent on base` node you have `steps`
 
 ***Steps (The "Iterations")***
 
@@ -128,10 +129,9 @@ CFG is a multiplier that determines how hard the AI should try to follow your te
 - High CFG (10.0+): The AI becomes "obsessive." Colors get oversaturated, edges get sharp/neon, and the image can "fry" or look over-baked.
 
 
----
 ## Workflow: F5_TTS_Voice_Emulator_Record
 
-This workflow will allow you to record your voice. Read the
+This workflow will allow you to record your voice, clone the voice then generate speech from text based on that.
 
 You'll need to add this flag to Chrome
 chrome://flags/#unsafely-treat-insecure-origin-as-secure
@@ -143,9 +143,10 @@ git clone https://github.com/niknah/ComfyUI-F5-TTS
 cd ComfyUI-F5-TTS
 git submodule update --init --recursive
 ```
+## Workflow: F5_TTS_Voice_Emulator
 
+This workflow will allow you to upload an audio file of someone speaking and transcribe the voice to text using the Whisper model. The transcribed text will be in the `Voice to Text` node. It will then clone the voice and use the text in the `Audio Sample Text (Must match audio exactly)` node to generate speech based on the clone. The reason for 2 text nodes is sometimes the transcribed text will be off slightly. It must match exactly for this to work properly
 
----
 
 ## Resources for Lesson 7
 
