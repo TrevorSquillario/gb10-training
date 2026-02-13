@@ -110,7 +110,7 @@ sudo fwupdmgr upgrade
 
 ### Install useful Linux utilities
 ```bash
-sudo apt install tree nvtop htop
+sudo apt install tree nvtop htop btop
 ```
 
 ### Setup your Python Virtual Environment
