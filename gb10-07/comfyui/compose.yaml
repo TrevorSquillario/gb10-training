@@ -10,7 +10,10 @@ services:
         SAGEATTN_REF: "main"
 
     container_name: comfyui
-
+    ipc: host
+    ulimit:
+      memlock: -1
+      stack: 67108864
     # GPU enablement
     deploy:
       resources:

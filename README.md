@@ -85,3 +85,12 @@ Focus: Performance tuning and professional customer delivery.
 - Playbook: NIM on Spark
 
 ### [Lesson 12 — Q & A](./gb10-12/)
+
+## [Appendix](./appendix/)
+
+- No space available on disk
+- OOM (OutofMemory) Errors
+- How to Reinstall the NVIDIA DGX Operating System
+- Simple LLM Benchmark
+- Manually Add Model to Ollama
+

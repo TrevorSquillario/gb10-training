@@ -1,4 +1,4 @@
-# Lesson 7: Visualizing AI with ComfyUI & FLUX
+# Lesson 7: Visualizing AI with ComfyUI 
 
 **Objective:** Master high-fidelity image generation using ComfyUI. While previous Sessions focused on text, the GB10's 128GB of Unified Memory makes it a "visual powerhouse," capable of running massive models like FLUX.2-dev and Stable Diffusion 3.5 without the out-of-memory (OOM) errors common on consumer cards. This allows us to build text-to-image, image-to-image, text-to-video and many other workflows using ComfyUI's node based web UI.
 
@@ -10,11 +10,19 @@ We will use an optimized Docker image designed specifically for the DGX Spark's 
 
 We want to keep our large model files and other configs on the host system so we don't have to re-download them if the container restarts.
 
+Since we are mapping the docker volume like `~/gb10/models/comfyui:/opt/ComfyUI/models` just the last subdirectory is important and must match exactly. ComfyUI nodes will look in these specific subdirectories
+
 ```bash
 mkdir -p ~/gb10/models/comfyui/checkpoints
 mkdir -p ~/gb10/models/comfyui/diffusion_models
-mkdir -p ~/gb10/models/comfyui/unet
+mkdir -p ~/gb10/models/comfyui/controlnet
 mkdir -p ~/gb10/models/comfyui/clip
+mkdir -p ~/gb10/models/comfyui/clip_vision
+mkdir -p ~/gb10/models/comfyui/ipadapter
+mkdir -p ~/gb10/models/comfyui/loras
+mkdir -p ~/gb10/models/comfyui/model_patches
+mkdir -p ~/gb10/models/comfyui/unet
+mkdir -p ~/gb10/models/comfyui/upscale_models
 mkdir -p ~/gb10/models/comfyui/vae
 mkdir -p ~/gb10/comfyui/custom_nodes
 mkdir -p ~/gb10/comfyui/output
@@ -37,43 +45,6 @@ docker compose up
 # Open a browser to http://<gb10-ip>:8188
 ```
 
-
-### Downloading the "heavyweight" (FLUX.2)
-
-ComfyUI is fine with the `*.safetensors` models. No need to worry about GGUF here. 
-
-Download the FLUX.2-dev model:
-
-```bash
-mkdir -p ~/gb10/models/comfyui/diffusion_models/FLUX.2-dev
-mkdir -p ~/gb10/models/comfyui/vae/FLUX.2-dev
-
-# If don't have the hf cli downloaded
-# Ensure our python venv is started
-source ~/venv/gb10-training/bin/activate
-pip install -U "huggingface_hub[cli]"
-
-wget -P  ~/gb10/models/comfyui/vae https://huggingface.co/stabilityai/sdxl-vae/resolve/main/sdxl_vae.safetensors
-wget -P  ~/gb10/models/comfyui/checkpoints https://huggingface.co/stabilityai/stable-diffusion-xl-refiner-1.0/resolve/main/sd_xl_refiner_1.0.safetensors
-wget -P  ~/gb10/models/comfyui/checkpoints https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0_0.9vae.safetensors
-
-# If you want to try the FLUX.2 image generation model. Requires submitting your into on Hugging Face. Other models like Llama require this as well. 
-hf download black-forest-labs/FLUX.2-dev \
-  --include "*flux2-dev.safetensors" \
-  --local-dir ~/gb10/models/comfyui/diffusion_models/FLUX.2-dev
-
-# These are nested in the hf model repo so we download them to /tmp to keep things clean
-hf download Comfy-Org/flux2-dev \
-  --include "*mistral_3_small_flux2_bf16.safetensors" \
-  --local-dir /tmp
-mv /tmp/split_files/text_encoders/*.safetensors ~/gb10/models/comfyui/clip/
-
-hf download Comfy-Org/flux2-dev \
-  --include "*flux2-vae.safetensors" \
-  --local-dir /tmp
-mv /tmp/split_files/vae/*.safetensors ~/gb10/models/comfyui/vae/
-```
-
 #### Note: 
 - Only the top level folders matter under `~/gb10/models/comfyui`. These are used by nodes to populate the models. You can create whatever subdirectories you would like. 
 - When adding models the ComfyUI needs and F5 refresh to see them
@@ -91,6 +62,7 @@ In ComfyUI workflows can be complex and difficult to understand so it's best to 
 *Warning: These sites contain NSFW material and are blocked on the corporate network
 - https://civitai.com
 - https://openart.ai/workflows/home
+- https://aistudynow.com/category/comfyui-workflows
 
 ## Workflow: text-to-image 
 
@@ -128,6 +100,59 @@ CFG is a multiplier that determines how hard the AI should try to follow your te
 
 - High CFG (10.0+): The AI becomes "obsessive." Colors get oversaturated, edges get sharp/neon, and the image can "fry" or look over-baked.
 
+## Workflow: qwen-image-edit
+
+This is the state-of-the-art open source image editing model. The results are impressive. Upload your Base Image, add your prompt and click Run (`Ctrl + Enter`)! The purple nodes are on bypass mode and won't be used. This will let you switch upscalers if you wish. 
+
+```bash
+wget -P  ~/gb10/models/comfyui/unet https://huggingface.co/unsloth/Qwen-Image-Edit-2511-GGUF/resolve/main/qwen-image-edit-2511-BF16.gguf
+wget -P  ~/gb10/models/comfyui/loras https://huggingface.co/lightx2v/Qwen-Image-Lightning/resolve/main/Qwen-Image-Lightning-8steps-V2.0-bf16.safetensors
+wget -P  ~/gb10/models/comfyui/checkpoints https://huggingface.co/Kijai/SUPIR_pruned/resolve/main/SUPIR-v0Q_fp16.safetensors
+wget -P  ~/gb10/models/comfyui/vae https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/vae/qwen_image_vae.safetensors
+wget -P  ~/gb10/models/comfyui/clip https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors
+
+# SeedVR2 Upscaler
+wget -P  ~/gb10/models/comfyui/SEEDVR2 https://huggingface.co/numz/SeedVR2_comfyUI/resolve/main/ema_vae_fp16.safetensors
+wget -P  ~/gb10/models/comfyui/SEEDVR2 https://huggingface.co/numz/SeedVR2_comfyUI/resolve/main/seedvr2_ema_7b_fp16.safetensors
+
+# Ultimate SD Upscaler
+wget -P ~/gb10/models/comfyui/upscale_models https://huggingface.co/Tenofas/ComfyUI/resolve/d79945fb5c16e8aef8a1eb3ba1788d72152c6d96/upscale_models/4x_NMKD-Siax_200k.pth
+```
+
+## Workflow: FLUX.2
+
+There are also some workflows that use the FLUX.2 model. This is the state-of-the-art open source image model. They take a long time to run.
+
+### Downloading FLUX.2
+
+ComfyUI is fine with the `*.safetensors` models. No need to worry about GGUF here. 
+
+Download the FLUX.2-dev model:
+
+```bash
+mkdir -p ~/gb10/models/comfyui/diffusion_models/FLUX.2-dev
+mkdir -p ~/gb10/models/comfyui/vae/FLUX.2-dev
+
+wget -P  ~/gb10/models/comfyui/vae https://huggingface.co/stabilityai/sdxl-vae/resolve/main/sdxl_vae.safetensors
+wget -P  ~/gb10/models/comfyui/checkpoints https://huggingface.co/stabilityai/stable-diffusion-xl-refiner-1.0/resolve/main/sd_xl_refiner_1.0.safetensors
+wget -P  ~/gb10/models/comfyui/checkpoints https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0_0.9vae.safetensors
+
+# If you want to try the FLUX.2 image generation model. Requires submitting your into on Hugging Face. Other models like Llama require this as well. 
+hf download black-forest-labs/FLUX.2-dev \
+  --include "*flux2-dev.safetensors" \
+  --local-dir ~/gb10/models/comfyui/diffusion_models/FLUX.2-dev
+
+# These are nested in the hf model repo so we download them to /tmp to keep things clean
+hf download Comfy-Org/flux2-dev \
+  --include "*mistral_3_small_flux2_bf16.safetensors" \
+  --local-dir /tmp
+mv /tmp/split_files/text_encoders/*.safetensors ~/gb10/models/comfyui/clip/
+
+hf download Comfy-Org/flux2-dev \
+  --include "*flux2-vae.safetensors" \
+  --local-dir /tmp
+mv /tmp/split_files/vae/*.safetensors ~/gb10/models/comfyui/vae/
+```
 
 ## Workflow: F5_TTS_Voice_Emulator_Record
 
@@ -143,16 +168,14 @@ git clone https://github.com/niknah/ComfyUI-F5-TTS
 cd ComfyUI-F5-TTS
 git submodule update --init --recursive
 ```
+
 ## Workflow: F5_TTS_Voice_Emulator
 
 This workflow will allow you to upload an audio file of someone speaking and transcribe the voice to text using the Whisper model. The transcribed text will be in the `Voice to Text` node. It will then clone the voice and use the text in the `Audio Sample Text (Must match audio exactly)` node to generate speech based on the clone. The reason for 2 text nodes is sometimes the transcribed text will be off slightly. It must match exactly for this to work properly
 
-## Workflow: FLUX.2
-
-There are also some workflows that use the FLUX.2 model. This is the state-of-the-art open source image model. They take a long time to run.
 
 
-## Resources for Lesson 7
+
 
 
 

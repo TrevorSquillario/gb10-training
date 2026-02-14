@@ -66,30 +66,45 @@ docker exec -it ollama ollama pull qwen3-coder-next
 # For models on HuggingFace. When on the model page on huggingface.co look for a "Use this model" dropdown on the right, select Ollama and it will give you the proper string. Be sure to select the proper quant. 
 docker exec -it ollama ollama run hf.co/Qwen/Qwen3-14B-GGUF:Q8_0
 ```
-#### 3. (Advanced) Manually download and copy to container models directory
-The last method is by manually adding the model files and creating the model definition. You don't need to run through this, it is here for future reference if you need it.
-
-See the appendix for step-by-step instructions: [Manually Add Model to Ollama](../appendix/README.md)
-
-### Hands-on Lab: LLM Benchmark
-
-See the appendix for step-by-step instructions to set this up: [Simple LLM Benchmark](../appendix/README.md)
-
-First download the model
+#### 3. Manually download and copy to models directory
 
 ```bash
-docker exec -it ollama ollama pull qwen3:8b
+# If don't have the hf cli downloaded
+# Ensure our python venv is started
+source ~/venv/gb10-training/bin/activate
+pip install -U "huggingface_hub[cli]"
+
+# Go to the Hugging Face page for a particular model then to the `Files and versions` tab. Click the file you want to download then find the `Copy download link` button. 
+wget -P  ~/gb10/models/Qwen3-8B-Q8_0 https://huggingface.co/Qwen/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q8_0.gguf
+
+# Create the Modelfile https://docs.ollama.com/modelfile
+cat << EOF >  ~/gb10/models/Qwen3-8B-Q8_0/Modelfile
+FROM ./Qwen3-8B-Q8_0.gguf
+
+# sets the temperature to 1 [higher is more creative, lower is more coherent]
+PARAMETER temperature 1
+# sets the context window size to 4096, this controls how many tokens the LLM can use as context to generate the next token
+PARAMETER num_ctx 32768
+EOF
+
+# Create the model in Ollama
+docker exec -it ollama /bin/bash
+# CD to the /models volume mount we specified in the compose.yaml. This corresponds to your ~/gb10/models directory on the host.
+cd /models/Qwen3-8B-Q8_0
+ollama create minimax-q8 -f Modelfile
 ```
-Then start the benchmark
-```bash
-python ~/git/gb10-training/appendix/llm_benchmark.py
-# Select option 1
-```
 
-### Hands-on Lab: Model Size Comparison
+See the appendix for a more advanced example with split .gguf files: [Manually Add Model to Ollama](../appendix/README.md)
 
-**Objective:** Compare quality, speed, and memory usage across quantization levels using Qwen3 models at different sizes.
+### Choosing the Right Model
 
+There are two questions we must ask ourselves:
+
+1. Will the full `fp16/bf16` model fit into RAM? Yes. This true some of the image models in ComfyUI. We have enough RAM so let's get the most out of this model. For that we should choose the full `fp16/bf16` model.
+
+2. Will the full `fp16/bf16` model fit into RAM? No. This is true of some LLMs and some the top coding models. So we should pick the largest quant that fits into the amount of RAM we have available. If you go to the HuggingFace site and login, go to the model page of a GGUF model, find the `Log In to add your hardware` link on the right above the quants. If you put in your GB10 it will tell you which ones fit. Really it just highlights the ones below 128GB in green. 
+
+Finding an NVFP4 variant from another user on HuggingFace is another option. These are supported in Ollama and ComfyUI.
 
 #### Choosing Model Size
 
@@ -99,28 +114,38 @@ python ~/git/gb10-training/appendix/llm_benchmark.py
 - **Quantization trade-offs:** lower-bit quant (e.g., Q4/Q8) reduces memory and increases speed but can slightly degrade output quality; test quant levels for your task.
 - **Practical tip:** start with a smaller model for iteration and scale up to larger models for evaluation on representative prompts; consider ensemble or retrieval-augmented approaches to get the best of both worlds.
 
-#### Download Models
+The main difference between gpt-oss:20b and a quantized gpt-oss:120b (a "quant") is a trade-off between native efficiency and compressed "brain power."
+
+Think of it like comparing a high-performance sports car (20b) to a massive semi-truck that has been stripped down to fit into a garage (120b quant). Both are from OpenAI’s "Open-Source Series" (OSS) and use a Mixture-of-Experts (MoE) architecture, but they serve very different roles.
+
+1. Intelligence & Reasoning Depth
+While the 20b model is surprisingly smart for its size, the 120b model is a powerhouse. Even when quantized (compressed), the 120b variant generally retains a higher "intelligence ceiling."
+
+gpt-oss:20b: Optimized for low-latency and local tasks. It's excellent for coding and STEM but can struggle with the deepest levels of nuance or highly complex multi-step planning compared to its big brother.
+
+gpt-oss:120b (Quant): Even at 4-bit quantization (MXFP4), it rivals frontier models like o3-mini or o4-mini. It has a much larger "internal library" of knowledge and better "zero-shot" reasoning.
+
+### Hands-on Lab: Ollama Model Runner
 
 Pull three Qwen3 models at different sizes:
 
 ```bash
-# 4B model variants
-docker exec -it ollama ollama pull qwen3:4b
-
-# 8B model variants  
 docker exec -it ollama ollama pull qwen3:8b
-
-# 32B model variants
+docker exec -it ollama ollama pull gpt-oss:20b
 docker exec -it ollama ollama pull qwen3:32b
 ```
 
-Open a New Chat, select each model and compare the results. You can use the prompt:
+Open 3 tabs of Ollama and start a New Chat, select each model and execute a prompt. We want to run these all at the same time and we can do that because they are small models. Ollama spins up a separate model runner for each different model. 
+
+You can use the prompt:
 
 ```
 Explain quantum computing in simple terms.
 ```
 
-Compare speed and quality of responses.
+1. Go to the Terminal and run `nvtop` take notice of multiple instances of ollama running, their RAM and CPU usage. 
+2. Compare speed and quality of responses. At the bottom of the response you can hover over the i icon and make note of the response_tokens/s. This is how fast we are generating tokens, smaller models higher t/s.
+
 
 ## Resources for Lesson 4
 

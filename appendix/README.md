@@ -1,3 +1,18 @@
+## Troubleshooting
+
+No space available on disk
+
+https://docs.docker.com/reference/cli/docker/system/prune/
+```bash
+docker system prune -a
+```
+
+OOM (OutofMemory) Errors
+
+It could be that the model is just too large to fit into RAM. If not clear the cache.
+```bash
+sudo sh -c "sync; echo 3 > /proc/sys/vm/drop_caches"
+```
 
 ## How to Reinstall the NVIDIA DGX Operating System
 https://www.dell.com/support/kbdoc/en-bh/000382042/how-to-reinstall-the-nvidia-dgx-operating-system-on-dell-pro-max-with-grace-blackwell-systems
