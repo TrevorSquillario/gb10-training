@@ -75,9 +75,6 @@ Workflows can be loaded by File > Open or dragging dropping them onto the canvas
 
 #### Knobs and Levers
 
-On the `KSampler (Advanced)` node you have `cfg`
-On the `total steps` and `steps spent on base` node you have `steps`
-
 ***Steps (The "Iterations")***
 
 Think of Steps as the amount of time and effort the AI spends "chiseling" an image out of a block of random static (noise).
@@ -99,6 +96,14 @@ CFG is a multiplier that determines how hard the AI should try to follow your te
 - Standard CFG (4.0 – 8.0): This is the classic range for Stable Diffusion. It tries hard to give you exactly what you asked for.
 
 - High CFG (10.0+): The AI becomes "obsessive." Colors get oversaturated, edges get sharp/neon, and the image can "fry" or look over-baked.
+
+***Seed (Randomness / Reproducibility)***
+
+- **Seed:** An integer used to initialize the pseudo-random number generator the sampler uses. The same model, prompt, workflow, and settings combined with the same seed will produce the same image output (reproducible). Changing the seed produces different variations. Leaving the seed blank or using a sentinel like `-1` causes a new random seed to be chosen each run.
+
+***Denoise (Denoising Strength)***
+
+- **Denoise (Denoising Strength):** Controls how strongly the model removes noise and follows the conditioning (prompt or source image). In image-to-image (img2img) workflows, a denoise value of `0.0` keeps the original image unchanged, while `1.0` lets the model fully regenerate the image from noise. Lower values preserve structure and make only subtle edits; higher values produce larger, more creative changes. For text-to-image, the effect is tied into the sampling process (steps and scheduler); increasing denoise-like parameters generally increases variability and may require more steps for stable results.
 
 ## Workflow: qwen-image-edit
 
@@ -154,11 +159,15 @@ hf download Comfy-Org/flux2-dev \
 mv /tmp/split_files/vae/*.safetensors ~/gb10/models/comfyui/vae/
 ```
 
+## Workflow: Qwen-TTS_VoiceClone
+
+This workflow will allow you to upload an audio file of someone speaking and transcribe the voice to text using the Qwen3-ASR (Automated Speech Recognition).  Then it clones the voice and generates speech from the `reference_text` based in the cloned voice. You don't need a very long sample 10-15 seconds.
+
 ## Workflow: F5_TTS_Voice_Emulator_Record
 
 This workflow will allow you to record your voice, clone the voice then generate speech from text based on that.
 
-You'll need to add this flag to Chrome
+You'll need to add this flag to Chrome to enable mic access for non-HTTPS sites
 chrome://flags/#unsafely-treat-insecure-origin-as-secure
 http://<gb10-ip>:8188
 
@@ -169,12 +178,9 @@ cd ComfyUI-F5-TTS
 git submodule update --init --recursive
 ```
 
-## Workflow: F5_TTS_Voice_Emulator
+## Resources
 
-This workflow will allow you to upload an audio file of someone speaking and transcribe the voice to text using the Whisper model. The transcribed text will be in the `Voice to Text` node. It will then clone the voice and use the text in the `Audio Sample Text (Must match audio exactly)` node to generate speech based on the clone. The reason for 2 text nodes is sometimes the transcribed text will be off slightly. It must match exactly for this to work properly
-
-
-
+- Self-hosted web based Photoshop https://www.photopea.com
 
 
 
