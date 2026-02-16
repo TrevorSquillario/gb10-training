@@ -243,3 +243,5 @@ if torch.cuda.is_available():
 else:
     print("No CUDA GPU detected.")
 ```
+
+*Ignore the "error" it's actually a warning. If the code runs you're good

@@ -91,7 +91,7 @@ First ensure our python virtual environment is started. Refer to Lesson 1 if you
 source ~/venv/gb10-training/bin/activate
 pip install -U "huggingface_hub[cli]"
 
-sudo mkdir -p ~/gb10/models
+mkdir -p ~/gb10/models
 hf download nvidia/Qwen3-8B-NVFP4 \
   --local-dir ~/gb10/models/Qwen3-8B-NVFP4
 

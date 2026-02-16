@@ -45,7 +45,7 @@ docker run --rm  --gpus all   nvidia/cuda:13.1.1-base-ubuntu24.04 nvidia-smi
 docker image ls
 ```
 
-What to look for: the output should show the NVIDIA GB10 and a CUDA 13..1 driver.
+What to look for: the output should show the NVIDIA GB10 and a CUDA 13.1.1 driver.
 
 #### Debugging
 
@@ -76,7 +76,9 @@ These common Docker commands cover most demo and troubleshooting workflows.
 | The Probe     | `docker exec -it <container> /bin/bash`                                | Open an interactive shell inside a running container.  |
 | List          | `docker ps -a`                                                         | List running and stopped containers.                   |
 | Logs          | `docker logs -f <container>`                                           | Stream container logs (use `-n` to tail N lines).      |
+| Stats         | `docker stats`                                             | Live resource usage (CPU, MEM, NET, I/O) for all containers. |
 | Run           | `docker run --rm -it --gpus all <image> bash`                          | Start an interactive GPU-enabled container.            |
+| Build           | `docker build --progress=plain .`                          | Build container from Dockerfile and show all output.            |
 | Images        | `docker images` (or `docker image ls`)                                 | List local images.                                     |
 | Pull          | `docker pull <image>`                                                  | Download an image from a registry.                     |
 | Inspect       | `docker inspect <container>`                                     | JSON low-level details about containers/images.        |

@@ -1,132 +1,205 @@
-# Lesson 11: Enterprise Deployment with NVIDIA NIMs
+# Lesson 11: Enterprise Use Cases
 
-**Objective:** Move from manual configuration to Enterprise AI. Deploy NVIDIA NIM (Inference Microservices), which are pre-packaged, "one-click" containers that wrap the world's most popular models in production-grade code. On the GB10, NIMs are the "Easy Button" for transitioning a lab project into a scalable customer solution.
+## The Billion Row Challenge (RAPIDS / cuDF)
 
-## 1. Why NIMs on the GB10?
+Overview
+- Goal: show how GPU acceleration (RAPIDS/cuDF) can replace large CPU clusters for big-data ETL and analytics by processing "billion-row" scale datasets interactively on a GB10.
+- Demonstration dataset: NYC Taxi trip data (multiple CSVs/parquet files). The lesson runs an identical workflow on CPU (pandas) and GPU (cuDF) to compare run-time and memory behavior.
 
-Think of NIM as the "Professional Wrapper" for everything we've learned. While SGLang (Lesson 10) is a raw engine, a NIM is a complete service.
+Why GB10
+- A GB10 with large GPU memory allows loading entire large datasets into GPU memory (e.g., 128 GB VRAM), removing the need for distributed clusters and demonstrating a dramatic speedup.
 
-- **Standardized APIs:** Every NIM exposes an industry-standard OpenAI-compatible API. This means if you build an app using a Llama-3 NIM, you can swap it for a Mistral NIM without changing a single line of your application code.
-- **Architecture-Aware Optimization:** When you launch a NIM on your GB10, it automatically detects the Blackwell architecture and selects the most optimized TensorRT-LLM or vLLM backend specifically for the SM 12.1 instruction set.
-- **Enterprise Security:** NIMs are part of the NVIDIA AI Enterprise stack, meaning they come with security patches and are validated to run 24/7 in production environments.
+Prerequisites
+- NVIDIA drivers + CUDA installed and working (`nvidia-smi`).
+- Conda or Miniconda installed on the host.
 
-## 2. Hands-on Lab: Deploying a Llama-3 NIM
-
-We will deploy the Llama-3.1-8B-Instruct NIM, which is officially supported on the DGX Spark.
-
-### Step A: Authentication (NGC)
-
-NIMs are hosted on the NVIDIA GPU Cloud (NGC). You will need your API key from Lesson 9.
-
-Get your NGC API Key
-1. Go to [ngc.nvidia.com](ngc.nvidia.com) and sign in/create an account. 
-2. Confirm your email
-3. Create your Nvidia Cloud account when it prompts you. Select your name when it asks you to select a Team/Organization
-4. Eventually you'll see your name in the top right. Select Setup or go directly to [https://org.ngc.nvidia.com/setup](https://org.ngc.nvidia.com/setup)
-5. Click Generate API Key or go to [https://org.ngc.nvidia.com/setup/api-keys](https://org.ngc.nvidia.com/setup/api-keys)
-```
-  Key Name: gb10 (Name it whatever you want)
-  Expiration: Never
-  Key Permissions: NGC Catalog
-```
-6. Copy the key and save it somewhere. ***This will be the only time you will be able to copy this key***
-
-Now let's start the NIM containers for FP8 and NVFP4 of the `qwen3-32b` model
-
-First login to the `nvcr.io` container registry. Enter `$oauthtoken` as-is, this is important.
+Quick setup (recommended: `mamba` + `conda` channels)
+1. Check CUDA version:
 
 ```bash
-docker login nvcr.io
-# Username: $oauthtoken
-# Password: <Your-NGC-API-Key>
+nvidia-smi
+# Note the CUDA driver version and choose a matching RAPIDS cudatoolkit.
 ```
 
-https://www.nvidia.com/en-us/solutions/ai/agentic-ai
-
-#### Start the NIM container for the Qwen3-32B model
-*You can add the `export` line to your `~/.bashrc`
-```bash
-export NGC_API_KEY=<Your-NGC-API-Key>
-```
-
-Create the NIM cache directory
-```bash
-sudo mkdir -p /app/cache/nim
-sudo chmod -R 777 /app/cache
-```
+2. Install `mamba` and create an environment (replace `CUDATOOLKIT` with a version that matches your system, e.g. `12.1`):
 
 ```bash
-docker run -it --rm --name qwen3-nim \
-  --gpus all \
-  -e NGC_API_KEY=$NGC_API_KEY \
-  -v "/app/cache/nim:/opt/nim/.cache" \
-  -p 8000:8000 \
-  nvcr.io/nim/mistralai/mistral-7b-instruct-v0.3:1.12.0
+conda install -n base -c conda-forge mamba -y
+mamba create -n rapids -c rapidsai -c nvidia -c conda-forge \
+	rapids python=3.10 cudatoolkit=CUDATOOLKIT -y
+conda activate rapids
 ```
+
+Note: RAPIDS releases must match your CUDA version. If unsure, see RAPIDS install docs: https://rapids.ai/start.html
+
+Download dataset (example: place multiple month CSVs into `data/`)
 
 ```bash
-# Login to the NVIDIA container registry
-echo $NGC_API_KEY | docker login nvcr.io --username '$oauthtoken' --password-stdin
+mkdir -p data
+# Download a few months of NYC taxi CSVs into data/ (example source)
+# e.g. https://s3.amazonaws.com/nyc-tlc/trip+data/ or other public parquet sources
+# For a fast experiment, download 3-12 months to create a large multi-GB dataset.
 ```
 
-### Step B: Launching the NIM
+Example scripts
 
-This command pulls the NIM and starts the microservice. We map the port to 8000 to differentiate it from our other servers.
+1) `gpu_run.py` — RAPIDS/cuDF (GPU)
+
+```python
+import time
+import cudf
+import glob
+
+start = time.perf_counter()
+df = cudf.read_csv(sorted(glob.glob('data/*.csv')))
+# simple example transform + aggregation
+df['tpep_pickup_datetime'] = cudf.to_datetime(df['tpep_pickup_datetime'])
+df = df[df['passenger_count'] > 0]
+agg = df.groupby('PULocationID').agg({'trip_distance': 'mean', 'total_amount': 'sum'})
+print(agg.head())
+print('Elapsed (GPU):', time.perf_counter() - start)
+```
+
+2) `cpu_run.py` — pandas (CPU)
+
+```python
+import time
+import pandas as pd
+import glob
+
+start = time.perf_counter()
+df = pd.concat((pd.read_csv(f) for f in sorted(glob.glob('data/*.csv'))), ignore_index=True)
+df['tpep_pickup_datetime'] = pd.to_datetime(df['tpep_pickup_datetime'])
+df = df[df['passenger_count'] > 0]
+agg = df.groupby('PULocationID').agg({'trip_distance': 'mean', 'total_amount': 'sum'})
+print(agg.head())
+print('Elapsed (CPU):', time.perf_counter() - start)
+```
+
+Steps to run the lesson
+- Ensure `data/` contains the CSV(s).
+- With the `rapids` conda env active, run the GPU script:
 
 ```bash
-export MODEL_NAME="meta/llama-3.1-8b-instruct"
-
-docker run -it --rm --name llama3-nim \
-  --gpus all \
-  -e NGC_API_KEY=$NGC_API_KEY \
-  -v ~/.cache/nim:/opt/nim/.cache \
-  -p 8000:8000 \
-  nvcr.io/nim/meta/llama-3.1-8b-instruct:latest
+python gpu_run.py
 ```
 
-`-v ~/.cache/nim`: This ensures that once the model is downloaded, it stays on your GB10 even if you stop the container.
-
-### Step C: Testing the production API
-
-Open a second terminal and send a request to your new enterprise endpoint:
+- In a separate conda env (or after installing `pandas` in the same env), run the CPU script:
 
 ```bash
-curl -X 'POST' \
-  'http://localhost:8000/v1/chat/completions' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "model": "meta/llama-3.1-8b-instruct",
-    "messages": [{"role":"user", "content":"What are the three core benefits of NVIDIA NIM?"}]
-  }'
+conda create -n pandas-env python=3.10 pandas -y
+conda activate pandas-env
+python cpu_run.py
 ```
 
-## 3. Workflow: The "Self-Healing" Demo
+What to highlight for students
+- Show GPU memory usage with `nvidia-smi` while `gpu_run.py` runs and note that the entire dataset can be resident in GPU memory.
+- Compare the printed elapsed times: expect the GPU run to be dramatically faster for large datasets and many-row operations.
+- Discuss trade-offs: RAPIDS API differences vs pandas, IO formats (Parquet often preferable), and ecosystem (Dask + cuDF for out-of-core / multi-GPU).
 
-In a production environment, if a service crashes, it must restart.
+Optional extensions
+- Convert CSVs to Parquet and re-run (Parquet improves IO and speeds up GPU reads).
+- Use Dask-cuDF to scale across multiple GPUs or a small cluster.
 
-- **The Demo:** Show the customer how the NIM handles errors. Stop the container (`docker stop llama3-nim`) and restart it.
-- **Observation:** Notice how quickly it comes back online. Because the model weights are already cached in your `~/.cache/nim` folder, the "Time to Ready" is minimal, which is a key requirement for enterprise SLAs.
+Expected "Aha!" moment
+- Students will observe a large wall-clock speedup (e.g., minutes → seconds) for complex joins/aggregations when run on the GB10 GPU versus CPU, demonstrating the practical value of GPU-accelerated data engineering.
 
----
 
-🌟 **Lesson 11 Challenge: The "API Switcheroo"**
 
-**Task:** Prove the portability of NIM.
+## Cybersecurity: Password Entropy & Auditing (Hashcat)
 
-1. Create a simple Python script that asks an AI to summarize a text using the URL `http://localhost:8000/v1`.
-2. Deploy a second NIM (e.g., Mistral-7B) on a different port (e.g., 8001).
-3. Change only the port number in your script.
+Overview
+- Goal: teach password-entropy concepts and practical auditing by creating local test hashes and measuring how quickly the GB10 can recover them with `hashcat`.
+- Lesson: "Why Length Matters" — show how short (6-char) passwords can be recovered in milliseconds while longer (11+ char) passwords are infeasible to brute-force.
 
-**Goal:** Show that your "Customer Application" works perfectly with two different AI models without any code refactoring.
+Why GB10
+- The GB10's architecture delivers very high integer-hash throughput, producing very large `hashes/sec` numbers in `hashcat` benchmarks — a striking demo for students.
 
----
+Ethics & safety
+- Run experiments only on hashes you create locally for teaching purposes. Do not attempt to crack hashes that you do not own or otherwise lack explicit authorization to test.
 
-## Resources for Lesson 11
+Prerequisites
+- `hashcat` installed (system package or release from https://hashcat.net/hashcat/).
+- A local wordlist such as `/usr/share/wordlists/rockyou.txt` (installable from `wordlists` packages) or a custom list.
 
-- Playbook: NIM on Spark Documentation
-- Catalogue: Explore the NVIDIA NIM API Inventory
+Create test hashes (local only)
+- MD5 (example: password `password`):
 
-> **Next Step:** Ready for Lesson 12: The Graduation Showcase, where you'll put all these tools together for a final customer pitch demo?
+```bash
+echo -n 'password' | md5sum | awk '{print $1}' > hashes_md5.txt
+# hashes_md5.txt now contains: 5f4dcc3b5aa765d61d8327deb882cf99
+```
 
-**Video Resource:** Deploying Generative AI in Production with NVIDIA NIM. This livestream demonstration covers common use cases and provides a live walkthrough of simplifying AI deployment using the NVIDIA NIM microservice containers.
+- SHA1 (example):
+
+```bash
+echo -n 'password' | sha1sum | awk '{print $1}' > hashes_sha1.txt
+```
+
+- bcrypt (example - Python) — hashcat mode supports full bcrypt hashes; generate them locally:
+
+```bash
+python - <<'PY' > hashes_bcrypt.txt
+import bcrypt
+print(bcrypt.hashpw(b'password123', bcrypt.gensalt()).decode())
+PY
+```
+
+Basic `hashcat` examples (local test hashes)
+- Benchmark hashcat to see native throughput for your GB10 (no target hashes):
+
+```bash
+hashcat -b
+```
+
+- Crack an MD5 hash using a wordlist (mode `-m 0`, attack `-a 0`):
+
+```bash
+hashcat -m 0 -a 0 hashes_md5.txt /usr/share/wordlists/rockyou.txt --potfile-path=hashcat.pot
+```
+
+- Bruteforce a 6-character lowercase password (mask attack):
+
+```bash
+# ?l = lowercase, mask ?l?l?l?l?l?l is 6 chars
+hashcat -m 0 -a 3 hashes_md5.txt ?l?l?l?l?l?l
+```
+
+- Attempt an 11-character mixed-case+digits password (note: infeasible for full brute force without targeted rules):
+
+```bash
+# Example mask for 11 chars: ?a?a?a?a?a?a?a?a?a?a?a (very large search space)
+hashcat -m 0 -a 3 hashes_md5.txt ?a?a?a?a?a?a?a?a?a?a?a
+```
+
+Teaching notes and demo flow
+- Start with `hashcat -b` to show hashes/sec baseline for MD5/SHA1 on the GB10.
+- Run the 6-char mask attack and show near-instant recovery for typical weak passwords.
+- Show the exponential jump in time/space required when increasing length (try 6 → 8 → 11) and discuss why length beats complexity for entropy.
+- Compare wordlist attacks vs mask/bruteforce and discuss targeted rules (hybrid attacks) as practical red-team techniques.
+
+What to highlight for students
+- Use `watch -n 0.5 nvidia-smi` during GPU runs to show GPU utilization and temperature.
+- Point out `hashcat` statistics printed on-screen: `Progress`, `Recovered`, `Rejected` and `Hashes/sec`.
+- Discuss defensive takeaways: use long, unique passphrases and multi-factor authentication; educate about password managers.
+
+Optional exercises
+- Build custom wordlists from leaked datasets (local, educational only) and compare success rates.
+- Use `--increment` mode or tuned masks to demonstrate how attackers optimize search strategies.
+
+Expected "Aha!" moment
+- Watch the `hashes/sec` counter reach very large values on the GB10 for fast hashing algorithms, and contrast that with the infeasibility of brute-forcing long passphrases.
+
+## Blender
+
+```bash
+sudo apt install blender
+```
+
+https://www.blender.org/download/demo-files/
+
+## FreeCAT
+
+```bash
+sudo apt install freecad
+```

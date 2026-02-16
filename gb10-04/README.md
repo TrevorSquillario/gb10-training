@@ -17,8 +17,8 @@ Ollama simplifies model management by bundling weights, configurations, and data
 The `docker compose` command launches the Ollama WebUI interface on port 12000 the Ollama API on port 11434 and ensures all chat history and models are saved permanently to your GB10 storage. It looks for a `docker-compose.yaml` or `compose.yaml` file by default.
 
 ```bash
-sudo mkdir -p ~/gb10/ollama
-sudo mkdir -p ~/gb10/open_webui
+mkdir -p ~/gb10/ollama
+mkdir -p ~/gb10/open_webui
 cd ~/git/gb10-training/gb10-04
 docker compose up 
 # Make sure the container starts without error then Ctrl + C and run it in the background (-d)
