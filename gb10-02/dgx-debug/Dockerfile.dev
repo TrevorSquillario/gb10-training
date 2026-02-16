@@ -1,0 +1,61 @@
+FROM nvcr.io/nvidia/cuda:12.6.2-devel-ubuntu22.04 
+
+ENV DEBIAN_FRONTEND=noninteractive \ 
+    TZ=UTC \ 
+    LANG=C.UTF-8 \ 
+    LC_ALL=C.UTF-8 
+
+# 1. Base OS tools and utilities 
+RUN apt-get update && apt-get install -y --no-install-recommends \ 
+    wget \ 
+    curl \ 
+    ca-certificates \ 
+    git \ 
+    vim \ 
+    nano \ 
+    less \ 
+    pciutils \ 
+    iproute2 \ 
+    iputils-ping \ 
+    net-tools \ 
+    dnsutils \ 
+    htop \ 
+    nvtop \ 
+    python3 \ 
+    python3-pip \ 
+    python3-venv \ 
+    pkg-config \ 
+    build-essential \ 
+    && rm -rf /var/lib/apt/lists/* 
+
+# Symlink python3 -> python 
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 
+
+# 2. Python + AI frameworks 
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel 
+
+# PyTorch (CUDA 12.1 wheels, compatible with 12.x) 
+RUN pip install --no-cache-dir \ 
+    torch==2.4.0+cu121 \ 
+    torchvision==0.19.0+cu121 \ 
+    torchaudio==2.4.0+cu121 \ 
+    --index-url https://download.pytorch.org/whl/cu121 
+
+# TensorFlow (GPU) 
+RUN pip install --no-cache-dir \ 
+    tensorflow==2.17.0 
+
+# 3. NCCL tests (for basic comms tests on a single node or multi-node) 
+RUN git clone https://github.com/NVIDIA/nccl-tests.git /opt/nccl-tests && \ 
+    cd /opt/nccl-tests && \ 
+    make MPI=0 
+
+ENV NCCL_TESTS_DIR=/opt/nccl-tests 
+
+# 4. Make sure CUDA tools and nvidia-smi are on PATH 
+ENV PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH} 
+
+# 5. Working directory 
+WORKDIR /workspace 
+
+CMD ["/bin/bash"] 
