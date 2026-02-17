@@ -49,9 +49,9 @@ Focus: Turning the GB10 into a coding and logic powerhouse.
 - Playbook: Vibe Coding
 
 ### [Lesson 6 — GPU Container Orchestration with Kubernetes](./gb10-06/)
-- Topics: Kubernetes (microk8s) and SLURM
-- Lab: Setup microk8s, install GPU Operator and deploy pods. Setup SLURM and execute GPU compute jobs
-- Goal: Learn about container orchestration using Kuberneted and SLURM
+- Topics: Kubernetes (microk8s)
+- Lab: Setup microk8s, install GPU Operator and deploy pods.
+- Goal: Learn about container orchestration using Kuberneted 
 
 ## Phase 3: Visuals & Multi-Modal Demos
 Focus: High-impact demos that "show" rather than "tell."
@@ -66,25 +66,29 @@ Focus: High-impact demos that "show" rather than "tell."
 - Lab: Live vision demo (webcam or file upload) where AI describes objects
 - Playbook: Live VLM WebUI
 
-### [Lesson 9 — RAG (Retrieval Augmented Generation)](./gb10-09/)
-- Topics: Vector DBs and "Chat with your Docs"
-- Lab: Ingest PDF directory (Sales Playbooks) and build a local search bot
+### [Lesson 9 — RAG (Retrieval-Augmented Generation)](./gb10-09/)
+- Objective: Master RAG to ground LLM answers with private documents while keeping data local to the GB10.
+- Topics: Vector DBs (FAISS, Milvus), embeddings, document chunking, CPU/GPU pipeline on GB10, and n8n workflows for ingestion.
+- Lab: Use `n8n` to ingest local files into a vector store, run in-memory lookups, and deploy the AI Workbench RAG App for a production-style demo.
 - Playbook: RAG App in AI Workbench
 
 ## Phase 4: Enterprise Optimization & Advanced Topics
 Focus: Performance tuning and professional customer delivery.
 
-### [Lesson 10 — High-Throughput Serving (vLLM / SGLang)](./gb10-10/)
-- Topics: Moving beyond Ollama; batching and multi-user serving
-- Lab: Set up SGLang server for Blackwell performance
-- Playbook: SGLang Inference Server
+### [Lesson 10 — High-Throughput Serving (SGLang & NIMs)](./gb10-10/)
+- Objective: Move from "one user, one model" to concurrent, high-throughput serving.
+- Topics: SGLang (RadixAttention, batching), vLLM alternatives, and NIMs for enterprise deployment.
+- Lab: Launch an SGLang server and deploy a Llama-3 NIM for production-style testing.
+- Playbook: SGLang Inference Server; NIM on Spark
 
-### [Lesson 11 — NVIDIA NIMs (Inference Microservices)](./gb10-11/)
-- Topics: Transition local work to enterprise-grade production with NIMs
-- Lab: Deploy a Llama-3 NIM and understand the Enterprise AI stack
+### [Lesson 11 — Enterprise Use Cases (Media Transcoding, RAPIDS, Security)](./gb10-11/)
+- Topics: CUDA-accelerated `ffmpeg`, RAPIDS/cuDF for billion-row GPU analytics, and cybersecurity demos with `hashcat`.
+- Lab: Deploy a Llama-3 NIM; run a GPU `ffmpeg` transcode demo; benchmark RAPIDS `cuDF` on large datasets.
 - Playbook: NIM on Spark
 
 ### [Lesson 12 — GPU Container Orchestration with SLURM](./gb10-12/)
+- Topics: SLURM installation and configuration, GPU scheduling (GRES), job submission and troubleshooting, and running common HPC & ML workflows (CFD, GROMACS, LLM training).
+- Lab: Install and configure SLURM on the GB10, submit example CFD and LLM training jobs, and practice troubleshooting stuck jobs and service restarts.
 
 ## [Appendix](./appendix/)
 
