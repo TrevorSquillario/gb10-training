@@ -1,0 +1,30 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  12
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      decomposeParDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Set this to your total core count
+numberOfSubdomains  20;
+
+decomposer      hierarchical;
+distributor     ptscotch;
+
+hierarchicalCoeffs
+{
+    // The product of these (5 * 2 * 2) must equal 20
+    n               (5 2 2);
+    order           xyz;
+}
+
+// ************************************************************************* //

@@ -6,7 +6,8 @@
 #SBATCH --gres=gpu:1             
 #SBATCH --partition=debug
 #SBATCH --time=02:00:00          # Reduced time; Lysozyme is fast!
-#SBATCH --output=gmx_output_%j.log
+#SBATCH --output=log.out
+#SBATCH --error=log.err
 
 # 1. Clean environment
 module purge
@@ -20,8 +21,8 @@ gmx --version | grep "Precision"
 
 # 4. Run the Production MD
 gmx mdrun -v \
-    -s /tmp/GROMACS_heterogeneous_parallelization_benchmark_info_and_systems_JCP/stmv/output.tpr \
-    -deffnm /tmp/GROMACS_heterogeneous_parallelization_benchmark_info_and_systems_JCP/stmv/output \
+    -s ~/scratch/GROMACS_heterogeneous_parallelization_benchmark_info_and_systems_JCP/stmv/output.tpr \
+    -deffnm ~/scratch/GROMACS_heterogeneous_parallelization_benchmark_info_and_systems_JCP/stmv/output \
     -ntmpi 1 \
     -ntomp $SLURM_CPUS_PER_TASK \
     -nb gpu \

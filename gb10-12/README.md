@@ -85,6 +85,9 @@ sudo chmod 755 /var/spool/slurm
 ```
 
 ### Run traditional CFD based job. CPU only.
+
+This uses OpenFOAM to simulate airflow over a motorcycle
+
 ```bash
 # Install OpenFOAM Foundation v12
 sudo sh -c "wget -O - https://dl.openfoam.org/gpg.key > /etc/apt/trusted.gpg.d/openfoam.asc"
@@ -92,36 +95,59 @@ sudo add-apt-repository http://dl.openfoam.org/ubuntu
 sudo apt update
 sudo apt -y install openfoam12 paraview
 
-# Download the example mesh https://holzmann-cfd.com/community/training-cases/gin-tonic
-wget -P /tmp https://holzmann-cfd.com/OpenFOAMCases/017_ginTonic/ginTonicCHT-12.tar.gz
-tar -xvf /tmp/ginTonicCHT-12.tar.gz -C /tmp
-cd /tmp/cases-12/ginTonicCHT
-cp -r 0.orig 0
+# Create your scratch space
+mkdir ~/scratch
+cd ~/scratch
 
-vi system/decomposeParDict
+cp -r /opt/openfoam12/tutorials/incompressibleFluid/motorBike/motorBike ~/scratch/motorBike
+cd  ~/scratch/motorBike
 
-numberOfSubdomains 20;
-method scotch;
+# Setup the job to use all 20 cores
+cp ~/git/gb10-training/gb10-12/slurm/cfd_job/decomposeParDict system/decomposeParDict
 
-simpleCoeffs
-{
-    n               (2 1 2);
-    delta           0.001;
-}
+# Submit the job to SLURM
+sbatch ~/git/gb10-training/gb10-12/slurm/cfd_job/run_motorBike.sh
 
-# Submit batch job to SLURM
-sbatch ~/git/gb10-training/gb10-06/slurm/cfd_job/run_gintonic.sh
-# This will output a job number, replace that in the tail command
-tail -f /tmp/lab_hpc_28.log
+# To verify the job got submitted to the queue
+squeue
+
+# You should see 20 processes pegged at 100% CPU usage
 htop
-# This will take 20-30 minutes to run
+
+# To view the job output
+tail -f log.out
+
+# When the job is complete `squeue` will be empty and `htop` will not show the running processes
+
+# To rerun the job
+rm -rf log.*
 ```
 
-### Run LLM training job
+### Visualize with ParaView
+
+This works over an SSH session with X11 (MobaXterm) or on the Gnome Desktop from the Terminal. It runs pretty poorly over X11. Another way to use ParaView is to install it on your Windows laptop. Then create a zip or tar of the `~/scratch/motorBike` folder and copy that to your laptop and open the `motorBike.foam` file. 
+
 ```bash
-wget -P /tmp https://repo.anaconda.com/miniconda/Miniconda3-py313_25.11.1-1-Linux-aarch64.sh
-chmod u+x /tmp/Miniconda3-py313_25.11.1-1-Linux-aarch64.sh
-sudo bash /tmp/Miniconda3-py313_25.11.1-1-Linux-aarch64.sh -b -p /opt/anaconda/25.11.1-1
+paraFoam -builtin
+```
+
+1. Select motorBike.foam in the Pipeline Browser
+2. In the Properties panel select Case Type: Decomposed Case, click Apply
+3. Under Mesh Regions select all
+4. Set Coloring to U
+5. Set Opacity to .1, click Apply
+6. Right click motorBike.foam, Add Filter > Alphabetical > Slice
+7. Select Slice1, Unselect Show Pane, Click Y Normal, Under Coloring select U
+
+### Run LLM training job
+
+This simulates an LLM training run
+
+```bash
+cd ~/scratch
+wget https://repo.anaconda.com/miniconda/Miniconda3-py313_25.11.1-1-Linux-aarch64.sh
+chmod u+x Miniconda3-py313_25.11.1-1-Linux-aarch64.sh
+sudo bash Miniconda3-py313_25.11.1-1-Linux-aarch64.sh -b -p /opt/anaconda/25.11.1-1
 
 # Create environment module (Used with the `module load` command)
 sudo chown -R root:${USER} /etc/environment-modules/modules
@@ -155,13 +181,13 @@ source ~/venv/gb10-training/bin/activate
 pip uninstall -y torch torchvision torchaudio
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
 
-sbatch ~/git/gb10-training/gb10-06/slurm/training_job/run_train_model_cpu.sh
+sbatch ~/git/gb10-training/gb10-12/slurm/training_job/run_train_model_cpu.sh
 # This will output a job number, replace that in the tail command
-tail -f /tmp/lab_hpc_28.log
+tail -f log.out
 
-sbatch ~/git/gb10-training/gb10-06/slurm/training_job/run_train_model_gpu.sh
+sbatch ~/git/gb10-training/gb10-12/slurm/training_job/run_train_model_gpu.sh
 # This will output a job number, replace that in the tail command
-tail -f /tmp/lab_hpc_28.log
+tail -f log.out
 ```
 
 ### Run GROMACS job
@@ -173,7 +199,7 @@ https://catalog.ngc.nvidia.com/orgs/nvidia/containers/gromacs
 
 #### Compile the software
 ```bash
-cd ~/git
+cd ~/scratch
 wget https://ftp.gromacs.org/gromacs/gromacs-2026.0.tar.gz
 tar xfz gromacs-2026.0.tar.gz
 cd gromacs-2026.0
@@ -223,7 +249,7 @@ EOF
 
 #### Submit the job
 ```bash
-cd /tmp
+cd ~/scratch
 wget https://zenodo.org/record/3893789/files/GROMACS_heterogeneous_parallelization_benchmark_info_and_systems_JCP.tar.gz 
 tar xf GROMACS_heterogeneous_parallelization_benchmark_info_and_systems_JCP.tar.gz 
 cd GROMACS_heterogeneous_parallelization_benchmark_info_and_systems_JCP/stmv
@@ -236,8 +262,8 @@ sed -i 's/nstlist.*/nstlist                  = 100/' pme_nvt.mdp
 /usr/local/gromacs/bin/gmx editconf -f conf.gro -o output.pdb
 /usr/local/gromacs/bin/gmx grompp -f pme_nvt.mdp -c conf.gro -p topol.top -o output.tpr
 
-sbatch ~/git/gb10-training/gb10-06/slurm/gromacs_job/gromacs_run.sh
-tail -f gmx_output_40.log
+sbatch ~/git/gb10-training/gb10-12/slurm/gromacs_job/gromacs_run.sh
+tail -f log.out
 
 # When the job completes you should have some new output.* files 
 ls -halt | head

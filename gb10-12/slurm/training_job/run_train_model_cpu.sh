@@ -2,7 +2,8 @@
 #SBATCH --job-name=gpu_train
 #SBATCH --gres=gpu:1
 #SBATCH --partition=debug
-#SBATCH --output=/tmp/lab_hpc_%j.log
+#SBATCH --output=log.out
+#SBATCH --error=log.err
 
 # 2. Load Anaconda (provides the Python interpreter your venv likely uses)
 module load anaconda/25.11.1-1

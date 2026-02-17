@@ -7,12 +7,12 @@ PDB_ID="1GD6"
 TOPOLOGY="topol.top"
 
 # Move to tmp directory for processing
-if [ -d "/tmp/${PDB_ID}" ]; then
-    echo "--- /tmp/${PDB_ID} exists; removing to ensure clean workspace ---"
-    rm -rf "/tmp/${PDB_ID}"
+if [ -d "~/scratch/${PDB_ID}" ]; then
+    echo "--- ~/scratch/${PDB_ID} exists; removing to ensure clean workspace ---"
+    rm -rf "~/scratch/${PDB_ID}"
 fi
-mkdir -p "/tmp/${PDB_ID}"
-cd "/tmp/${PDB_ID}" || { echo "Failed to enter /tmp/${PDB_ID}"; exit 1; }
+mkdir -p "~/scratch/${PDB_ID}"
+cd "~/scratch/${PDB_ID}" || { echo "Failed to enter ~/scratch/${PDB_ID}"; exit 1; }
 
 module purge
 echo "--- Load GROMACS module ---"
@@ -77,7 +77,7 @@ echo "--- Step 9: Final Assembly (Production) ---"
 # We use the final.gro from step 7 as the starting coordinates
 gmx grompp -f nvt.mdp -c ${PDB_ID}_final.gro -p $TOPOLOGY -o production.tpr
 
-echo "--- Files prepared in /tmp/${PDB_ID} ---"
+echo "--- Files prepared in ~/scratch/${PDB_ID} ---"
 echo "------------------------------------------------------"
 echo "SUCCESS: production.tpr is ready."
 echo "Run: gmx mdrun -v -deffnm production -nb gpu -pme gpu -bonded gpu -update gpu"
