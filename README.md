@@ -86,7 +86,7 @@ Focus: Performance tuning and professional customer delivery.
 - Lab: Deploy a Llama-3 NIM; run a GPU `ffmpeg` transcode demo; benchmark RAPIDS `cuDF` on large datasets.
 - Playbook: NIM on Spark
 
-### [Lesson 12 — GPU Container Orchestration with SLURM](./gb10-12/)
+### [Lesson 12 — GPU Job Orchestration with SLURM](./gb10-12/)
 - Topics: SLURM installation and configuration, GPU scheduling (GRES), job submission and troubleshooting, and running common HPC & ML workflows (CFD, GROMACS, LLM training).
 - Lab: Install and configure SLURM on the GB10, submit example CFD and LLM training jobs, and practice troubleshooting stuck jobs and service restarts.
 

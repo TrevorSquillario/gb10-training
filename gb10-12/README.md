@@ -1,4 +1,4 @@
-# Lesson 12: GPU Container Orchestration with SLURM
+# Lesson 12: GPU Job Orchestration with SLURM
 
 This lesson covers using SLURM to manage and schedule GPU workloads on the GB10, including installation, job submission, troubleshooting, and running common HPC and ML jobs.
 
