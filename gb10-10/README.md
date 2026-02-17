@@ -157,15 +157,14 @@ export NGC_API_KEY=<Your-NGC-API-Key>
 
 Create the NIM cache directory
 ```bash
-mkdir -p /app/cache/nim
-sudo chmod -R 777 /app/cache
+mkdir -p ~/.cache/nim
 ```
 
 ```bash
 docker run -it --rm --name qwen3-nim \
   --gpus all \
   -e NGC_API_KEY=$NGC_API_KEY \
-  -v "/app/cache/nim:/opt/nim/.cache" \
+  -v "~/.cache/nim:/opt/nim/.cache" \
   -p 8000:8000 \
   nvcr.io/nim/mistralai/mistral-7b-instruct-v0.3:1.12.0
 ```

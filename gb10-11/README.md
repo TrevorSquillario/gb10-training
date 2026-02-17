@@ -1,5 +1,46 @@
 # Lesson 11: Enterprise Use Cases
 
+## CUDA Accelerated ffmpeg
+
+### HWACCEL Transcode with Scaling
+
+https://docs.nvidia.com/video-technologies/video-codec-sdk/13.0/ffmpeg-with-nvidia-gpu/index.html
+
+This allows you to load a 4k video and scale it down to multiple resolutions at the same time. The 4k video is stored in VRAM and transcoded simultaneously to lower resolutions.
+
+1:N HWACCEL Transcode with Scaling
+The following command reads file input.mp4 and transcodes it to two different H.264 videos at various output resolutions and bit rates. Note that while using the GPU video encoder and decoder, this command also uses the scaling filter (scale_npp) in FFmpeg for scaling the decoded video output into multiple desired resolutions. Doing this ensures that the memory transfers (system memory to video memory and vice versa) are eliminated, and that transcoding is performed with the highest possible performance on the GPU hardware.
+
+Input: input.mp4
+
+Outputs: 1080p, 720p (audio same as input)
+
+```bash
+ffmpeg -y -vsync 0 -hwaccel cuda -hwaccel_output_format cuda -i input.mp4
+-vf scale_npp=1920:1080 -c:a copy -c:v h264_nvenc -b:v 5M output1.mp4
+-vf scale_npp=1280:720 -c:a copy -c:v h264_nvenc -b:v 8M output2.mp4
+```
+
+Simple enough right, not so much. The difficult part is compiling ffmpeg with the options to support this. I build a custom container to handle this as there isn't one publicly available. 
+
+```bash
+cd gb10-11/ffmpeg-nvec
+docker compose up
+
+docker exec -it ffmpeg-nvenc /bin/bash
+ffmpeg -y -vsync 0 -hwaccel cuda -hwaccel_output_format cuda -i 4k_sample.mkv -vf scale_cuda=1280:720 -c:a copy -c:v h264_nvenc -b:v 5M output.mp4
+```
+
+### VMAF
+
+https://developer.nvidia.com/blog/calculating-video-quality-using-nvidia-gpus-and-vmaf-cuda/
+
+VMAF evaluates video quality using key elementary metrics from a reference and a distorted image:
+
+- Visual information fidelity (VIF): Quantifies the preservation of original content, reflecting perceived information loss.
+- Additive distortion measurement (ADM): Assesses structural changes and texture degradation. It is notably sensitive to additive distortions such as noise.
+- Motion features: Crucial for appraising motion-rendering quality in dynamic scenes. 
+
 ## The Billion Row Challenge (RAPIDS / cuDF)
 
 Overview
@@ -198,7 +239,7 @@ sudo apt install blender
 
 https://www.blender.org/download/demo-files/
 
-## FreeCAT
+## FreeCAD
 
 ```bash
 sudo apt install freecad

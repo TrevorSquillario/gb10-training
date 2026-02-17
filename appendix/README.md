@@ -114,3 +114,15 @@ ollama create minimax-q8 -f Modelfile
 # Verify the model is working with
 ollama run minimax-q8
 ```
+
+## Prometheus /metrics Endpoint for Ollama
+https://github.com/NorskHelsenett/ollama-metrics
+
+## Sunshine/Moonight Streaming
+https://github.com/seanGSISG/dgx-spark-sunshine-setup
+
+## Other Self-Hosted Apps Worth Trying
+- Frigate https://frigate.video/
+- Immich https://immich.app/
+- changedetection.io https://github.com/dgtlmoon/changedetection.io
+- Paperless-ngx + Paperless-AI

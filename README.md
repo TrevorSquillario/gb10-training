@@ -48,7 +48,7 @@ Focus: Turning the GB10 into a coding and logic powerhouse.
 - Lab: Set up Continue.dev extension in VS Code
 - Playbook: Vibe Coding
 
-### [Lesson 6 — GPU Container Orchestration with Kubernetes and SLURM](./gb10-06/)
+### [Lesson 6 — GPU Container Orchestration with Kubernetes](./gb10-06/)
 - Topics: Kubernetes (microk8s) and SLURM
 - Lab: Setup microk8s, install GPU Operator and deploy pods. Setup SLURM and execute GPU compute jobs
 - Goal: Learn about container orchestration using Kuberneted and SLURM
@@ -84,13 +84,15 @@ Focus: Performance tuning and professional customer delivery.
 - Lab: Deploy a Llama-3 NIM and understand the Enterprise AI stack
 - Playbook: NIM on Spark
 
-### [Lesson 12 — Q & A](./gb10-12/)
+### [Lesson 12 — GPU Container Orchestration with SLURM](./gb10-12/)
 
 ## [Appendix](./appendix/)
 
-- No space available on disk
-- OOM (OutofMemory) Errors
+- Troubleshooting
 - How to Reinstall the NVIDIA DGX Operating System
 - Simple LLM Benchmark
 - Manually Add Model to Ollama
+- Prometheus /metrics Endpoint for Ollama
+- Sunshine/Moonight Streaming
+- Other Self-Hosted Apps Worth Trying
 

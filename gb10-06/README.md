@@ -1,14 +1,30 @@
-# Lesson 6: GPU Container Orchestration with Kubernetes and SLURM
+# Lesson 6: GPU Container Orchestration with Kubernetes
 
-This lesson covers container orchestration using two popular frameworks:
-- **Kubernetes (microk8s)** with NVIDIA GPU Operator and time-slicing
-- **SLURM** workload manager for HPC environments
+This lesson covers container orchestration using Kubernetes using microk8s with NVIDIA GPU Operator and time-slicing
 
-## Quick Start
+## Kubernetes GPU Architecture
+```
+┌─────────────────────────────────────────────────┐
+│           Kubernetes Cluster                    │
+│  ┌──────────────────────────────────────────┐   │
+│  │  GPU Operator (manages GPU resources)    │   │
+│  └──────────────────────────────────────────┘   │
+│  ┌──────────────────────────────────────────┐   │
+│  │  Time-Slicing Config (4x multiplier)     │   │
+│  └──────────────────────────────────────────┘   │
+│  ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐        │
+│  │ Pod 1 │ │ Pod 2 │ │ Pod 3 │ │ Pod 4 │        │
+│  │  GPU  │ │  GPU  │ │  GPU  │ │  GPU  │        │
+│  └───┬───┘ └───┬───┘ └───┬───┘ └───┬───┘        │
+│      └──────┬──┴──────┬──────┴─────┘            │
+│             │         │                         │
+│      ┌──────▼─────────▼──────┐                  │
+│      │  Physical GPU (1x)    │                  │
+│      └───────────────────────┘                  │
+└─────────────────────────────────────────────────┘
+```
 
-### Kubernetes (microk8s)
-
-#### Install and configure microk8s
+### Install and configure microk8s
 ```bash
 cd ~/git/gb10-training/gb10-06/microk8s
 sudo ./install.sh
@@ -22,7 +38,7 @@ microk8s kubectl get pods -A
 microk8s status
 ```
 
-#### Install GPU Operator
+### Install GPU Operator
 
 Reference: https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/getting-started.html#microk8s
 
@@ -47,7 +63,7 @@ microk8s kubectl get nodes -o json | jq '.items[].status.allocatable["nvidia.com
 microk8s kubectl -n gpu-operator describe pod nvidia-device-plugin-daemonset-mmvrc
 ```
 
-#### Configure GPU time-slicing
+### Configure GPU time-slicing
 Instructions to apply time-slicing:
 
 1. Apply the time slicing config:
@@ -76,7 +92,7 @@ Notes:
 - Performance depends on workload characteristics
 - Best for burst workloads or development/testing
 
-#### Deploy nvidia-smi test pod to check if the container can see the GPU
+### Deploy nvidia-smi test pod to check if the container can see the GPU
 ```bash
 kubectl apply -f ../kubernetes/nvidia-smi.yaml
 kubectl logs pod/nvidia-smi
@@ -85,7 +101,7 @@ kubectl logs pod/nvidia-smi
 kubectl delete -f ../kubernetes/nvidia-smi.yaml
 ```
 
-#### Deploy test vLLM cluster (2 replicas sharing GPU)
+### Deploy test vLLM cluster (2 replicas sharing GPU)
 ```bash
 # Make your models available at /mnt/models for Kubernetes HostPath mounting
 sudo ln -s /home/$USER/gb10/models /mnt/models
@@ -115,7 +131,7 @@ curl -X POST http://localhost:30080/v1/chat/completions \
 
 ```
 
-#### Setup Prometheus and Grafana for DCGM and vLLM Metrics
+### Setup Prometheus and Grafana for DCGM and vLLM Metrics
 ```bash
 microk8s enable observability
 microk8s kubectl get svc -n observability
@@ -139,7 +155,7 @@ kubectl get svc -n observability | grep grafana
 # Default user/pass: admin/prom-operator
 ```
 
-#### Install the NVIDIA DCGM Exporter and vLLM Dashboard
+### Install the NVIDIA DCGM Exporter and vLLM Dashboard
 1. Download the dashboard `json` files from https://github.com/TrevorSquillario/gb10-training/tree/main/gb10-06/grafana
 2. Open Grafana
 3. Hover over the Dashboards icon on the left and select `+ Import`
@@ -148,199 +164,17 @@ kubectl get svc -n observability | grep grafana
 6. Repeat this for `vllm_grafana.json`
 7. Go to Dashboards > General and look for `NVIDIA DCGM Exporter Dashboard` and `vLLM`
 
-#### Cleanup vLLM cluster deployment
+### Cleanup vLLM cluster deployment
 ```bash
 # Delete the deployment (which will remove the pods)
 kubectl delete -f ../kubernetes/vllm-deployment.yaml
 kubectl delete -f ../kubernetes/vllm-metrics-servicemonitor.yaml
 ```
 
-#### Uninstall
+### Uninstall
 ```bash
 cd ~/home/trevor~/git/gb10-training/gb10-06/microk8s
 sudo ./uninstall.sh
 ```
 
-### SLURM
-
-#### Install
-```bash
-# Install dependencies
-sudo apt-y install environment-modules build-essential cmake git m4 flex bison zlib1g-dev libboost-system-dev libboost-thread-dev 
-
-# Install SLURM
-cd slurm
-sudo ./install.sh
-srun -n1 hostname
-```
-
-#### Useful commands
-```bash
-squeue
-scancel 1
-sinfo
-# Submit background job
-sbatch run_train_model.sh
-# Submit interactive job
-srun run_train_model.sh
-```
-
-#### Troubleshooting
-
-***Job stuck in queue***
-```bash
-sudo pkill -9 slurmctld
-sudo pkill -9 slurmd
-sudo pkill -9 slurmstepd
-
-# 2. Check if anything is still running (should return empty)
-ps aux | grep slurm | grep -v grep
-
-# 3. Wipe the state locations again
-sudo rm -rf /var/spool/slurm/ctld/*
-sudo rm -rf /var/spool/slurm/d/*
-
-# 4. Restart services
-sudo systemctl start slurmctld
-sudo systemctl start slurmd
-sudo chmod 755 /var/spool/slurm
-```
-
-#### Run traditional CFD based job. CPU only.
-```bash
-# Install OpenFOAM Foundation v12
-sudo sh -c "wget -O - https://dl.openfoam.org/gpg.key > /etc/apt/trusted.gpg.d/openfoam.asc"
-sudo add-apt-repository http://dl.openfoam.org/ubuntu
-sudo apt update
-sudo apt -y install openfoam12 paraview
-
-# Download the example mesh https://holzmann-cfd.com/community/training-cases/gin-tonic
-wget -P /tmp https://holzmann-cfd.com/OpenFOAMCases/017_ginTonic/ginTonicCHT-12.tar.gz
-tar -xvf /tmp/ginTonicCHT-12.tar.gz -C /tmp
-cd /tmp/cases-12/ginTonicCHT
-cp -r 0.orig 0
-
-vi system/decomposeParDict
-
-numberOfSubdomains 20;
-method scotch;
-
-simpleCoeffs
-{
-    n               (2 1 2);
-    delta           0.001;
-}
-
-# Submit batch job to SLURM
-sbatch ~/git/gb10-training/gb10-06/slurm/cfd_job/run_gintonic.sh
-# This will output a job number, replace that in the tail command
-tail -f /tmp/lab_hpc_28.log
-htop
-# This will take 20-30 minutes to run
-```
-
-#### Run LLM training job
-```bash
-wget -P /tmp https://repo.anaconda.com/miniconda/Miniconda3-py313_25.11.1-1-Linux-aarch64.sh
-chmod u+x /tmp/Miniconda3-py313_25.11.1-1-Linux-aarch64.sh
-sudo bash /tmp/Miniconda3-py313_25.11.1-1-Linux-aarch64.sh -b -p /opt/anaconda/25.11.1-1
-
-# Create environment module (Used with the `module load` command)
-cat << EOF > /etc/environment-modules/modules/anaconda/25.11.1-1
-#%Module1.0
-##
-## Anaconda Modulefile
-##
-proc ModulesHelp { } {
-    puts stderr "\tThis module adds Anaconda to your environment."
-}
-
-module-whatis   "Name: Anaconda"
-module-whatis   "Version: 25.11.1-1"
-
-set root "/opt/anaconda/25.11.1-1"
-
-# Set Path
-prepend-path    PATH            $root/bin
-
-# The magic for conda activate
-if { [ module-info mode load ] } {
-    puts stdout "source $root/etc/profile.d/conda.sh;"
-}
-EOF
-
-# Reinstall torch with GPU support
-source ~/venv/gb10-training/bin/activate
-pip uninstall -y torch torchvision torchaudio
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
-
-sbatch ~/git/gb10-training/gb10-06/slurm/training_job/run_train_model_cpu.sh
-# This will output a job number, replace that in the tail command
-tail -f /tmp/lab_hpc_28.log
-
-sbatch ~/git/gb10-training/gb10-06/slurm/training_job/run_train_model_gpu.sh
-# This will output a job number, replace that in the tail command
-tail -f /tmp/lab_hpc_28.log
-```
-
-## Architecture Overview
-
-### Kubernetes GPU Architecture
-```
-┌─────────────────────────────────────────────────┐
-│           Kubernetes Cluster                    │
-│  ┌──────────────────────────────────────────┐   │
-│  │  GPU Operator (manages GPU resources)    │   │
-│  └──────────────────────────────────────────┘   │
-│  ┌──────────────────────────────────────────┐   │
-│  │  Time-Slicing Config (4x multiplier)     │   │
-│  └──────────────────────────────────────────┘   │
-│  ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐        │
-│  │ Pod 1 │ │ Pod 2 │ │ Pod 3 │ │ Pod 4 │        │
-│  │  GPU  │ │  GPU  │ │  GPU  │ │  GPU  │        │
-│  └───┬───┘ └───┬───┘ └───┬───┘ └───┬───┘        │
-│      └──────┬──┴──────┬──────┴─────┘            │
-│             │         │                         │
-│      ┌──────▼─────────▼──────┐                  │
-│      │  Physical GPU (1x)    │                  │
-│      └───────────────────────┘                  │
-└─────────────────────────────────────────────────┘
-```
-
-### SLURM GPU Architecture
-```
-┌─────────────────────────────────────────────────┐
-│              SLURM Cluster                      │
-│  ┌──────────────────────────────────────────┐   │
-│  │      slurmctld (Controller)              │   │
-│  └──────────────────────────────────────────┘   │
-│  ┌──────────────────────────────────────────┐   │
-│  │  slurmd (Compute Node with GPUs)         │   │
-│  │  ┌────────────────────────────────────┐  │   │
-│  │  │  Job Queue                         │  │   │
-│  │  │  ┌──────┐ ┌──────┐ ┌──────┐        │  │   │
-│  │  │  │Job 1 │ │Job 2 │ │Job 3 │        │  │   │
-│  │  │  └──────┘ └──────┘ └──────┘        │  │   │
-│  │  └────────────────────────────────────┘  │   │
-│  │  ┌────────────────────────────────────┐  │   │
-│  │  │  GPU Resources (via GRES)          │  │   │
-│  │  │  ┌──────────────────────────────┐  │  │   │
-│  │  │  │  GPU 0  │  GPU 1  │  GPU 2   │  │  │   │
-│  │  │  └──────────────────────────────┘  │  │   │
-│  │  └────────────────────────────────────┘  │   │
-│  └──────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────┘
-```
-
-## Comparison: Kubernetes vs SLURM
-
-| Feature | Kubernetes | SLURM |
-|---------|-----------|-------|
-| **Primary Use** | Microservices, web apps | HPC, batch jobs |
-| **GPU Sharing** | Time-slicing, MIG | Exclusive or shared |
-| **Scheduling** | Real-time, declarative | Batch queue, priority |
-| **Networking** | Service mesh, ingress | InfiniBand, high-speed |
-| **State** | Stateless preferred | Stateful jobs common |
-| **Auto-scaling** | Built-in HPA/VPA | Manual configuration |
-| **Best For** | AI inference, serving | Training, simulations |
 

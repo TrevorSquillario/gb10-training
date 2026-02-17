@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: gb10-ffmpeg-vmaf:latest
+    image: ffmpeg-nvenc:latest
     container_name: ffmpeg-nvenc
     restart: unless-stopped
     volumes:
