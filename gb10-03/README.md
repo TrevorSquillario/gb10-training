@@ -144,7 +144,7 @@ aiperf profile \
   --streaming
 ```
 
-## Stop trtllm container. Due to memory limitations we can only run either TensorRT-LLM or vLLM at the same time. 
+## Stop trtllm container. Due to memory limitations if we're using a large model we can only run either TensorRT-LLM or vLLM. 
 
 `Ctrl + C` in the window it's running or `docker stop ttrtllm`
 

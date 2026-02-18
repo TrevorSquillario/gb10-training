@@ -96,11 +96,11 @@ sudo apt update
 sudo apt -y install openfoam12 paraview
 
 # Create your scratch space
-mkdir ~/scratch
-cd ~/scratch
+mkdir ~/gb10/scratch
+cd ~/gb10/scratch
 
-cp -r /opt/openfoam12/tutorials/incompressibleFluid/motorBike/motorBike ~/scratch/motorBike
-cd  ~/scratch/motorBike
+cp -r /opt/openfoam12/tutorials/incompressibleFluid/motorBike/motorBike ~/gb10/scratch/motorBike
+cd  ~/gb10/scratch/motorBike
 
 # Setup the job to use all 20 cores
 cp ~/git/gb10-training/gb10-12/slurm/cfd_job/decomposeParDict system/decomposeParDict
@@ -125,7 +125,7 @@ rm -rf log.*
 
 ### Visualize with ParaView
 
-This works over an SSH session with X11 (MobaXterm) or on the Gnome Desktop from the Terminal. It runs pretty poorly over X11. Another way to use ParaView is to install it on your Windows laptop. Then create a zip or tar of the `~/scratch/motorBike` folder and copy that to your laptop and open the `motorBike.foam` file. 
+This works over an SSH session with X11 (MobaXterm) or on the Gnome Desktop from the Terminal. It runs pretty poorly over X11. Another way to use ParaView is to install it on your Windows laptop. Then create a zip or tar of the `~/gb10/scratch/motorBike` folder and copy that to your laptop and open the `motorBike.foam` file. 
 
 ```bash
 paraFoam -builtin
@@ -144,7 +144,7 @@ paraFoam -builtin
 This simulates an LLM training run
 
 ```bash
-cd ~/scratch
+cd ~/gb10/scratch
 wget https://repo.anaconda.com/miniconda/Miniconda3-py313_25.11.1-1-Linux-aarch64.sh
 chmod u+x Miniconda3-py313_25.11.1-1-Linux-aarch64.sh
 sudo bash Miniconda3-py313_25.11.1-1-Linux-aarch64.sh -b -p /opt/anaconda/25.11.1-1
@@ -199,7 +199,7 @@ https://catalog.ngc.nvidia.com/orgs/nvidia/containers/gromacs
 
 #### Compile the software
 ```bash
-cd ~/scratch
+cd ~/gb10/scratch
 wget https://ftp.gromacs.org/gromacs/gromacs-2026.0.tar.gz
 tar xfz gromacs-2026.0.tar.gz
 cd gromacs-2026.0
@@ -249,7 +249,7 @@ EOF
 
 #### Submit the job
 ```bash
-cd ~/scratch
+cd ~/gb10/scratch
 wget https://zenodo.org/record/3893789/files/GROMACS_heterogeneous_parallelization_benchmark_info_and_systems_JCP.tar.gz 
 tar xf GROMACS_heterogeneous_parallelization_benchmark_info_and_systems_JCP.tar.gz 
 cd GROMACS_heterogeneous_parallelization_benchmark_info_and_systems_JCP/stmv

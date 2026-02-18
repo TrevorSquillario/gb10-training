@@ -76,27 +76,25 @@ Ranking of current VSCode extensions:
 
 These are separate IDEs that have better support for AI coding assistants:
 
-1. [Zed](https://zed.dev) is a local-first code editor with AI built-in. This is actually really good and works well with Ollama. Has a model picker to change what Ollama model you want to use.
-2. [Kilo Code](https://kilo.ai/) Haven't tried this one but it seems to have good reviews.
-3. [Windsurf](https://windsurf.com) is another AI coding assistant that can be self-hosted. 
-4. SublimeText through the OllamaSublime or Yollama packages
-5. NeoVim for you vim psychopaths
+- [Zed](https://zed.dev) is a local-first code editor with AI built-in. This is actually really good and works well with Ollama. Has a model picker to change what Ollama model you want to use.
+- [Kilo Code](https://kilo.ai/) Haven't tried this one but it seems to have good reviews.
+- [Windsurf](https://windsurf.com) is another AI coding assistant that can be self-hosted. 
+- SublimeText through the OllamaSublime or Yollama packages
+- NeoVim for you vim psychopaths
 
 ## Hands-on Lab: Vibe Coding Techniques
 
 Now that it's set up, practice the three core "Vibes":
 
-- **The Ghost Write (Tab):** Create a new `test.py` file. Start typing a function like `def calculate_sales_tax(amount):`. Wait 500ms. The GB10 will suggest the entire function in gray text. Press Tab to accept.
-- **The Highlight (Cmd+L / Ctrl+L):** Highlight a block of code and press `Ctrl+L`. Ask: "Refactor this to be more efficient using a list comprehension."
-- **The Intent (Cmd+I / Ctrl+I):** Press `Ctrl+I` to open the "Edit" box. Type: "Add a docstring to every function in this file." Watch as the GB10 edits the file in real-time.
-
+- **The Ghost Write (Tab):** Create a new `test.py` file. Start typing a function like `def calculate_sales_tax(amount):`. Wait 500ms. The GB10 will suggest the entire function in gray text. Press Tab to accept. IThis doesn't always work with local models.
+- **The Highlight:** Highlight a block of code, press `Ctrl+I` or go to your Chat. Ask: "Refactor this to accept a sales_tax parameter."
 ---
 
 **Task:** Create a new React or HTML component without "writing" any logic manually.
 
 1. Create a blank file `Dashboard.html`.
-2. Use `Ctrl+I` to say: "Build me a sales dashboard with a dark theme, a header, and a table showing 5 dummy products using Tailwind CSS."
-3. Use `Ctrl+L` on the resulting table to say: "Add a 'Status' column that randomly displays 'Paid' or 'Pending' with green/yellow badges."
+2. With the file selected ask: "Build me a sales dashboard with a dark theme, a header, and a table showing 5 dummy products using Tailwind CSS."
+3. Then ask: "Add a 'Status' column that randomly displays 'Paid' or 'Pending' with green/yellow badges."
 
 **Goal:** See how far you can get by only describing the "vibe" of the UI.
 

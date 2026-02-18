@@ -21,8 +21,8 @@ gmx --version | grep "Precision"
 
 # 4. Run the Production MD
 gmx mdrun -v \
-    -s ~/scratch/GROMACS_heterogeneous_parallelization_benchmark_info_and_systems_JCP/stmv/output.tpr \
-    -deffnm ~/scratch/GROMACS_heterogeneous_parallelization_benchmark_info_and_systems_JCP/stmv/output \
+    -s ~/gb10/scratch/GROMACS_heterogeneous_parallelization_benchmark_info_and_systems_JCP/stmv/output.tpr \
+    -deffnm ~/gb10/scratch/GROMACS_heterogeneous_parallelization_benchmark_info_and_systems_JCP/stmv/output \
     -ntmpi 1 \
     -ntomp $SLURM_CPUS_PER_TASK \
     -nb gpu \
