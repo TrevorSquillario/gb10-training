@@ -13,11 +13,28 @@ Setup the connection in VSCode
 1. Click the Remote Explorer icon in the left bar. Hover over to see the names.
 2. Hover over the SSH section and click the + icon
 3. A box will appear at the top center of the window. Enter `ssh <username>@<gb10-ip>`
-4. It should log you in automatically using passwordless SSH key authentication. If it prompts you for a password, something it's setup properly. You can enter your password but you'll have to do it everytime.
+4. It should log you in automatically using passwordless SSH key authentication. If it prompts you for a password, something isn't setup properly. Refer to `gb10-01`. You can enter your password but you'll have to do it everytime.
+
+## Hands-on Lab: Github Copilot Chat
+
+1. Go to the Extensions view (`Ctrl + Shift + X`) and install **Github Copilot Chat**.
+2. Select View > Chat if the chat window doesn't show up on the right pane.
+3. Go to the Accounts button in the bottom left above the Settings icon. Sign-in using a Github account. This will give you access to the free tier which provides 50 requests Premium Requests per month (all requests are treated as Premium with the free tier). With the Github Copilot Pro membership ($100/yr) you get unlimited access to the basic models like GPT-4o and GPT5-mini as well as additional Premium Requests for models like Claude Sonnet, Codex, etc.
+
+## Hands-on Lab: Auto-Completion
+
+- **The Ghost Write (Tab):** Create a new `test.py` file. Start typing a function like `def calculate_sales_tax(amount):`. Wait 500ms. The GB10 will suggest the entire function in gray text. Press Tab to accept. 
+- **The Highlight:** Highlight a block of code, press `Ctrl+I` or go to your Chat. Ask: "Refactor this to accept a sales_tax parameter."
+
+---
+
+## Hands-on Lab: Using Local Models with Ollama
+
+Ollama integration doesn't work with Github Copilot, the models are populated from Ollama but chats fail. At least with the models I tested with. 
 
 ### Top open weights coding models
 
-YMMV on these models but they are worth trying out. There are many others and it's worth trying them out. 
+YMMV on these models but they are worth trying out. There are many others but some do a better job at tool calling to edit files. Honestly they're not that good compared to the ones in Github Copilot. The models need to be tightly integrated with the IDE.
 
 To add these to Ollama in your terminal, run:
 
@@ -50,18 +67,6 @@ hf download unsloth/Qwen3-Coder-Next-FP8-Dynamic  --local-dir ~/gb10/models/Qwen
 
 ```
 
-## Hands-on Lab: Configuring Cline
-
-1. Go to the Extensions view (`Ctrl + Shift + X`) and install **Cline**.
-2. Click the Cline icon on the left bar and drag it to the right Chat panel if you'd prefer.
-3. Click the gear icon at the top of the Cline sidebar. Select API Configuration
-```
-API Provider: ollama
-Use custom base URL: http://192.168.0.30:11434
-Model: Select a model
-```
-4. Follow a similar process for **Roo Code** if you want to try that extension as well. Compare them and see which you prefer. 
-
 ## Review of Extensions
 
 None of the VSCode extensions are even close to Github Copilot but that was kind of expected. I think with time these open source extensions will improve.
@@ -72,23 +77,29 @@ Ranking of current VSCode extensions:
 2. Claude Code: Terminal focused but has a Chat panel that seems to work. The Chat panel is less feature rich compared to Github Copilot. Uses a fixed Ollama model. 
 3. Roo Code: Works okay, bare bones chat and editing capabilities. This is a fork of Cline with more features. Uses a fixed Ollama model. 
 4. Cline: Works okay but limited features
-5. Continue.dev: Lots of mention of this on the Internets but I couldn't get it to work properly with any models besides Llama3. None of the Ollama models would work with tool calling to edit files.
+5. Continue.dev: Lots of mention of this on the Internets but I couldn't get it to work properly with any models besides Llama3. None of the Ollama models I tested would work with tool calling to edit files.
 
 These are separate IDEs that have better support for AI coding assistants:
 
+- [Goose](https://block.github.io/goose) This is an interesting project from the former CEO of Twitter. Similar to Claude Code but all open source. 
 - [Zed](https://zed.dev) is a local-first code editor with AI built-in. This is actually really good and works well with Ollama. Has a model picker to change what Ollama model you want to use.
 - [Kilo Code](https://kilo.ai/) Haven't tried this one but it seems to have good reviews.
 - [Windsurf](https://windsurf.com) is another AI coding assistant that can be self-hosted. 
 - SublimeText through the OllamaSublime or Yollama packages
 - NeoVim for you vim psychopaths
 
-## Hands-on Lab: Vibe Coding Techniques
+### Configuring Cline or Roo Code
 
-Now that it's set up, practice the three core "Vibes":
-
-- **The Ghost Write (Tab):** Create a new `test.py` file. Start typing a function like `def calculate_sales_tax(amount):`. Wait 500ms. The GB10 will suggest the entire function in gray text. Press Tab to accept. IThis doesn't always work with local models.
-- **The Highlight:** Highlight a block of code, press `Ctrl+I` or go to your Chat. Ask: "Refactor this to accept a sales_tax parameter."
----
+1. Go to the Extensions view (`Ctrl + Shift + X`) and install **Cline** or **Roo Code**.
+2. Click the Cline icon on the left bar and drag it to the right Chat panel if you'd prefer.
+3. Click the gear icon at the top of the Cline sidebar. Select API Configuration
+```
+API Provider: ollama
+Use custom base URL: http://<gb10-ip>:11434
+API Key: ollama
+Model: Select a model
+```
+4. Follow a similar process for **Roo Code** if you want to try that extension as well. Compare them and see which you prefer. 
 
 **Task:** Create a new React or HTML component without "writing" any logic manually.
 
@@ -151,6 +162,9 @@ Pull the model in Ollama:
 docker exec -it ollama ollama pull qwen3-coder-next
 ```
 3. Launching the Agent
+
+The `claude` command is now accessible via the terminal and you can use it from there. 
+
 Navigate to any code project directory on your GB10 and launch:
 
 ```bash
@@ -159,26 +173,25 @@ claude --model qwen3-coder-next
 
 ## Setup Claude Code in VSCode
 
-Since your GB10 is already running Ollama and Claude Code, we just need to "plug in" VS Code.
+Since your GB10 is already running Ollama and Claude Code, we just need to "plug in" VS Code. 
 
 ### Extension install
 
 1. Open VS Code on your laptop 
-2. Select the Extensions tab on the left or hit Ctrl + Shift + P and search for Install Extension
-3. Search for Remote - SSH and install
-4. Search for Claude Code and install
-6. Hit Ctrl + Shift + P and search for User Settings then select Preferences: Open User Settings
-7. Go to Extensions > Claude Code and select
+2. Select the Extensions tab on the left, hit `Ctrl + Shift + X` or hit Ctrl + Shift + P and search for Install Extension
+3. Search for Claude Code and install
+4. Hit Ctrl + Shift + P and search for User Settings then select Preferences: Open User Settings
+5. Go to Extensions > Claude Code and select
 ```
 - Disable Login Prompt
 - Select Model: qwen3-coder-next
 - Use Terminal
 ```
 
-## Using Claude Code
+## Using Claude Code in VSCode
 
 1. Select the Claude Code icon (orange sprite) in the top right
-2. This will open the build-in VSCode Terminal and launch Claude Code in Terminal Mode. As of this writing it seems the extensions chat interface is broke when using a local LLM. We'll expore other options in future lessons.
+2. This will open the build-in VSCode Terminal and launch Claude Code in Terminal Mode. As of this writing it seems the extensions chat interface is broke when using a local LLM. 
 3. Ensure the `qwen3-coder-next`is displayed in the top right. If not use `/model qwen3-coder-next` to select the model
 
 ### Useful Commands inside Claude Code
