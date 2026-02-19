@@ -11,7 +11,7 @@ services:
 
     container_name: comfyui
     ipc: host
-    ulimit:
+    ulimits:
       memlock: -1
       stack: 67108864
     # GPU enablement
