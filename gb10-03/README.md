@@ -146,7 +146,7 @@ aiperf profile \
 
 ## Stop trtllm container. Due to memory limitations if we're using a large model we can only run either TensorRT-LLM or vLLM. 
 
-`Ctrl + C` in the window it's running or `docker stop ttrtllm`
+`Ctrl + C` in the window it's running or `docker stop trtllm`
 
 ## Hands-on Lab: Serving a model using vLLM
 
@@ -389,7 +389,7 @@ We will use the TensorRT-LLM Spark Dev container, which contains the specific li
 
 ```bash
 docker run --rm -it --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
-  -v "~/gb10/output_models:/workspace/output_models" \
+  -v "$HOME/gb10/output_models:/workspace/output_models" \
   -v "$HOME/.cache/huggingface:/root/.cache/huggingface" \
   -e HF_TOKEN=$HF_TOKEN \
   -e ACCELERATE_USE_FSDP=false \
