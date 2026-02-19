@@ -1,0 +1,26 @@
+services:
+  vllm-coder:
+    image: nvcr.io/nvidia/vllm:26.01-py3
+    container_name: vllm-coder
+    network_mode: "host"
+    ipc: host
+    ports:
+      - "8000:8000" # VLLM API access
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    volumes:
+      - ${HOME}/.cache/huggingface:/root/.cache/huggingface
+      - ${HOME}/gb10/models:/models
+    command: >
+      vllm serve "/models/Qwen3-Coder-Next-FP8"
+      --served-model-name qwen3-coder-next --port 8000 --max-model-len 170000 --gpu-memory-utilization 0.90
+      --enable-auto-tool-choice --tool-call-parser qwen3_coder --attention-backend flashinfer --enable-prefix-caching
+      --kv-cache-dtype fp8 --max-num-seqs 8
+    restart: "no"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]

@@ -208,4 +208,39 @@ Since your GB10 is already running Ollama and Claude Code, we just need to "plug
 
 Prompt: Create a test directory in the current path and create 3 text files. Fill the files with loren ipsum text
 
-Pro Tip: If Claude Code feels "slow" to start, it’s usually because it is reading your .git history or large node_modules. Create a .claudeignore file in your project root to exclude those folders, just like a .gitignore.
+### Serve Your Coding Model with vLLM
+
+This is generally not something you're going to need or use but it's here for reference. The comparison below focuses on parallel use (e.g. Claude Sub-Agents). However you will notice a faster TTFT (Time To First Token) compared to Ollama for sequential use (one prompt at a time). 
+
+#### Throughput & Latency
+
+Ollama (Parallel): Uses llama.cpp under the hood. It supports parallelism by creating multiple "slots" for the same model. However, it often handles them in a "round-robin" or limited batching fashion. If you send 4 subagent requests, Ollama might process them with some overhead, leading to a higher Time to First Token (TTFT) as the queue builds up.
+
+vLLM (Parallel): Uses Continuous Batching. Instead of waiting for one request to finish, vLLM "injects" new subagent prompts into the current GPU calculation cycle dynamically. On a GB10, vLLM will likely be 3x to 5x faster in terms of total tokens per second when all subagents are firing at once.
+
+#### Memory Management
+
+Ollama: Uses traditional contiguous memory allocation. If you set OLLAMA_NUM_PARALLEL=4, it carves out 4 distinct blocks of VRAM for the KV cache. This can lead to "fragmentation" where you have enough total memory, but not enough in one continuous "chunk," causing OOM crashes.
+
+vLLM: Uses PagedAttention. It treats GPU memory like a computer treats RAM (virtual memory). It breaks the KV cache into small "pages," meaning it uses almost 100% of the available VRAM with zero waste. For subagents with long chat histories, vLLM is far more stable
+
+#### Setup
+
+```bash
+hf download Qwen/Qwen3-Coder-Next-FP8 \
+  --local-dir ~/gb10/models/Qwen3-Coder-Next-FP8
+
+cd gb10-05/vllm-coder
+docker compose up -d
+```
+
+Edit your `~/.bashrc`:
+
+```bash
+export ANTHROPIC_BASE_URL="http://localhost:8000"
+```
+
+Launch claude
+```bash
+claude
+```

@@ -8,7 +8,7 @@ services:
       - GGML_CUDA_ENABLE_UNIFIED_MEMORY=1  # Explicitly allow Blackwell Unified Memory
       - OLLAMA_FLASH_ATTENTION=1 # Enable Flash Attention for supported models
       - OLLAMA_KV_CACHE_TYPE=q4_0 # Save memory with q4_0 quantization for KV cache
-      - OLLAMA_NUM_PARALLEL=2
+      - OLLAMA_NUM_PARALLEL=4
     ports:
       - "11434:11434" # Ollama API access
     volumes:

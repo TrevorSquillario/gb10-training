@@ -81,6 +81,7 @@ These common Docker commands cover most demo and troubleshooting workflows.
 | Build           | `docker build --progress=plain .`                          | Build container from Dockerfile and show all output.            |
 | Images        | `docker images` (or `docker image ls`)                                 | List local images.                                     |
 | Pull          | `docker pull <image>`                                                  | Download an image from a registry.                     |
+| Update          | `docker compose pull`                                                  | Update container images in compose file.                      |
 | Inspect       | `docker inspect <container>`                                     | JSON low-level details about containers/images.        |
 | Remove (cont) | `docker rm <container>`                                                 | Remove stopped container(s).                           |
 | Remove (img)  | `docker rmi <image>`                                                   | Remove an image from local cache.                      |

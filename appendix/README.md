@@ -3,6 +3,9 @@
 No space available on disk
 
 https://docs.docker.com/reference/cli/docker/system/prune/
+
+This will remove all the docker images no associated to a running container.
+
 ```bash
 docker system prune -a
 ```
