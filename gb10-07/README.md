@@ -59,6 +59,8 @@ Model Types Explained
 
 In ComfyUI workflows can be complex and difficult to understand so it's best to use existing workflows to understand what nodes are needed, what they do and how others have done it. Some great resources are available at:
 
+- https://docs.comfy.org/tutorials
+
 *Warning: These sites contain NSFW material and are blocked on the corporate network
 - https://civitai.com
 - https://openart.ai/workflows/home
@@ -122,6 +124,24 @@ wget -P  ~/gb10/models/comfyui/SEEDVR2 https://huggingface.co/numz/SeedVR2_comfy
 
 # Ultimate SD Upscaler
 wget -P ~/gb10/models/comfyui/upscale_models https://huggingface.co/Tenofas/ComfyUI/resolve/d79945fb5c16e8aef8a1eb3ba1788d72152c6d96/upscale_models/4x_NMKD-Siax_200k.pth
+```
+
+## Workflow: z-image-turbo
+The Z-Image Turbo model is a fast, 6-billion parameter, distilled text-to-image model developed by Alibaba’s Tongyi Lab, designed for high-speed, high-quality photorealistic image generation in ComfyUI. It is highly efficient, capable of generating images in 8-9 steps, often running faster than Flux while running comfortably on 12-16GB VRAM GPUs.
+
+```bash
+wget -P ~/gb10/models/comfyui/text_encoders/ https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/text_encoders/qwen_3_4b.safetensors
+wget -P ~/gb10/models/comfyui/vae/ https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/vae/ae.safetensors
+wget -P ~/gb10/models/comfyui/diffusion_models/ https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/diffusion_models/z_image_turbo_bf16.safetensors
+```
+
+## Workflow: SRPO
+SRPO (Semantic-Relative Preference Optimization) refers to a specialized, fine-tuned version of the FLUX.1-dev model released by Tencent-Hunyuan. It is designed to significantly improve image realism and better align AI-generated images with human preferences, effectively reducing the "plastic" or artificial look often found in earlier Flux models.
+
+```bash
+wget -P ~/gb10/models/comfyui/vae/ https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/vae/ae.safetensors
+wget -P ~/gb10/models/comfyui/diffusion_models/SRPO https://huggingface.co/tencent/SRPO/resolve/main/diffusion_pytorch_model.safetensors
+wget -P ~/gb10/models/comfyui/vae/ https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/vae/ae.safetensors
 ```
 
 ## Workflow: FLUX.2
