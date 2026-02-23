@@ -1,0 +1,36 @@
+job: extension
+config:
+  name: "test_smoke_run"
+  process:
+    - type: 'sd_trainer'
+      training_folder: "/output"
+      device: cuda:0
+      performance_log_every: 1 # Force output every step
+      trigger_word: "bbstyle"
+      model:
+        name_or_path: "/models/FLUX.1-dev"
+        is_flux: true
+        low_vram: false 
+      datasets:
+        - folder_path: "/input" # Put exactly 1 image here
+          caption_ext: "txt"
+          resolution: [1024, 1024]
+          cache_latents_to_disk: true # Cache latents to disk to prevent OOM errors
+      network:
+        type: "lora"
+        linear: 16 # Low rank for fast testing
+        linear_alpha: 16
+      sample:
+        sample_every: 10 # Sample very early
+        prompts:
+          - "bbstyle, a simple burger"
+      train:
+        skip_first_sample: true
+        cache_latents: true
+        batch_size: 1
+        steps: 20
+        gradient_accumulation_steps: 8
+        log_every: 1 # THIS IS KEY: reports loss every step
+        noise_scheduler: "flowmatch" 
+        optimizer: "adamw"
+        lr: 1e-4

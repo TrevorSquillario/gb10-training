@@ -1,0 +1,44 @@
+services:
+  burgerizer:
+    build: .
+    image: burgerizer:latest
+    container_name: burgerizer
+    environment:
+      # Disable torch.compile/inductor - Triton doesn't support Blackwell sm_121a yet
+      TORCH_COMPILE_DISABLE: "1"
+      TORCHDYNAMO_DISABLE: "1"
+
+      # Grace-Blackwell unified memory optimizations
+      CUDA_CACHE_DISABLE: "1"
+      #PYTORCH_NO_CUDA_MEMORY_CACHING: "1"
+      #CUDA_DEVICE_MAX_CONNECTIONS: "1"
+      CUDA_DEVICE_MAX_COPY_CONNECTIONS: "4"
+      CUDA_MODULE_LOADING: "EAGER"
+      #CUDA_MANAGED_FORCE_DEVICE_ALLOC: "1"
+      OMP_NUM_THREADS: "20"
+      #CUBLAS_WORKSPACE_CONFIG: ":0:0"
+      PYTORCH_CUDA_ALLOC_CONF: "expandable_segments:True" # Enable PyTorch's new expandable memory segments to better handle memory fragmentation.
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - ./:/app/
+      - ~/gb10/models/comfyui/diffusion_models:/models
+      - ~/gb10/images/bb_images/S10E02:/input
+      - ~/gb10/images/bb_images/S10E20:/input_val
+      #- ~/gb10/images/bb_images_test:/input
+      - ~/gb10/output_models:/output
+    ipc: host
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    shm_size: 16gb
+    stdin_open: true
+    tty: true
+    command: ["python", "train.py"]
+    #command: ["python", "train.py", "--generate_samples_only"]

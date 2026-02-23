@@ -1,0 +1,50 @@
+---
+job: extension
+config:
+  name: "bobs_burgers_style"
+  process:
+    - type: 'sd_trainer'
+      training_folder: "/output"
+      device: cuda:0
+      performance_log_every: 250
+      trigger_word: "bbstyle"
+      model:
+        name_or_path: "/models/FLUX.1-dev"
+        is_flux: true # Essential if using Flux
+        assistant_lora_path: null # Set this if using a distilled/turbo model
+        low_vram: true # Enable low VRAM optimizations (e.g., offloading, reduced precision)
+      datasets:
+        - folder_path: "/input"
+          caption_ext: "txt"
+          resolution: [1024, 1024]
+      network:
+        type: "lora"
+        linear: 64
+        linear_alpha: 64
+      sample:
+        sampler: "flowmatch" # THIS IS THE CRITICAL FIX
+        sample_every: 250
+        width: 1024
+        height: 1024
+        prompts:
+          - "bbstyle, Bob Belcher standing in front of his restaurant"
+        neg: "" 
+        seed: 42
+        sample_steps: 20
+        guidance_scale: 3.5 # Flux works best around 3.5 - 4.0
+      train:
+        batch_size: 1   # Start with 2; if it still crashes, drop to 1
+        gradient_accumulation_steps: 4 # 2 * 8 = 16 effective batch
+        skip_first_sample: true 
+        steps: 2500
+        train_unet: true
+        train_text_encoder: false 
+        gradient_checkpointing: false
+        noise_scheduler: "flowmatch" 
+        optimizer: "adamw8bit" #"adamw8bit" # adamw is also an option if you have the VRAM to support it without OOMs
+        lr: 1e-4
+      save:
+        dtype: bf16 # precision to save
+        save_every: 250 # save every this many steps
+        max_step_saves_to_keep: 4 # how many intermittent saves to keep
+        push_to_hub: false #change this to True to push your trained model to Hugging Face.

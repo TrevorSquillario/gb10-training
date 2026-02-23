@@ -129,3 +129,4 @@ https://github.com/seanGSISG/dgx-spark-sunshine-setup
 - Immich https://immich.app/
 - changedetection.io https://github.com/dgtlmoon/changedetection.io
 - Paperless-ngx + Paperless-AI
+- Self-hosted web based Photoshop https://www.photopea.com

@@ -144,6 +144,15 @@ wget -P ~/gb10/models/comfyui/diffusion_models/SRPO https://huggingface.co/tence
 wget -P ~/gb10/models/comfyui/vae/ https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/vae/ae.safetensors
 ```
 
+## Workflow: FLUX.1
+
+```bash
+hf download black-forest-labs/FLUX.1-dev \
+  --include "*flux1-dev.safetensors" \
+  --local-dir ~/gb10/models/comfyui/checkpoints
+
+```
+
 ## Workflow: FLUX.2
 
 There are also some workflows that use the FLUX.2 model. This is the state-of-the-art open source image model. They take a long time to run.
@@ -198,10 +207,49 @@ cd ComfyUI-F5-TTS
 git submodule update --init --recursive
 ```
 
-## Resources
+# FLUX.1 LoRA Training
 
-- Self-hosted web based Photoshop https://www.photopea.com
+We are training a LoRA for the FLUX.1-dev model.
 
+LoRA (Low-Rank Adaptation) is an efficient technique for fine-tuning large AI models (like Large Language Models or Stable Diffusion) without needing to retrain the entire model. Instead of updating all billions of parameters, which is computationally expensive, LoRA freezes the original model and injects small, trainable "adapter" matrices into specific layers (like attention layers).
 
+Use ffmpeg to capture iframe every 30 seconds and crop for Flux.1-dev size (1024x1024)
+```bash
+ffmpeg -i video.mkv -vf "fps=1/30,scale=1024:1024:force_original_aspect_ratio=increase,crop=1024:1024" "~/gb10/images/bb_images/S10E02/S10E02_%04d.png"
+```
+
+Use default VLM `--model qwen2.5vl:32b` with the Ollama `--host http://localhost:11434` to auto caption images. This script is written to help the VLM recognize Bob's Burger characters and to create accurate image captions. It will write the caption in a file next to the image with a .txt extension.
+
+```bash
+cd ~/git/gb10-training/gb10-07/burgerizer/
+python caption_burger.py --dir ~/gb10/images/bb_images/S10E02
+```
+
+Training
+
+Training took 14-26 hours on 43 images. In the training output you want to watch for the `Val loss:` that is calculated after each checkpoint is saved (every 200 steps). This should slowly drop as the model trains.
+
+| Val loss | Interpretation | Notes |
+|---|---|---|
+| 0.50+ | Underfit | Way too early. Keep going. |
+| 0.25–0.35 | The Target Zone | This is where the magic usually happens for FLUX. |
+| 0.15–0.20 | Risk of Overfit | The model may start losing flexibility or "burning" colors. |
+| Below 0.10 | Deep Fried | Usually signifies the LoRA is too "stiff" and won't respond to prompts well. |
+
+```bash
+# Stop ALL docker containers (we need ALL that RAM)
+docker stop $(docker ps -q)
+
+cd ~/git/gb10-training/gb10-07/burgerizer/
+docker compose up -d
+docker logs -f burgerizer
+```
+
+Troubleshooting
+```bash
+# Look for Out-of-Memory errors. 
+sudo dmesg -wH
+[Feb21 17:13] NVRM: nvCheckOkFailedNoLog: Check failed: Out of memory [NV_ERR_NO_MEMORY] (0x00000051) returned from _memdescAllocInternal(pMemDesc) @ mem_desc.c:1359
+```
 
 
