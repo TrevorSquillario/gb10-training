@@ -54,86 +54,70 @@ Prerequisites
 - NVIDIA drivers + CUDA installed and working (`nvidia-smi`).
 - Conda or Miniconda installed on the host.
 
-Quick setup (recommended: `mamba` + `conda` channels)
-1. Check CUDA version:
+### Setup
+
+We are going to take a different approach than using Docker containers here. We're using `mamba` + `conda` which is another approach to dependency isolation used by the data science folks. Like Docker this allows you to run separate versions of the CUDA Toolkit and PyTorch on the same host. 
+
+Check CUDA version:
 
 ```bash
 nvidia-smi
 # Note the CUDA driver version and choose a matching RAPIDS cudatoolkit.
 ```
 
-2. Install `mamba` and create an environment (replace `CUDATOOLKIT` with a version that matches your system, e.g. `12.1`):
+Install Conda
+```bash
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh
+chmod +x Miniconda3-latest-Linux-aarch64.sh
+./Miniconda3-latest-Linux-aarch64.sh
+# Accept all the defaults and install
+
+# Reload your bash shell
+source ~/.bashrc
+
+# Confirm version
+conda --version
+```
+
+Install `mamba` and create an environment (replace `CUDATOOLKIT` with a version that matches your system, e.g. `12.1`). The GB10 is `13.0`:
 
 ```bash
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+# Install mamba (high speed package manager)
 conda install -n base -c conda-forge mamba -y
-mamba create -n rapids -c rapidsai -c nvidia -c conda-forge \
-	rapids python=3.10 cudatoolkit=CUDATOOLKIT -y
-conda activate rapids
 ```
 
 Note: RAPIDS releases must match your CUDA version. If unsure, see RAPIDS install docs: https://rapids.ai/start.html
 
-Download dataset (example: place multiple month CSVs into `data/`)
+Downloads dataset to `~/gb10/nyc-data`
 
 ```bash
-mkdir -p data
-# Download a few months of NYC taxi CSVs into data/ (example source)
-# e.g. https://s3.amazonaws.com/nyc-tlc/trip+data/ or other public parquet sources
-# For a fast experiment, download 3-12 months to create a large multi-GB dataset.
+cd ~/git/gb10-training/gb10-11/RAPIDS
+python download_data.py
 ```
 
-Example scripts
+Run the example scripts
 
-1) `gpu_run.py` — RAPIDS/cuDF (GPU)
-
-```python
-import time
-import cudf
-import glob
-
-start = time.perf_counter()
-df = cudf.read_csv(sorted(glob.glob('data/*.csv')))
-# simple example transform + aggregation
-df['tpep_pickup_datetime'] = cudf.to_datetime(df['tpep_pickup_datetime'])
-df = df[df['passenger_count'] > 0]
-agg = df.groupby('PULocationID').agg({'trip_distance': 'mean', 'total_amount': 'sum'})
-print(agg.head())
-print('Elapsed (GPU):', time.perf_counter() - start)
-```
-
-2) `cpu_run.py` — pandas (CPU)
-
-```python
-import time
-import pandas as pd
-import glob
-
-start = time.perf_counter()
-df = pd.concat((pd.read_csv(f) for f in sorted(glob.glob('data/*.csv'))), ignore_index=True)
-df['tpep_pickup_datetime'] = pd.to_datetime(df['tpep_pickup_datetime'])
-df = df[df['passenger_count'] > 0]
-agg = df.groupby('PULocationID').agg({'trip_distance': 'mean', 'total_amount': 'sum'})
-print(agg.head())
-print('Elapsed (CPU):', time.perf_counter() - start)
-```
-
-Steps to run the lesson
-- Ensure `data/` contains the CSV(s).
-- With the `rapids` conda env active, run the GPU script:
+`cpu_run.py` — pandas (CPU)
 
 ```bash
-python gpu_run.py
-```
-
-- In a separate conda env (or after installing `pandas` in the same env), run the CPU script:
-
-```bash
-conda create -n pandas-env python=3.10 pandas -y
+# Create your python sandbox
+conda create -n pandas-env python=3.11 pandas -y
 conda activate pandas-env
 python cpu_run.py
 ```
 
-What to highlight for students
+`gpu_run.py` — RAPIDS/cuDF (GPU)
+```bash
+# Create your RAPIDS sandbox
+mamba create -n rapids -c rapidsai -c nvidia -c conda-forge \
+	rapids python=3.11 cuda-toolkit=13.0 -y
+conda activate rapids
+python gpu_run.py
+```
+
+What to look for
 - Show GPU memory usage with `nvidia-smi` while `gpu_run.py` runs and note that the entire dataset can be resident in GPU memory.
 - Compare the printed elapsed times: expect the GPU run to be dramatically faster for large datasets and many-row operations.
 - Discuss trade-offs: RAPIDS API differences vs pandas, IO formats (Parquet often preferable), and ecosystem (Dask + cuDF for out-of-core / multi-GPU).
@@ -142,10 +126,12 @@ Optional extensions
 - Convert CSVs to Parquet and re-run (Parquet improves IO and speeds up GPU reads).
 - Use Dask-cuDF to scale across multiple GPUs or a small cluster.
 
-Expected "Aha!" moment
-- Students will observe a large wall-clock speedup (e.g., minutes → seconds) for complex joins/aggregations when run on the GB10 GPU versus CPU, demonstrating the practical value of GPU-accelerated data engineering.
+### Cleanup
 
-
+Uninstall Conda
+```bash
+~/miniconda3/uninstall.sh
+```
 
 ## Cybersecurity: Password Entropy & Auditing (Hashcat)
 
@@ -160,8 +146,10 @@ Ethics & safety
 - Run experiments only on hashes you create locally for teaching purposes. Do not attempt to crack hashes that you do not own or otherwise lack explicit authorization to test.
 
 Prerequisites
-- `hashcat` installed (system package or release from https://hashcat.net/hashcat/).
-- A local wordlist such as `/usr/share/wordlists/rockyou.txt` (installable from `wordlists` packages) or a custom list.
+```bash
+sudo apt install -y hashcat
+wget -P ~/gb10/wordlists https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt
+```
 
 Create test hashes (local only)
 - MD5 (example: password `password`):
@@ -180,6 +168,8 @@ echo -n 'password' | sha1sum | awk '{print $1}' > hashes_sha1.txt
 - bcrypt (example - Python) — hashcat mode supports full bcrypt hashes; generate them locally:
 
 ```bash
+pip install bcrypt
+
 python - <<'PY' > hashes_bcrypt.txt
 import bcrypt
 print(bcrypt.hashpw(b'password123', bcrypt.gensalt()).decode())
@@ -190,13 +180,21 @@ Basic `hashcat` examples (local test hashes)
 - Benchmark hashcat to see native throughput for your GB10 (no target hashes):
 
 ```bash
-hashcat -b
+# CPU
+hashcat -b -D 1
+
+# GPU
+hashcat -b -D 2
 ```
 
 - Crack an MD5 hash using a wordlist (mode `-m 0`, attack `-a 0`):
 
 ```bash
-hashcat -m 0 -a 0 hashes_md5.txt /usr/share/wordlists/rockyou.txt --potfile-path=hashcat.pot
+# CPU
+hashcat -m 0 -a 0 -D 1 hashes_md5.txt ~/gb10/wordlists/rockyou.txt --potfile-path=hashcat.pot
+
+# GPU
+hashcat -m 0 -a 0 -D 2 hashes_md5.txt ~/gb10/wordlists/rockyou.txt --potfile-path=hashcat.pot
 ```
 
 - Bruteforce a 6-character lowercase password (mask attack):

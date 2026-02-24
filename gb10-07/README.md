@@ -144,15 +144,6 @@ wget -P ~/gb10/models/comfyui/diffusion_models/SRPO https://huggingface.co/tence
 wget -P ~/gb10/models/comfyui/vae/ https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/vae/ae.safetensors
 ```
 
-## Workflow: FLUX.1
-
-```bash
-hf download black-forest-labs/FLUX.1-dev \
-  --include "*flux1-dev.safetensors" \
-  --local-dir ~/gb10/models/comfyui/checkpoints
-
-```
-
 ## Workflow: FLUX.2
 
 There are also some workflows that use the FLUX.2 model. This is the state-of-the-art open source image model. They take a long time to run.
@@ -218,16 +209,16 @@ Use ffmpeg to capture iframe every 30 seconds and crop for Flux.1-dev size (1024
 ffmpeg -i video.mkv -vf "fps=1/30,scale=1024:1024:force_original_aspect_ratio=increase,crop=1024:1024" "~/gb10/images/bb_images/S10E02/S10E02_%04d.png"
 ```
 
-Use default VLM `--model qwen2.5vl:32b` with the Ollama `--host http://localhost:11434` to auto caption images. This script is written to help the VLM recognize Bob's Burger characters and to create accurate image captions. It will write the caption in a file next to the image with a .txt extension.
+Use default VLM `qwen2.5vl:32b` with the default Ollama host `http://localhost:11434` to auto caption images. This script is written to help the VLM recognize Bob's Burger characters and create accurate image captions. It will write the caption in a file next to the image with a .txt extension.
 
 ```bash
-cd ~/git/gb10-training/gb10-07/burgerizer/
+cd ~/git/gb10-training/gb10-07/burgerizer
 python caption_burger.py --dir ~/gb10/images/bb_images/S10E02
 ```
 
 Training
 
-Training took 14-26 hours on 43 images. In the training output you want to watch for the `Val loss:` that is calculated after each checkpoint is saved (every 200 steps). This should slowly drop as the model trains.
+Training took 14-26 hours on 43 images. In the training output you want to watch for the `Val loss:` that is calculated after each checkpoint is saved. This should slowly drop as the model trains. Since we don't know how many epochs it will take to get the "best" checkpoint we save one every 200 steps, use the parameter `--save_every` to adjust this. 
 
 | Val loss | Interpretation | Notes |
 |---|---|---|
@@ -236,14 +227,28 @@ Training took 14-26 hours on 43 images. In the training output you want to watch
 | 0.15–0.20 | Risk of Overfit | The model may start losing flexibility or "burning" colors. |
 | Below 0.10 | Deep Fried | Usually signifies the LoRA is too "stiff" and won't respond to prompts well. |
 
+After struggling to get `ai-toolkit` working (it just ate up all the RAM and crashed) I used Github Copilot with the Claude Sonnet 4.6 model to write me a `train.py` script. Then wrapped this in a docker container. 
+
+The script:
+1. Creates embeddings for image/caption and saves the `.pt` file to `/output/cache`
+2. Runs the training session, saving checkpoints to `/output`
+3. When the training is finished it generates sample images using the base model, then using every checkpoint. Samples are in the `/output/samples` directory.
+
 ```bash
 # Stop ALL docker containers (we need ALL that RAM)
 docker stop $(docker ps -q)
 
-cd ~/git/gb10-training/gb10-07/burgerizer/
+hf download black-forest-labs/FLUX.1-dev --local-dir ~/gb10/models/comfyui/diffusion_models/FLUX.1-dev
+
+cd ~/git/gb10-training/gb10-07/burgerizer
 docker compose up -d
 docker logs -f burgerizer
 ```
+
+Testing LoRA
+
+- Load the `txt2img-flux1-dev-lora` workflow in ComfyUI
+
 
 Troubleshooting
 ```bash
