@@ -66,6 +66,7 @@ Interactive session:
 ```sh
 docker run -it --rm --gpus all \
   --net=host --ipc=host \
+  -v ${PWD}:/workspace \
   -v /var/log:/var/log:ro \
   gb10-dev:latest
 ```
@@ -73,12 +74,12 @@ docker run -it --rm --gpus all \
 Inside container:
 
 ```sh
-# NCCL sanity check
-cd $NCCL_TESTS_DIR
-./build/all_reduce_perf -b 8 -e 512M -f 2 -g 1
-
 # Print all CUDA related info
 python cudainfo.py
+
+# NCCL sanity check
+cd $NCCL_TESTS_DIR
+NCCL_DEBUG=INFO ./build/all_reduce_perf -b 8 -e 512M -f 2 -g 1
 
 # PyTorch GPU check
 python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"

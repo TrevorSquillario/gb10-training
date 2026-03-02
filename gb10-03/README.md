@@ -23,10 +23,6 @@ Most AI enthusiasts are used to INT4 or GGUF quantization. Blackwell introduces 
 ## How do I get NVFP4 models?
 
 - Use a NIM from the NGC. Models must support the arm64 archeticture for the GB10 
-
-```bash
-docker manifest inspect nvcr.io/nim/qwen/qwen3-32b-dgx-spark:1.0 | grep architecture
-```
 - Nvidia has compatible models at https://huggingface.co/nvidia/models
 - Convert open source models manually
 
