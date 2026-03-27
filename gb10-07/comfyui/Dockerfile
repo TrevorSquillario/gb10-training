@@ -40,6 +40,14 @@ RUN pip install -r /opt/ComfyUI/requirements.txt
 # Handled at runtime by entrypoint.sh (clones if missing in mounted volume)
 # This ensures latest version on each container start
 
+# Optimal Environment Variables for Blackwell/GB10
+ENV CUDA_MODULE_LOADING=LAZY
+ENV TORCH_CUDNN_V8_API_ENABLED=1
+# Force Blackwell-optimized kernels
+ENV NCCL_IGNORE_CPU_AFFINITY=1 
+# Helps with Dell Spark's specific PCIe topology
+ENV PYTHONUNBUFFERED=1
+
 # ---- SageAttention ----
 # GB10 is compute capability 12.1 (sm_121).
 # CUDA 13.0 NVCC supports sm_121, so we compile directly for it.

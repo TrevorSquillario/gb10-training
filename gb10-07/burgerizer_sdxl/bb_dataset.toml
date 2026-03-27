@@ -1,0 +1,18 @@
+[general]
+shuffle_caption = true
+caption_extension = ".txt"
+keep_tokens = 2
+enable_bucket = true
+bucket_reso_steps = 64
+max_bucket_reso = 1344 # You can even push to 1536 if you have high-res source!
+min_bucket_reso = 256
+
+[[datasets]]
+batch_size = 16
+resolution = 1024
+enable_bucket = true
+
+  [[datasets.subsets]]
+  image_dir = "/input"
+  num_repeats = 10
+  cache_info = true

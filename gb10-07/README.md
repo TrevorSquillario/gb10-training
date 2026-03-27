@@ -198,63 +198,24 @@ cd ComfyUI-F5-TTS
 git submodule update --init --recursive
 ```
 
-# FLUX.1 LoRA Training
+## LoRA Training
 
-We are training a LoRA for the FLUX.1-dev model.
+- [ai-toolkit]((./ai-toolkit/)) The Ostris AI Toolkit is the most popular diffusion model training tool. I tested it out and ran into OOM errors training the FLUX.1-dev model. It's usable but maybe not optimzed for the GB10.
+- [burgerizer_flux]((./burgerizer_flux/)) So I decided to use AI to generate my own script to train a LoRA on FLUX.1-dev. This runs and from all the training output it's working but I can't get the results I'm looking for in ComfyUI
+- [burgerizer_sdxl_diffusers]((./burgerizer_sdxl_diffusers/)) Then I moved to SDXL. This uses the HuggingFace Diffusers script https://github.com/huggingface/diffusers/blob/main/examples/advanced_diffusion_training/README.md. It requires a `metadata.jsonl` file containing all the images and caption files. Possible but I gave up fell back to the old standard.
+- [burgerizer_sdxl]((./burgerizer_sdxl/)) This uses the scripts from the Koyha-SS project. Uses a simple image01.png/image01.txt format for image/caption. Another benefit is it automatically creates training buckets to group images of different SDXL standard sizes. The `scrape_fandom.py` will pull images from a Fandom Gallery via a url you can provide to the script.
 
-LoRA (Low-Rank Adaptation) is an efficient technique for fine-tuning large AI models (like Large Language Models or Stable Diffusion) without needing to retrain the entire model. Instead of updating all billions of parameters, which is computationally expensive, LoRA freezes the original model and injects small, trainable "adapter" matrices into specific layers (like attention layers).
+### SDXL Resolution Sizes
 
-Use ffmpeg to capture iframe every 30 seconds and crop for Flux.1-dev size (1024x1024)
-```bash
-ffmpeg -i video.mkv -vf "fps=1/30,scale=1024:1024:force_original_aspect_ratio=increase,crop=1024:1024" "~/gb10/images/bb_images/S10E02/S10E02_%04d.png"
-```
-
-Use default VLM `qwen2.5vl:32b` with the default Ollama host `http://localhost:11434` to auto caption images. This script is written to help the VLM recognize Bob's Burger characters and create accurate image captions. It will write the caption in a file next to the image with a .txt extension.
-
-```bash
-cd ~/git/gb10-training/gb10-07/burgerizer
-python caption_burger.py --dir ~/gb10/images/bb_images/S10E02
-```
-
-Training
-
-Training took 14-26 hours on 43 images. In the training output you want to watch for the `Val loss:` that is calculated after each checkpoint is saved. This should slowly drop as the model trains. Since we don't know how many epochs it will take to get the "best" checkpoint we save one every 200 steps, use the parameter `--save_every` to adjust this. 
-
-| Val loss | Interpretation | Notes |
-|---|---|---|
-| 0.50+ | Underfit | Way too early. Keep going. |
-| 0.25–0.35 | The Target Zone | This is where the magic usually happens for FLUX. |
-| 0.15–0.20 | Risk of Overfit | The model may start losing flexibility or "burning" colors. |
-| Below 0.10 | Deep Fried | Usually signifies the LoRA is too "stiff" and won't respond to prompts well. |
-
-After struggling to get `ai-toolkit` working (it just ate up all the RAM and crashed) I used Github Copilot with the Claude Sonnet 4.6 model to write me a `train.py` script. Then wrapped this in a docker container. 
-
-The script:
-1. Creates embeddings for image/caption and saves the `.pt` file to `/output/cache`
-2. Runs the training session, saving checkpoints to `/output`
-3. When the training is finished it generates sample images using the base model, then using every checkpoint. Samples are in the `/output/samples` directory.
-
-```bash
-# Stop ALL docker containers (we need ALL that RAM)
-docker stop $(docker ps -q)
-
-hf download black-forest-labs/FLUX.1-dev --local-dir ~/gb10/models/comfyui/diffusion_models/FLUX.1-dev
-
-cd ~/git/gb10-training/gb10-07/burgerizer
-docker compose up -d
-docker logs -f burgerizer
-```
-
-Testing LoRA
-
-- Load the `txt2img-flux1-dev-lora` workflow in ComfyUI
-
-
-Troubleshooting
-```bash
-# Look for Out-of-Memory errors. 
-sudo dmesg -wH
-[Feb21 17:13] NVRM: nvCheckOkFailedNoLog: Check failed: Out of memory [NV_ERR_NO_MEMORY] (0x00000051) returned from _memdescAllocInternal(pMemDesc) @ mem_desc.c:1359
-```
-
-
+| Aspect Ratio | Resolution (W x H) | Orientation | Typical Use Case |
+|---|---:|---|---|
+| 1:1 | 1024 x 1024 | Square | Social Media, Profile Pictures |
+| 2:3 | 832 x 1216 | Portrait | Photography, Standard Portrait |
+| 3:4 | 896 x 1152 | Portrait | Standard Print, Digital Art |
+| 5:8 | 768 x 1216 | Portrait | Tall Mobile Displays |
+| 9:16 | 768 x 1344 | Portrait | Smartphone Wallpapers, TikTok/Reels |
+| 9:21 | 640 x 1536 | Portrait | Ultra-tall, Cinematic Vertical |
+| 3:2 | 1216 x 832 | Landscape | Photography, Web Banners |
+| 4:3 | 1152 x 896 | Landscape | Tablet Displays, Standard Presentation |
+| 16:9 | 1344 x 768 | Landscape | HD Widescreen, YouTube Thumbnails |
+| 21:9 | 1536 x 640 | Landscape | Cinematic Ultrawide |

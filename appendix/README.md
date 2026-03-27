@@ -20,6 +20,15 @@ sudo sh -c "sync; echo 3 > /proc/sys/vm/drop_caches"
 ## How to Reinstall the NVIDIA DGX Operating System
 https://www.dell.com/support/kbdoc/en-bh/000382042/how-to-reinstall-the-nvidia-dgx-operating-system-on-dell-pro-max-with-grace-blackwell-systems
 
+## NVIDIA PyTorch Container Comparison
+
+| **Feature**            | **25.02‑py3**                | **25.09‑py3**                        | **25.10‑py3**               |
+|------------------------|------------------------------|--------------------------------------|-----------------------------|
+| PyTorch Version        | 2.7.0a0                      | 2.9.0a0                              | 2.9.0a0                     |
+| CUDA Toolkit           | 12.8                         | 12.9 (Early CUDA 13)                 | 13.0.2                      |
+| Python Version         | 3.12.3                       | 3.12.3                               | 3.12.3                      |
+| Blackwell Status       | Early Access / Beta          | Optimized                            | Production Stable           |
+| RAPIDS Included        | Yes                          | No (Removed)                         | No (Removed)                |
 
 ## Simple LLM Benchmark
 ```bash
@@ -121,8 +130,11 @@ ollama run minimax-q8
 ## Prometheus /metrics Endpoint for Ollama
 https://github.com/NorskHelsenett/ollama-metrics
 
-## Sunshine/Moonight Streaming
-https://github.com/seanGSISG/dgx-spark-sunshine-setup
+## Remote Access via Sunshine/Moonight Streaming
+
+This is much better than RDP or VNC. Supports high resolutions and GPU rendering
+
+https://github.com/eelbaz/dgx-spark-headless-sunshine
 
 ## Other Self-Hosted Apps Worth Trying
 - Frigate https://frigate.video/

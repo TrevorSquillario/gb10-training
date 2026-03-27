@@ -1,0 +1,45 @@
+[general]
+shuffle_caption = true
+caption_extension = ".txt"
+keep_tokens = 1
+enable_bucket = true
+bucket_reso_steps = 64
+max_bucket_reso = 1344 # You can even push to 1536 if you have high-res source!
+min_bucket_reso = 256
+
+[[datasets]]
+batch_size = 8          # Crank this up! 
+resolution = 1024
+enable_bucket = true
+
+  [[datasets.subsets]]
+  image_dir = "/input/bob_belcher"
+  num_repeats = 15
+
+  [[datasets.subsets]]
+  image_dir = "/input/linda_belcher"
+  num_repeats = 15
+
+  [[datasets.subsets]]
+  image_dir = "/input/tina_belcher"
+  num_repeats = 15
+  
+  [[datasets.subsets]]
+  image_dir = "/input/gene_belcher"
+  num_repeats = 15
+  
+  [[datasets.subsets]]
+  image_dir = "/input/louise_belcher"
+  num_repeats = 15
+  
+  [[datasets.subsets]]
+  image_dir = "/input/teddy"
+  num_repeats = 18
+
+  [[datasets.subsets]]
+  image_dir = "/input/mr_fischoeder"
+  num_repeats = 30
+
+  [[datasets.subsets]]
+  image_dir = "/input/group"
+  num_repeats = 10

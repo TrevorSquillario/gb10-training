@@ -65,3 +65,8 @@ docker compose up
 # Open a browser to http://<gb10-ip>:5000
 ```
 
+**GB10 Roadshow Demo**
+
+https://github.com/TrevorSquillario/gb10-demo
+
+This workspace contains the yolo-face demo: a Docker Compose stack that runs a set of microservices for real-time video capture, face detection & tracking, segmentation/masking, optional pose/depth/VLM/stable-diffusion modules, and a small API gateway for viewing results.
