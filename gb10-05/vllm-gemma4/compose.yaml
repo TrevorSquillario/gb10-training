@@ -1,0 +1,46 @@
+services:
+  vllm-gemma4:
+    #image: vllm/vllm-openai:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vllm-gemma4
+    network_mode: host
+    ipc: host
+    #ports:
+    #  - "8090:8000" # VLLM API access
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    volumes:
+      - ${HOME}/.cache/huggingface:/root/.cache/huggingface
+      - ${HOME}/gb10/vllm_cache/vllm_gemma4:/root/.cache/vllm
+    #environment:
+    #  - VLLM_NVFP4_GEMM_BACKEND=marlin
+    command: >
+      google/gemma-4-26B-A4B-it
+      --tensor-parallel-size 1
+      --port 8090
+      --max-model-len 256144
+      --gpu-memory-utilization 0.60
+      --trust-remote-code
+      --enable-prefix-caching
+      --kv-cache-dtype fp8
+      --reasoning-parser gemma4
+      --tool-call-parser gemma4
+      --enable-auto-tool-choice
+      --enable-chunked-prefill
+      --max-num-batched-tokens 32768
+      --compilation-config '{"cache_dir": "/root/.cache/vllm"}'
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
