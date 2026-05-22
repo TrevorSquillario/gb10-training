@@ -30,9 +30,8 @@ RUN pip install --index-url https://download.pytorch.org/whl/cu130 \
     torch torchvision torchcodec
 
 # ---- ComfyUI ----
-RUN git clone https://github.com/comfyanonymous/ComfyUI.git /opt/ComfyUI && \
-    cd /opt/ComfyUI && \
-    git checkout ${COMFYUI_REF} || true
+RUN git clone -b ${COMFYUI_REF} https://github.com/comfyanonymous/ComfyUI.git /opt/ComfyUI && \
+    cd /opt/ComfyUI || true
 
 RUN pip install -r /opt/ComfyUI/requirements.txt
 

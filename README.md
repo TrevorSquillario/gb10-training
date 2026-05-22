@@ -91,12 +91,13 @@ Focus: Performance tuning and professional customer delivery.
 - Lab: Install and configure SLURM on the GB10, submit example CFD and LLM training jobs, and practice troubleshooting stuck jobs and service restarts.
 
 ## [Appendix](./appendix/)
-
 - Troubleshooting
 - How to Reinstall the NVIDIA DGX Operating System
+- Dual GB10 Setup
+- NVIDIA PyTorch Container Comparison
 - Simple LLM Benchmark
 - Manually Add Model to Ollama
 - Prometheus /metrics Endpoint for Ollama
-- Sunshine/Moonight Streaming
+- Remote Access via Sunshine/Moonight Streaming
 - Other Self-Hosted Apps Worth Trying
 
