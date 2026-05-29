@@ -225,6 +225,57 @@ mpirun -np 2 -H 192.168.1.10:1,192.168.1.11:1 \
   $HOME/nccl-tests/build/all_gather_perf -b 16G -e 16G -f 2
 ```
 
+### Benchmark
+
+Spark 2:
+```
+ibdev2netdev
+ib_write_bw -d rocep1s0f0 --report_gbits -q 4 -R --force-link IB
+
+************************************
+* Waiting for client to connect... *
+************************************
+```
+Spark 1:
+
+```
+ib_write_bw 192.168.1.11 -d rocep1s0f0 --report_gbits -q 4 -R --force-link IB
+
+---------------------------------------------------------------------------------------
+                    RDMA_Write BW Test
+ Dual-port       : OFF          Device         : rocep1s0f0
+ Number of qps   : 4            Transport type : IB
+ Connection type : RC           Using SRQ      : OFF
+ PCIe relax order: ON
+ ibv_wr* API     : ON
+ TX depth        : 128
+ CQ Moderation   : 1
+ Mtu             : 1024[B]
+ Link type       : IB
+ Max inline data : 0[B]
+ rdma_cm QPs     : ON
+ Data ex. method : rdma_cm
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x066e PSN 0xf840
+ local address: LID 0000 QPN 0x066f PSN 0x3a9d2a
+ local address: LID 0000 QPN 0x0670 PSN 0x52282c
+ local address: LID 0000 QPN 0x0671 PSN 0xc9420b
+ remote address: LID 0000 QPN 0x012f PSN 0x3362c8
+ remote address: LID 0000 QPN 0x0130 PSN 0xc82912
+ remote address: LID 0000 QPN 0x0131 PSN 0x2929f4
+ remote address: LID 0000 QPN 0x0132 PSN 0x4eb433
+---------------------------------------------------------------------------------------
+ #bytes     #iterations    BW peak[Gb/sec]    BW average[Gb/sec]   MsgRate[Mpps]
+ 65536      20000            111.62             111.61             0.212877
+---------------------------------------------------------------------------------------
+```
+
+Latency
+```
+ib_write_lat -d rocep1s0f0 --report_gbits -R --force-link IB
+ib_write_lat 192.168.1.11 -d rocep1s0f0 --report_gbits -R --force-link IB
+```
+
 ## NVIDIA PyTorch Container Comparison
 
 | **Feature**            | **25.02‑py3**                | **25.09‑py3**                        | **25.10‑py3**               |

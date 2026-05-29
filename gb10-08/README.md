@@ -60,6 +60,7 @@ This demo uses ffmpeg to take a public traffic camera's video stream which is an
 
 ```bash
 cd gb10-08/YOLO
+wget https://huggingface.co/Ultralytics/YOLO26/resolve/main/yolo26n.pt
 docker compose up
 
 # Open a browser to http://<gb10-ip>:5000
