@@ -1,0 +1,5 @@
+---
+# Default list of sudoers files to install. Override in playbook if needed.
+sudoers_files:
+  - { src: 'trevor', dest: '/etc/sudoers.d/trevor' }
+  - { src: 'telegraf', dest: '/etc/sudoers.d/telegraf' }

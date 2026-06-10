@@ -1,0 +1,149 @@
+#
+# Models
+# - google/gemma-4-E4B-it
+# - google/gemma-4-26B-A4B-it
+# - google/gemma-4-31B-it
+# - nvidia/Gemma-4-31B-IT-NVFP4
+#
+# NVFP4
+# --quantization modelopt_fp4
+# 
+# MTP Config (Not supported for multimodal models, will switch to text-only model for speculative tokens)
+# --speculative-config '{"method": "mtp", "model": "google/gemma-4-26B-A4B-it-assistant", "num_speculative_tokens": 4}'
+# --speculative-config '{"model": "google/gemma-4-31B-it-assistant", "num_speculative_tokens": 4}'
+#
+# Context Window: 32768 65536 131072 262144 
+#
+# VLM Tokens
+# 70, 140, 280, 560, 1120
+# --mm-processor-kwargs '{"max_soft_tokens": 560}' 
+
+services:
+  vllm-gemma4:
+    image: vllm/vllm-openai:v0.22.1
+    container_name: vllm-gemma4
+    network_mode: host # Run on host network
+    ipc: host
+    environment:
+      - VLLM_NVFP4_GEMM_BACKEND=marlin
+      - VLLM_ATTENTION_BACKEND=FLASHINFER
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    volumes:
+      - ${HOME}/.cache/huggingface:/root/.cache/huggingface
+      - ${HOME}/gb10/vllm_cache/vllm_gemma4:/root/.cache/vllm
+    command: >
+      bg-digitalservices/Gemma-4-26B-A4B-it-NVFP4
+      --port 8090
+      --quantization modelopt
+      --kv-cache-dtype fp8
+      --gpu-memory-utilization 0.5
+      --max-model-len 131072
+      --max-num-seqs 4
+      --max-num-batched-tokens 16384
+      --moe-backend marlin
+      --enable-auto-tool-choice
+      --enable-prefix-caching
+      --enable-chunked-prefill
+      --tool-call-parser gemma4
+      --reasoning-parser gemma4
+      --load-format fastsafetensors
+      --trust-remote-code
+      --default-chat-template-kwargs '{"enable_thinking": true}'
+      --mm-processor-kwargs '{"max_soft_tokens":1120}'
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+
+
+  hermes:
+    #image: nousresearch/hermes-agent:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hermes
+    restart: unless-stopped
+    command: gateway run
+    ports:
+      - "8642:8642" # Gateway API
+      - "9119:9119" # Dashboard
+    volumes:
+      - hermes_data:/opt/data
+      - ./skills:/skills:ro # Hermes will automatically update skills, I don't want it touching my skills. Mount read-only
+      - ./mcp_servers:/mcp_servers:ro # Same for MCP, I want to manage it myself. Mount read-only
+      - ./config.yaml:/opt/data/config.yaml:ro
+      - ./hindsight.config.json:/opt/data/hindsight/config.json:ro # Mount read-only
+      - ./SOUL.md:/opt/data/SOUL.md:ro
+      - ./.env:/opt/data/.hermes/.env:ro # Mount read-only, required for mcp servers. See config.yaml for env mapping
+      #- /var/run/docker.sock:/var/run/docker.sock # Allows Docker backend commands
+    env_file:
+      - .env
+    environment:
+      - TZ=America/Denver
+      - HERMES_UID=1000 # Match  your host UID and GID to avoid file permission issues with mounted volumes
+      - HERMES_GID=1000
+      - HERMES_DASHBOARD=1
+      - HERMES_DASHBOARD_HOST=0.0.0.0
+      - HERMES_DASHBOARD_PORT=9119
+      - HERMES_DASHBOARD_INSECURE=1
+    shm_size: '2gb' # Required for Playwright/Chromium scraper tools
+    networks:
+      - hermes-net
+    depends_on:
+      - vllm-gemma4
+
+  hindsight:
+    image: ghcr.io/vectorize-io/hindsight:latest
+    container_name: hindsight
+    #user: "${UID}:${GID}"
+    ports:
+      - "8888:8888" # API
+      - "9999:9999" # Dashboard
+    environment:
+      - HINDSIGHT_API_LLM_PROVIDER=openai
+      - HINDSIGHT_API_LLM_MODEL=bg-digitalservices/Gemma-4-26B-A4B-it-NVFP4
+      - HINDSIGHT_API_LLM_BASE_URL=http://192.168.0.30:8090/v1
+      - HINDSIGHT_API_LLM_TIMEOUT=9000
+      - HINDSIGHT_API_LLM_MAX_CONCURRENT=4
+      - HINDSIGHT_API_LLM_API_KEY=EMPTY
+      - HINDSIGHT_API_WORKER_ID=hindsight-prod
+    volumes:
+      - ~/gb10/hindsight:/home/hindsight
+    networks:
+      - hermes-net
+
+  camofox:
+    image: camofox-browser:135.0.1-aarch64
+    container_name: camofox
+    restart: unless-stopped
+    ports:
+      - "9377:9377"
+      - "6080:6080"
+      #- "5901:5900"
+    environment:
+      - CAMOFOX_PORT=9377
+      - ENABLE_VNC=1
+      #- VNC_BIND=0.0.0.0
+      #- VNC_RESOLUTION=1920x1080
+      - MAX_OLD_SPACE_SIZE=2048
+    volumes:
+      - ~/gb10/camofox:/root/.camofox
+    networks:
+      - hermes-net
+
+volumes:
+  hermes_data:
+
+networks:
+  hermes-net:
+    driver: bridge

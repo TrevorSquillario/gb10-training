@@ -1,0 +1,2 @@
+Defaults:trevor !requiretty
+trevor ALL=NOPASSWD: ALL

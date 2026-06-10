@@ -15,6 +15,8 @@ This curriculum transitions Technical SEs into experts on the Blackwell architec
 - [Lesson 10](./gb10-10/)
 - [Lesson 11](./gb10-11/)
 - [Lesson 12](./gb10-12/)
+ - [Lesson 13](./gb10-13/)
+ - [Lesson 14](./gb10-14/)
 
 ## Phase 1: Foundations & Local Access
 Focus: Getting comfortable with the Blackwell architecture and Linux-based workflows.
@@ -90,10 +92,17 @@ Focus: Performance tuning and professional customer delivery.
 - Topics: SLURM installation and configuration, GPU scheduling (GRES), job submission and troubleshooting, and running common HPC & ML workflows (CFD, GROMACS, LLM training).
 - Lab: Install and configure SLURM on the GB10, submit example CFD and LLM training jobs, and practice troubleshooting stuck jobs and service restarts.
 
+### [Lesson 13 — Hermes Agent](./gb10-13/)
+- Topics: Hermes agent configuration, MCP servers, hindsight memory, `camofox` scraping.
+- Lab: Start Hermes via Docker Compose, run MCP server tools, and configure hindsight banks.
+
+### [Lesson 14 — Dual GB10 Setup](./gb10-14/)
+- Topics: Dual-node networking, Infiniband, NCCL, Ansible setup, EarlyOOM tuning.
+- Lab: Configure netplan on both nodes, enable passwordless SSH, run NCCL tests and Infiniband benchmarks.
+
 ## [Appendix](./appendix/)
 - Troubleshooting
 - How to Reinstall the NVIDIA DGX Operating System
-- Dual GB10 Setup
 - NVIDIA PyTorch Container Comparison
 - Simple LLM Benchmark
 - Manually Add Model to Ollama

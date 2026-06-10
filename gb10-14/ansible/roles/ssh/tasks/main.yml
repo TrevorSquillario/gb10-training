@@ -1,0 +1,23 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for ssh
+
+- name: Update SSHD Config
+  ansible.builtin.lineinfile:
+    line: "{{ item.line }}"
+    regexp: "{{ item.regexp }}"
+    path: /etc/ssh/sshd_config
+  loop:
+    - line: 'ClientAliveInterval 900'
+      regexp: '^(#)?ClientAliveInterval'
+    - line: 'ClientAliveCountMax 2'
+      regexp: '^(#)?ClientAliveCountMax'
+  register: sshd_config
+  notify: Restart SSHD
+
+- name: Deploy SSH public key
+  ansible.posix.authorized_key:
+    user: trevor
+    state: present
+    key: "{{ lookup('file', item) }}"
+  loop: "{{ ssh_keys }}"

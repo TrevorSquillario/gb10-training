@@ -1,0 +1,32 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for earlyoom
+- name: Install earlyoom
+  ansible.builtin.package:
+    name: earlyoom
+    state: present
+
+- name: Copy Common Config Files
+  ansible.builtin.copy:
+    src: earlyoom
+    dest: /etc/default/earlyoom
+    owner: root
+    group: root
+    mode: "0544"
+
+- name: Start earlyoom
+  service:
+    name: earlyoom
+    state: restarted
+    enabled: True
+
+- name: Add earlyoom alias to .bashrc for current user
+  ansible.builtin.lineinfile:
+    path: "~/.bashrc"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  become: False
+  loop:
+    - regexp: "^alias earlyoom=.*"
+      line: "alias earlyoom='journalctl -u earlyoom -f'"

@@ -1,0 +1,61 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for telegraf
+
+- name: Create Telegraf Repo
+  ansible.builtin.get_url:
+    url: https://repos.influxdata.com/influxdata-archive.key
+    dest: /tmp/influxdata-archive.key
+    mode: '0644'
+  register: influx_key
+
+- name: Ensure /etc/apt/keyrings exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Install InfluxData key to apt keyrings
+  ansible.builtin.shell: cat /tmp/influxdata-archive.key | gpg --dearmor | tee /etc/apt/keyrings/influxdata-archive.gpg > /dev/null
+  args:
+    creates: /etc/apt/keyrings/influxdata-archive.gpg
+  register: dearmored
+
+- name: Create InfluxData Repo
+  ansible.builtin.copy:
+    content: "deb [signed-by=/etc/apt/keyrings/influxdata-archive.gpg] https://repos.influxdata.com/debian stable main"
+    dest: /etc/apt/sources.list.d/influxdata.list
+  register: telegraf_repo
+
+- name: Update Apt
+  ansible.builtin.command: apt update
+  when: telegraf_repo.changed or (dearmored is defined and dearmored.changed)
+
+- name: Install Telegraf
+  package:
+    name: "telegraf"
+    state: present
+
+- name: Add telegraf to docker group
+  user:
+    name: telegraf
+    groups: docker
+    append: yes
+
+- name: Configure Telegraf
+  copy:
+    src: "{{ telegraf_conf }}"
+    dest: "/etc/telegraf/telegraf.conf"
+  register: telegraf
+  notify: Restart Telegraf
+  tags:
+    - telegraf
+    - telegraf-config
+
+- name: Start Telegraf
+  service:
+    name: telegraf
+    state: started
+    enabled: True
+  tags:
+    - telegraf

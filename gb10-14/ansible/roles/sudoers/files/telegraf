@@ -1,0 +1,17 @@
+Defaults:telegraf !requiretty, !syslog
+Cmnd_Alias SCRIPTS = /app/scripts/*, /opt/MegaRAID/storcli/storcli64 *
+telegraf  ALL=(ALL) NOPASSWD: SCRIPTS
+
+Cmnd_Alias LVM = /usr/sbin/pvs *, /usr/sbin/vgs *, /usr/sbin/lvs *
+telegraf  ALL=(ALL) NOPASSWD: LVM
+Defaults!LVM !logfile, !syslog, !pam_session
+
+# For smartctl add the following lines:
+Cmnd_Alias SMARTCTL = /usr/sbin/smartctl
+telegraf  ALL=(ALL) NOPASSWD: SMARTCTL
+Defaults!SMARTCTL !logfile, !syslog, !pam_session
+
+# For nvme-cli add the following lines:
+Cmnd_Alias NVME = /usr/sbin/nvme
+telegraf  ALL=(ALL) NOPASSWD: NVME
+Defaults!NVME !logfile, !syslog, !pam_session

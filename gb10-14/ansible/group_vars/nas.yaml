@@ -1,0 +1,16 @@
+package_list:     
+  - lsscsi
+  - smartmontools
+  - unzip
+  - lm-sensors
+  - wget
+  - nvme-cli
+  - fio
+  - tmux
+  - dstat
+  - intel-gpu-tools
+  - samba
+  - nmap
+  - r8168-dkms
+telegraf_conf: telegraf-nas.conf
+sysctl_conf: sysctl-nas.conf

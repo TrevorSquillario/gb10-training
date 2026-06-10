@@ -1,0 +1,17 @@
+---
+- name: GB10 OS Setup
+  hosts: gb10
+  become: True
+  roles:
+    #- role: ssh
+    #  tags: [ssh]
+    #- role: common
+    #  tags: [common]
+    #- role: earlyoom
+    #  tags: [earlyoom]
+    #- role: sudoers
+    #  tags: [sudoers]
+    #- role: telegraf
+    #  tags: [telegraf]
+    #- role: nfs-client
+    #  tags: [nfs-client]

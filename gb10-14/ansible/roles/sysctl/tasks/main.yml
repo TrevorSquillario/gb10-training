@@ -1,0 +1,21 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for sysctl
+
+- name: Copy sysctl.conf
+  copy:
+    src: "{{ sysctl_conf }}"
+    dest: /etc/sysctl.conf
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+  register: sysctl_copy
+  tags:
+    - sysctl
+
+- name: Update sysctl
+  command: sysctl -p
+  when: sysctl_copy.changed
+  tags:
+    - sysctl

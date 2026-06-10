@@ -1,0 +1,26 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for sudoers
+
+- name: Copy sudoers files
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: '0440'
+    backup: yes
+  loop: "{{ sudoers_files }}"
+  tags:
+    - sudo
+
+- name: Ensure includedir sudoers.d
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    regexp: '^@includedir /etc/sudoers.d.*'
+    line: '@includedir /etc/sudoers.d'
+    state: present
+    create: no
+    backup: yes
+  tags:
+    - sudo

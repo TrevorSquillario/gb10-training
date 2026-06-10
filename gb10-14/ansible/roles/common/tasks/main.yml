@@ -1,0 +1,46 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for common
+
+- name: Install Common Packages
+  ansible.builtin.package:
+    name: "{{ package_list }}"
+    state: present
+  tags:
+    - packages
+
+- name: Update .bashrc for current user
+  ansible.builtin.lineinfile:
+    path: "~/.bashrc"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  become: False
+  loop:
+    - regexp: "^export PS1=.*"
+      line: >
+        export PS1="\[\e[1;32m\]\u@\h \[\e[1;34m\]\w \[\e[0;33m\]\$(git branch 2>/dev/null | grep '^*' | colrm 1 2)\[\e[0m\]$ "
+    - regexp: "^HISTSIZE=.*"
+      line: "#HISTSIZE="
+    - regexp: "^HISTFILESIZE=.*"
+      line: "#HISTFILESIZE="
+
+  tags:
+    - bashrc
+
+- name: Copy Common Config Files
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+    backup: yes
+  loop:
+    - { src: 'hgrep.sh', dest: '/etc/profile.d', mode: '0755' }
+    - { src: 'history.sh', dest: '/etc/profile.d', mode: '0755' }
+    - { src: 'inputrc', dest: '/etc', mode: '0644' }
+    - { src: 'gitconfig', dest: '/etc/gitconfig', mode: '0644' }
+  tags:
+    - config
+  become: yes

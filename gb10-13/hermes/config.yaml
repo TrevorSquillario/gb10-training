@@ -1,0 +1,116 @@
+model:
+  provider: custom
+  model: bg-digitalservices/Gemma-4-26B-A4B-it-NVFP4
+  base_url: http://192.168.0.30:8090/v1
+  api_key: "none" # vLLM doesn't enforce API keys internally
+
+providers:
+  custom:
+    request_timeout_seconds: 3600
+    stale_timeout_seconds: 900
+
+custom_providers:
+  - name: vllm # This feeds the /model command in hermes. It will auto-populate with the current model running in the vLLM instance
+    base_url: http://192.168.0.30:8090/v1
+
+auxiliary:
+  vision:
+    provider: custom
+    model: bg-digitalservices/Gemma-4-26B-A4B-it-NVFP4 
+    timeout: 9000          # LLM API call timeout (seconds)
+    download_timeout: 60   # Image HTTP download timeout (seconds)
+                           # Increase for slow connections or self-hosted image servers
+
+agent: 
+  default_model: bg-digitalservices/Gemma-4-26B-A4B-it-NVFP4 
+  system_prompt: "You are a professional operations assistant capable of precise tool execution, autonomous web scraping, and Python development."
+
+approvals:
+  destructive_slash_confirm: false # Disable confirmation. We're running in a docker container so it's less of a risk here.
+
+curator:
+  enabled: false
+
+sessions:
+  auto_prune: true # Automatically prune old sessions to manage storage
+  retention_days: 180
+
+display: # These can be adjusted if the terminal is too noisy
+  show_reasoning: true 
+  tool_progress: "verbose"
+  tool_progress_command: true
+  tool_preview_length: 200
+
+delegation:
+  max_concurrent_children: 4 # Number of concurrent subagents from delegate_task
+  max_spawn_depth: 2 # Number of nested subagents from initial delegate_task
+
+timezone: "America/Denver" 
+
+memory:
+  provider: hindsight
+
+browser:
+  auto_local_for_private_urls: true
+  allow_private_urls: true 
+
+bundles: # Default tools to enable
+  - search_tools
+  - coding_assistant
+  - system_management
+  - openhue
+
+web:
+  backend: tavily    # firecrawl | parallel | tavily 
+
+logging:
+  level: "INFO"
+
+skills:
+  external_dirs:
+    - /skills # This cooresponds to the docker volume in compose.yaml
+
+mcp_servers:
+  arr:
+    command: "/opt/venv/bin/python"
+    args: ["/mcp_servers/arr/arr.py"]
+    env:
+      NAS_IP: ${NAS_IP}
+      RADARR_PORT: ${RADARR_PORT}
+      RADARR_API_KEY: ${RADARR_API_KEY}
+      RADARR_DEFAULT_QUALITY_PROFILE_ID: ${RADARR_DEFAULT_QUALITY_PROFILE_ID}
+      RADARR_ROOT_FOLDER_PATH: ${RADARR_ROOT_FOLDER_PATH}
+      SONARR_PORT: ${SONARR_PORT}
+      SONARR_API_KEY: ${SONARR_API_KEY}
+      SONARR_DEFAULT_QUALITY_PROFILE_ID: ${SONARR_DEFAULT_QUALITY_PROFILE_ID}
+      SONARR_ROOT_FOLDER_PATH: ${SONARR_ROOT_FOLDER_PATH}
+  jellyfin:
+    command: "/opt/venv/bin/python"
+    args: ["/mcp_servers/jellyfin.py"]
+    env:
+      JELLYFIN_URL: ${JELLYFIN_URL}
+      JELLYFIN_API_KEY: ${JELLYFIN_API_KEY}
+      JELLYFIN_USERNAME: ${JELLYFIN_USERNAME}
+  yfinance:
+    command: "/opt/venv/bin/python"
+    args: ["/mcp_servers/finance/yfinance_mcp.py"]
+  edgar:
+    command: "/opt/venv/bin/python"
+    args: ["/mcp_servers/finance/edgar_mcp.py"]
+    env:
+      MASSIVE_API_KEY: ${MASSIVE_API_KEY}
+      EDGAR_IDENTITY: ${EDGAR_IDENTITY}
+  fred:
+    command: "/opt/venv/bin/python"
+    args: ["/mcp_servers/finance/fred_mcp.py"]
+    env:
+      FRED_API_KEY: ${FRED_API_KEY}
+  massive:
+    command: "/opt/venv/bin/python"
+    args: ["/mcp_servers/finance/massive_mcp.py"]
+    env:
+      MASSIVE_API_KEY: ${MASSIVE_API_KEY}
+  home_assistant:
+    url: http://192.168.0.137:8124/mcp
+    tools:
+      include: [ha_get_state, ha_get_history]

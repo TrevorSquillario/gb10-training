@@ -1,0 +1,22 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for nfs-client
+- name: Install NFS client packages
+  package:
+    name: nfs-common
+    state: present
+
+- name: Ensure NetworkManager-wait-online.service is enabled and started
+  ansible.builtin.service:
+    name: NetworkManager-wait-online.service
+    state: started
+    enabled: true
+
+- name: Ensure NFS volume is mounted at boot
+  ansible.posix.mount:
+    src: "{{ item.src }}"
+    path: "{{ item.path }}"
+    fstype: nfs
+    opts: "{{ item.opts }}"
+    state: mounted
+  loop: "{{ nfs_mounts }}"
