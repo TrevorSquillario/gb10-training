@@ -4,7 +4,7 @@ This is my very opinionated hermes setup:
 
 - `curator.enabled=false`: I'm not a fan of hermes editing my skills. I run the show here Herm.
 - `/skills` are mounted readonly
-- `config.yaml` is mounted readonly
+- `config.yaml` is mounted readonly. This does prevent you from editing the config in the hermes Dashboard. 
 - `hindsight` for memory with `"auto_retain": false, "auto_recall": false` set to disable memory being automaticaly saved and recalled for every prompt
 - `camofox` for web scraping
 
@@ -22,7 +22,7 @@ hermes() {
 }
 ```
 
-Run the `hermes` command to launch the TUI or browse to the Hermes Dashboard at http://gb10-ip:9119
+Run the `hermes` command to launch the TUI or browse to the hermes Dashboard at http://gb10-ip:9119
 
 ## Adding Skills
 
@@ -101,7 +101,7 @@ volumes:
   - ./hindsight.config.json:/opt/data/hindsight/config.json:ro
 ```
 
-Update Hermes `config.yaml`:
+Update hermes `config.yaml`:
 ```
 memory:
    provider: hindsight
@@ -116,8 +116,34 @@ Hindsight Dashboard: http://gb10-ip:9999
 
 The `Dockerfile` adds a patch to the hindsight integration in hermes. It allows you to specify the `bank_id` when using the `hindsight_*` tools to use multiple banks.
 
-# OME MCP
+## iDRAC MCP
 
+```
+cd ~/git
+git clone https://github.com/TrevorSquillario/idrac-redfish-mcp.git
+```
+
+Update docker volume mapping in hermes `compose.yaml`
+```
+volumes:
+ - ../idrac-redfish-mcp:/mcp/idrac-redfish-mcp:ro
+```
+
+Add the `mcp_servers:` config in `config.yaml`
+```
+mcp_servers:
+  idrac:
+    command: "/opt/venv/bin/python"
+    args: ["/mcp/idrac-redfish-mcp/src/fastmcp-server.py"]
+    env:
+      IDRAC_USERNAME: ${IDRAC_USERNAME}
+      IDRAC_PASSWORD: ${IDRAC_PASSWORD}
+      IDRAC_SSL_VERIFY: ${IDRAC_SSL_VERIFY}
+```
+
+Restart the `hermes` container with `docker compose up -d hermes`. This will recreate the container, if it doesn't use `docker compose restart hermes`
+
+## OME MCP
 Note:
 *If you're GB10 can't resolve the FQDN of the OME server. You can update the hosts file in the `compose.yaml`
 ```
@@ -145,12 +171,11 @@ or
 5. Paste that into the terminal window where you ran the `hermes mcp...` command.
 6. On Success it should say `Authenticated — 26 tool(s) available`. 
 
-## Troubleshooting
+### Troubleshooting
 
 - `405 Method Not Allowed` means you're using `http` instead of `https`
 
-
-# Camofox
+## Camofox
 
 https://github.com/jo-inc/camofox-browser.git
 
