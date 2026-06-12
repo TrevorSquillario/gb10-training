@@ -129,7 +129,7 @@ volumes:
  - ../idrac-redfish-mcp:/mcp/idrac-redfish-mcp:ro
 ```
 
-Add the `mcp_servers:` config in `config.yaml`
+Add the `mcp_servers:` config in `config.yaml`. Remember the envs are read from `.env` mapped to `/opt/data/.hermes/.env` in the container, aka `~/.hermes/.env`
 ```
 mcp_servers:
   idrac:
@@ -147,13 +147,15 @@ Restart the `hermes` container with `docker compose up -d hermes`. This will rec
 Note:
 *If you're GB10 can't resolve the FQDN of the OME server. You can update the hosts file in the `compose.yaml`
 ```
+  hermes:
     extra_hosts:
       - "ome.example.com:192.168.0.160"
 ```
 
-1. Set OME appliance hostname to the FQDN. Configure DNS servers for OME.
+1. Set OME appliance hostname to a proper FQDN. Configure DNS servers for OME.
 2. Add the MCP server to your hermes `config.yaml` in the `mcp_servers` section
 ```
+mcp_servers:
   ome:
     url: https://ome.example.com/mcp
     auth: oauth
@@ -161,19 +163,23 @@ Note:
 ```
 or
 ```
+mcp_servers:
   ome:
     url: https://ome.example.com/mcp
     auth: oauth
     ssl_verify: /opt/certs/ome.example.com.crt
 ```
-3. Start hermes and run `hermes mcp login ome`. You will be presented with an OAuth URL. Open that and login with your OME credentials. 
-4. The browser will redirect to a 127.0.0.1 address. Copy from the `?code=*` to the end of the URL. Ex: `?code=zeqfBfyA_tXc-TNf7RN-WZugyR7SqpslKn_KpSZG0hg&state=r1687_fXjyPwLj4IMxIbMcYcC7auqvqTjgzpffgx8Wg`
+3. Start the hermes container and run `hermes mcp login ome`. You will be presented with an OAuth URL. Copy/paste or Ctrl+Click that link and login with your OME credentials. *You only have 40s so be quick with it!*
+4. The browser will redirect to a 127.0.0.1 address. Copy the full URL. (If that doesn't work just copy from the `?code=*` to the end. Ex: `?code=zeqfBfyA_tXc-TNf7RN-WZugyR7SqpslKn_KpSZG0hg&state=r1687_fXjyPwLj4IMxIbMcYcC7auqvqTjgzpffgx8Wg`)
 5. Paste that into the terminal window where you ran the `hermes mcp...` command.
 6. On Success it should say `Authenticated — 26 tool(s) available`. 
 
 ### Troubleshooting
 
 - `405 Method Not Allowed` means you're using `http` instead of `https`
+- Do the FQDNs match for OME in the hermes `config.yaml`, the OME hostname, and the DNS record?
+- Are you using `https` in your `config.yaml`?
+- If you're not using 
 
 ## Camofox
 
