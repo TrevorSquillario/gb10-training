@@ -33,6 +33,11 @@ services:
     environment:
       - OLLAMA_BASE_URL=http://ollama:11434
       - WEBUI_AUTH=True # Set to False if you don't want a login screen
+      - REQUESTS_VERIFY=False
+      - PYTHONHTTPSVERIFY=0
+      - ENABLE_WEB_LOADER_SSL_VERIFICATION=False
+      - AIOHTTP_CLIENT_SESSION_SSL=False
+      - AIOHTTP_CLIENT_SESSION_TOOL_SERVER_SSL=False
     volumes:
       - ~/gb10/open_webui:/app/backend/data
     depends_on:

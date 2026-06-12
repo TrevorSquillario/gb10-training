@@ -1,22 +1,9 @@
-#
-# Models
-# - google/gemma-4-E4B-it
-# - google/gemma-4-26B-A4B-it
-# - google/gemma-4-31B-it
-# - nvidia/Gemma-4-31B-IT-NVFP4
-#
-# NVFP4
-# --quantization modelopt_fp4
 # 
 # MTP Config (Not supported for multimodal models, will switch to text-only model for speculative tokens)
 # --speculative-config '{"method": "mtp", "model": "google/gemma-4-26B-A4B-it-assistant", "num_speculative_tokens": 4}'
-# --speculative-config '{"model": "google/gemma-4-31B-it-assistant", "num_speculative_tokens": 4}'
 #
-# Context Window: 32768 65536 131072 262144 
+# Context Windows: 32768 65536 131072 262144 
 #
-# VLM Tokens
-# 70, 140, 280, 560, 1120
-# --mm-processor-kwargs '{"max_soft_tokens": 560}' 
 
 services:
   vllm-gemma4:
@@ -80,9 +67,10 @@ services:
     volumes:
       - hermes_data:/opt/data
       - ./skills:/skills:ro # Hermes will automatically update skills, I don't want it touching my skills. Mount read-only
-      - ./mcp_servers:/mcp_servers:ro # Same for MCP, I want to manage it myself. Mount read-only
-      - ./config.yaml:/opt/data/config.yaml:ro
-      - ./hindsight.config.json:/opt/data/hindsight/config.json:ro # Mount read-only
+      # - ../<skills_directory>:/skills/<skills_directory>:ro # Alternative if you want to mount specific skill directories
+      # - ../<mcp_server_directory>:/mcp/<mcp_server_directory>:ro # Mount MCP servers, required .env mapping
+      - ./config.yaml:/opt/data/config.yaml:ro # Mount read-only, this does disable editing config values in the Hermes Dashboard
+      #- ./hindsight.config.json:/opt/data/hindsight/config.json:ro # Mount read-only
       - ./SOUL.md:/opt/data/SOUL.md:ro
       - ./.env:/opt/data/.hermes/.env:ro # Mount read-only, required for mcp servers. See config.yaml for env mapping
       #- /var/run/docker.sock:/var/run/docker.sock # Allows Docker backend commands
@@ -103,6 +91,8 @@ services:
       - vllm-gemma4
 
   hindsight:
+    profiles:
+      - hindsight
     image: ghcr.io/vectorize-io/hindsight:latest
     container_name: hindsight
     #user: "${UID}:${GID}"
@@ -123,6 +113,8 @@ services:
       - hermes-net
 
   camofox:
+    profiles:
+      - camofox
     image: camofox-browser:135.0.1-aarch64
     container_name: camofox
     restart: unless-stopped

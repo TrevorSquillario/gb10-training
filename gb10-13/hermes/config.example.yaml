@@ -1,7 +1,7 @@
 model:
   provider: custom
   model: bg-digitalservices/Gemma-4-26B-A4B-it-NVFP4
-  base_url: http://192.168.0.30:8090/v1
+  base_url: http://192.168.0.30:8090/v1 # vLLM instance or any OpenAI-compatible API endpoint
   api_key: "none" # vLLM doesn't enforce API keys internally
 
 providers:
@@ -9,9 +9,9 @@ providers:
     request_timeout_seconds: 3600
     stale_timeout_seconds: 900
 
-custom_providers:
+custom_providers: # Use this to be able to switch between multiple LLM backends if you have multiple running. 
   - name: vllm # This feeds the /model command in hermes. It will auto-populate with the current model running in the vLLM instance
-    base_url: http://192.168.0.30:8090/v1
+    base_url: http://192.168.0.30:8090/v1 # vLLM instance or any OpenAI-compatible API endpoint
 
 auxiliary:
   vision:
@@ -29,7 +29,7 @@ approvals:
   destructive_slash_confirm: false # Disable confirmation. We're running in a docker container so it's less of a risk here.
 
 curator:
-  enabled: false
+  enabled: false # Disable automatic skill updating
 
 sessions:
   auto_prune: true # Automatically prune old sessions to manage storage
@@ -47,8 +47,9 @@ delegation:
 
 timezone: "America/Denver" 
 
-memory:
-  provider: hindsight
+# Uncomment if you wish to use a memory provider
+# memory:
+#   provider: hindsight
 
 browser:
   auto_local_for_private_urls: true
@@ -58,10 +59,9 @@ bundles: # Default tools to enable
   - search_tools
   - coding_assistant
   - system_management
-  - openhue
 
 web:
-  backend: tavily    # firecrawl | parallel | tavily 
+  backend: tavily # firecrawl | parallel | tavily 
 
 logging:
   level: "INFO"
@@ -70,47 +70,4 @@ skills:
   external_dirs:
     - /skills # This cooresponds to the docker volume in compose.yaml
 
-mcp_servers:
-  arr:
-    command: "/opt/venv/bin/python"
-    args: ["/mcp_servers/arr/arr.py"]
-    env:
-      NAS_IP: ${NAS_IP}
-      RADARR_PORT: ${RADARR_PORT}
-      RADARR_API_KEY: ${RADARR_API_KEY}
-      RADARR_DEFAULT_QUALITY_PROFILE_ID: ${RADARR_DEFAULT_QUALITY_PROFILE_ID}
-      RADARR_ROOT_FOLDER_PATH: ${RADARR_ROOT_FOLDER_PATH}
-      SONARR_PORT: ${SONARR_PORT}
-      SONARR_API_KEY: ${SONARR_API_KEY}
-      SONARR_DEFAULT_QUALITY_PROFILE_ID: ${SONARR_DEFAULT_QUALITY_PROFILE_ID}
-      SONARR_ROOT_FOLDER_PATH: ${SONARR_ROOT_FOLDER_PATH}
-  jellyfin:
-    command: "/opt/venv/bin/python"
-    args: ["/mcp_servers/jellyfin.py"]
-    env:
-      JELLYFIN_URL: ${JELLYFIN_URL}
-      JELLYFIN_API_KEY: ${JELLYFIN_API_KEY}
-      JELLYFIN_USERNAME: ${JELLYFIN_USERNAME}
-  yfinance:
-    command: "/opt/venv/bin/python"
-    args: ["/mcp_servers/finance/yfinance_mcp.py"]
-  edgar:
-    command: "/opt/venv/bin/python"
-    args: ["/mcp_servers/finance/edgar_mcp.py"]
-    env:
-      MASSIVE_API_KEY: ${MASSIVE_API_KEY}
-      EDGAR_IDENTITY: ${EDGAR_IDENTITY}
-  fred:
-    command: "/opt/venv/bin/python"
-    args: ["/mcp_servers/finance/fred_mcp.py"]
-    env:
-      FRED_API_KEY: ${FRED_API_KEY}
-  massive:
-    command: "/opt/venv/bin/python"
-    args: ["/mcp_servers/finance/massive_mcp.py"]
-    env:
-      MASSIVE_API_KEY: ${MASSIVE_API_KEY}
-  home_assistant:
-    url: http://192.168.0.137:8124/mcp
-    tools:
-      include: [ha_get_state, ha_get_history]
+mcp_servers: []
