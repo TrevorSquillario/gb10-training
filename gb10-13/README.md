@@ -143,6 +143,21 @@ mcp_servers:
 
 Restart the `hermes` container with `docker compose up -d hermes`. This will recreate the container, if it doesn't use `docker compose restart hermes`
 
+## iDRAC Skills
+
+```
+cd ~/git
+git clone https://github.com/TrevorSquillario/idrac-hermes-skills
+```
+
+Update docker volume mapping in hermes `compose.yaml`
+```
+volumes:
+ - ../idrac-hermes-skills:/skills/idrac-hermes-skills:ro
+```
+
+hermes will automatically pickup the new/updated skill the next prompt
+
 ## OME MCP
 Note:
 *If you're GB10 can't resolve the FQDN of the OME server. You can update the hosts file in the `compose.yaml`

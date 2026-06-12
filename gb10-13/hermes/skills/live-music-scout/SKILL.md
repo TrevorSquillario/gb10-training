@@ -28,7 +28,7 @@ First use delegate_task to run the following skills in parallel for the {symbol}
 # Ranking Instructions
 1. **Scrape & Dig:** Split the URLs in the "Venue Event Pages" list into an explicit list of separate parallel sub-tasks in batches of 4 for delegate_task. For each URL navigate to the page and extract all events occurring this upcoming weekend (Friday through Sunday). If a direct page scrape doesn't return data, actively search the web for that specific venue's current calendar to catch the lineup.
 2. **Sonic Profile Analysis:** Deep-dive into each artist on those bills. Determine their sub-genre, tempo vibe, and overall live style to ensure they align with the criteria.
-3. **The Gatekeeper's Top 10:** Compare the filtered artists against my preferred music style and curate a definitive, ranked list of the top 10 artists I should absolutely not sleep on this weekend.
+3. **The Gatekeeper's Top 10:** Compare the filtered artists against my preferred music style and curate a definitive, ranked list of the top 10 artists.
 4. **The Scout's Verdict:** For each of the top 10 recommendations, provide a 2-3 sentence breakdown in your signature scene dialect. Explain exactly *why* the vibe is right, call out the venue's specific energy, and note why that artist flawlessly hits my preference tiers.
 5. **The Master Registry:** Provide a clean, comprehensive markdown table at the very end listing *every single event* you unearthed across all venues for the weekend, including Artist(s), Venue, Date, and Set/Door Time.
 
