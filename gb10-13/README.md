@@ -12,10 +12,11 @@ This is my very opinionated hermes setup:
 ```
 cd hermes
 cp .env.example .env
+cp config.example.yaml config.yaml
 docker compose up -d
 ```
 
-Add to your ~/.bashrc for a `hermes` command alias on your docker host
+Add to your ~/.bashrc for a `hermes` command alias on your docker host. Log out and back in after.
 ```
 hermes() {
   docker exec -it hermes /opt/hermes/.venv/bin/hermes "$@"
@@ -26,9 +27,9 @@ Run the `hermes` command to launch the TUI or browse to the hermes Dashboard at 
 
 ## Adding Skills
 
-The `config.yaml` is configured to read skills from the /skills directory. 
+The `config.yaml` is set up to read skills from the /skills directory. 
 
-1. `cd` to the directory above `hermes` and run `git clone <github_repo>` 
+1. `cd` to the directory above the `hermes` directory and run `git clone <github_repo>` 
 2. Add a docker volume mapping to your hermes `compose.yaml`
 ```
 hermes:
@@ -44,7 +45,7 @@ https://hermes-agent.nousresearch.com/docs/reference/mcp-config-reference
 
 ### Via File (stdio)
 
-Think of `stdio` like the `|` pipe command.
+Think of `stdio` like the `|` pipe command. 
 
 1. `cd` to the directory above `hermes` and run `git clone <github_repo>` 
 2. Add a docker volume mapping to your hermes `compose.yaml`
@@ -67,6 +68,8 @@ mcp_servers:
 4. Since the hermes container is running these directly you will need to add their dependencies into the `requirements.txt` file and run `docker compose build hermes` to rebuild the container. 
 
 ### Via URL
+
+This means the MCP server is running a container somewhere or the in the Cloud. You can add this to your `compose.yaml` to host your own MCP servers. It may be slightly slower than `stdio` but potentially easier to manage. 
 
 ```
 mcp_servers:
