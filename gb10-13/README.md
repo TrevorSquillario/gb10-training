@@ -69,7 +69,7 @@ mcp_servers:
 
 ### Via URL
 
-This means the MCP server is running a container somewhere or the in the Cloud. You can add this to your `compose.yaml` to host your own MCP servers. It may be slightly slower than `stdio` but potentially easier to manage. 
+This means the MCP server is running a container somewhere locally or the in the Cloud. You can add this to your `compose.yaml` to host your own MCP servers. It may be slightly slower than `stdio` but potentially easier to manage. 
 
 ```
 mcp_servers:

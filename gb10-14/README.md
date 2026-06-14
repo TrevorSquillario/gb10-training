@@ -2,7 +2,7 @@ Lesson 14: Dual GB10
 
 # Dual GB10 Setup
 
-* This is designed around 1 DAC cable connected to port 0 of each node.
+* This is designed around 1 DAC cable connected to port 1 of each node. We're using the 192.168.20.x network.
 
 ## Configure Network
 List infiniband interfaces and make note of which is connected
@@ -172,9 +172,9 @@ make MPI=1
 ### Run a NCCL Test (On Head Node)
 ```
 # Set network interface environment variables (use your active interface)
-export UCX_NET_DEVICES=enp1s0f0np0
-export NCCL_SOCKET_IFNAME=enp1s0f0np0
-export OMPI_MCA_btl_tcp_if_include=enp1s0f0np0
+export UCX_NET_DEVICES=enp1s0f1np1
+export NCCL_SOCKET_IFNAME=enp1s0f1np1
+export OMPI_MCA_btl_tcp_if_include=enp1s0f1np1
 
 # Run the all_gather performance test across both nodes
 mpirun -np 2 -H 192.168.1.10:1,192.168.1.11:1 \
@@ -188,7 +188,7 @@ mpirun -np 2 -H 192.168.1.10:1,192.168.1.11:1 \
 Spark 2:
 ```
 ibdev2netdev
-ib_write_bw -d rocep1s0f0 --report_gbits -q 4 -R --force-link IB
+ib_write_bw -d rocep1s0f1 --report_gbits -q 4 -R --force-link IB
 
 ************************************
 * Waiting for client to connect... *
@@ -197,11 +197,11 @@ ib_write_bw -d rocep1s0f0 --report_gbits -q 4 -R --force-link IB
 Spark 1:
 
 ```
-ib_write_bw 192.168.1.11 -d rocep1s0f0 --report_gbits -q 4 -R --force-link IB
+ib_write_bw 192.168.1.11 -d rocep1s0f1 --report_gbits -q 4 -R --force-link IB
 
 ---------------------------------------------------------------------------------------
                     RDMA_Write BW Test
- Dual-port       : OFF          Device         : rocep1s0f0
+ Dual-port       : OFF          Device         : rocep1s0f1
  Number of qps   : 4            Transport type : IB
  Connection type : RC           Using SRQ      : OFF
  PCIe relax order: ON
@@ -230,8 +230,8 @@ ib_write_bw 192.168.1.11 -d rocep1s0f0 --report_gbits -q 4 -R --force-link IB
 
 Latency
 ```
-ib_write_lat -d rocep1s0f0 --report_gbits -R --force-link IB
-ib_write_lat 192.168.1.11 -d rocep1s0f0 --report_gbits -R --force-link IB
+ib_write_lat -d rocep1s0f1 --report_gbits -R --force-link IB
+ib_write_lat 192.168.1.11 -d rocep1s0f1 --report_gbits -R --force-link IB
 ```
 
 ## Llama-Benchy LLM Benchmark
