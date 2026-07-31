@@ -1,6 +1,15 @@
 #!/bin/bash
 set -e
 
+# Parse options
+SKIP_ADDONS=false
+while getopts "w" opt; do
+    case "$opt" in
+        w) SKIP_ADDONS=true ;;
+        *) echo "Usage: $0 [-w]"; exit 1 ;;
+    esac
+done
+
 echo "=========================================="
 echo "MicroK8s Setup for GPU Workloads"
 echo "=========================================="
@@ -43,11 +52,15 @@ chown -R "$TARGET_USER:$TARGET_USER" "$KUBE_DIR" || true
 echo "Waiting for MicroK8s to be ready..."
 microk8s status --wait-ready
 
-# Enable required addons
-echo "Enabling required addons..."
-microk8s enable dns
-microk8s enable helm3
-microk8s enable storage
+# Enable required addons (skip if -w was passed)
+if [ "$SKIP_ADDONS" = true ]; then
+    echo "Skipping enabling addons due to -w flag."
+else
+    echo "Enabling required addons..."
+    microk8s enable dns
+    microk8s enable helm3
+    microk8s enable storage
+fi
 
 # Setup kubectl alias
 echo "Setting up kubectl alias..."

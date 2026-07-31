@@ -2,10 +2,10 @@ Lesson 14: Dual GB10
 
 # Dual GB10 Setup
 
-* This is designed around 1 DAC cable connected to port 1 of each node. We're using the 192.168.20.x network.
+* This is designed around 1 DAC cable connected to port 1 of each node. We're using the 192.168.10.x network.
 
 ## Configure Network
-List infiniband interfaces and make note of which is connected
+List infiniband interfaces and make note of which is UP
 ```ibdev2netdev```
 
 ```
@@ -23,6 +23,7 @@ network:
       dhcp4: no
       addresses:
         - 192.168.10.10/24
+      mtu: 9000
       link-local: []
 
     # Physical Port 2 (Network 2)
@@ -30,6 +31,7 @@ network:
       dhcp4: no
       addresses:
         - 192.168.20.10/24
+      mtu: 9000
       link-local: []
 
     # ----------------------------------------------------
@@ -38,12 +40,13 @@ network:
     # Handled automatically by Mellanox hardware/driver
     enP2p1s0f0np0:
       dhcp4: no
+      mtu: 9000
       link-local: []
 
     enP2p1s0f1np1:
       dhcp4: no
+      mtu: 9000
       link-local: []
-
 EOF
 
 sudo chmod 600 /etc/netplan/40-cx7.yaml
@@ -64,6 +67,7 @@ network:
       dhcp4: no
       addresses:
         - 192.168.10.11/24
+      mtu: 9000
       link-local: []
 
     # Physical Port 2 (Network 2)
@@ -71,6 +75,7 @@ network:
       dhcp4: no
       addresses:
         - 192.168.20.11/24
+      mtu: 9000
       link-local: []
 
     # ----------------------------------------------------
@@ -79,10 +84,12 @@ network:
     # Handled automatically by Mellanox hardware/driver
     enP2p1s0f0np0:
       dhcp4: no
+      mtu: 9000
       link-local: []
 
     enP2p1s0f1np1:
       dhcp4: no
+      mtu: 9000
       link-local: []
 EOF
 
@@ -172,15 +179,38 @@ make MPI=1
 ### Run a NCCL Test (On Head Node)
 ```
 # Set network interface environment variables (use your active interface)
-export UCX_NET_DEVICES=enp1s0f1np1
-export NCCL_SOCKET_IFNAME=enp1s0f1np1
-export OMPI_MCA_btl_tcp_if_include=enp1s0f1np1
+export UCX_NET_DEVICES=enp1s0f0np0
+export NCCL_SOCKET_IFNAME=enp1s0f0np0
+export OMPI_MCA_btl_tcp_if_include=enp1s0f0np0
 
 # Run the all_gather performance test across both nodes
-mpirun -np 2 -H 192.168.1.10:1,192.168.1.11:1 \
+mpirun -np 2 -H 192.168.10.10:1,192.168.10.11:1 \
   --mca plm_rsh_agent "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" \
   -x LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
   $HOME/nccl-tests/build/all_gather_perf -b 16G -e 16G -f 2
+```
+
+If this test hangs ensure you have SSH key authentication setup properly by trying ssh 192.168.10.11 from the head node. You shouldn't be prompted for a password. Also be sure you ran Configure NCCL (Run on Both Nodes)
+
+Output
+```
+# nccl-tests version 2.18.5 nccl-headers=22809 nccl-library=22809
+# Collective test starting: all_gather_perf
+# nThread 1 nGpus 1 minBytes 17179869184 maxBytes 17179869184 step: 2(factor) warmup iters: 1 iters: 20 agg iters: 1 validation: 1 graph: 0 unalign: 0
+#
+# Using devices
+#  Rank  0 Group  0 Pid  37755 on promaxgb10-4c75 device  0 [000f:01:00] NVIDIA GB10
+#  Rank  1 Group  0 Pid  30808 on promaxgb10-4c99 device  0 [000f:01:00] NVIDIA GB10
+#
+#                                                              out-of-place                       in-place
+#       size         count      type   redop    root     time   algbw   busbw  #wrong     time   algbw   busbw  #wrong
+#        (B)    (elements)                               (us)  (GB/s)  (GB/s)             (us)  (GB/s)  (GB/s)
+ 17179869184    2147483648     float    none      -1   374425   45.88   22.94       0   373792   45.96   22.98       0
+# Out of bounds values : 0 OK
+# Avg bus bandwidth    : 22.9611
+#
+# Collective test concluded: all_gather_perf
+#
 ```
 
 ### Infiniband Benchmark
@@ -188,7 +218,7 @@ mpirun -np 2 -H 192.168.1.10:1,192.168.1.11:1 \
 Spark 2:
 ```
 ibdev2netdev
-ib_write_bw -d rocep1s0f1 --report_gbits -q 4 -R --force-link IB
+ib_write_bw -d rocep1s0f0 --report_gbits -q 4 -R --force-link IB
 
 ************************************
 * Waiting for client to connect... *
@@ -197,11 +227,11 @@ ib_write_bw -d rocep1s0f1 --report_gbits -q 4 -R --force-link IB
 Spark 1:
 
 ```
-ib_write_bw 192.168.1.11 -d rocep1s0f1 --report_gbits -q 4 -R --force-link IB
+ib_write_bw 192.168.10.11 -d rocep1s0f0 --report_gbits -q 4 -R --force-link IB
 
 ---------------------------------------------------------------------------------------
                     RDMA_Write BW Test
- Dual-port       : OFF          Device         : rocep1s0f1
+ Dual-port       : OFF          Device         : rocep1s0f0
  Number of qps   : 4            Transport type : IB
  Connection type : RC           Using SRQ      : OFF
  PCIe relax order: ON
@@ -230,8 +260,8 @@ ib_write_bw 192.168.1.11 -d rocep1s0f1 --report_gbits -q 4 -R --force-link IB
 
 Latency
 ```
-ib_write_lat -d rocep1s0f1 --report_gbits -R --force-link IB
-ib_write_lat 192.168.1.11 -d rocep1s0f1 --report_gbits -R --force-link IB
+ib_write_lat -d rocep1s0f0 --report_gbits -R --force-link IB
+ib_write_lat 192.168.10.11 -d rocep1s0f0 --report_gbits -R --force-link IB
 ```
 
 ## Llama-Benchy LLM Benchmark
@@ -264,6 +294,32 @@ cd spark-vllm-docker
 
 # Run recipe (from the ./recipes directory)
 ./run-recipe.sh gemma4-26b-a4b --setup
+```
+
+### eugr/spark-vllm-docker recipe for deepseek-ai/DeepSeek-V4-Flash-0731
+
+Until this PR [#304](https://github.com/eugr/spark-vllm-docker/pull/304) gets merged you have to use the fork that contains the recipe and patches to use DFlash speculative decoding.
+
+```
+cd ~/git
+git clone -b deepseek-v4-flash-dspark-perf-recipe https://github.com/vedcsolution/spark-vllm-docker
+
+# We need to copy in the custom recipe
+cp ~/git/gb10-training/gb10-14/deepseek-v4-flash-dspark-0731.yaml ~/git/spark-vllm-docker/recipes/
+```
+
+This is going to take 30-40 minutes on the first run. It has to compile everything from source then copy the docker image to the worker node. Subsequent runs are much faster.
+
+```
+cd ~/git/spark-vllm-docker
+./build-and-copy.sh --vllm-ref releases/v0.25.1 --rebuild-vllm -c 192.168.10.11
+```
+
+This is going to use up almost all of the RAM available so be sure to stop any other containers that are using GPU VRAM like ollama. You can monitor available RAM with the `earlyoom` tool or `free -m` and look for `available`.
+
+If you've made it this far, cross your fingers and send it. 
+```
+./run-recipe.sh deepseek-v4-flash-dspark-0731
 ```
 
 ### sparkun

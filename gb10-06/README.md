@@ -63,7 +63,7 @@ microk8s kubectl get nodes -o json | jq '.items[].status.allocatable["nvidia.com
 microk8s kubectl -n gpu-operator describe pod nvidia-device-plugin-daemonset-mmvrc
 ```
 
-### Configure GPU time-slicing
+### Configure GPU Time-Slicing
 Instructions to apply time-slicing:
 
 1. Apply the time slicing config:
@@ -177,4 +177,54 @@ cd ~/home/trevor~/git/gb10-training/gb10-06/microk8s
 sudo ./uninstall.sh
 ```
 
+## Kubernetes Cluster Setup
 
+Be sure to run through the ***Install GPU Operator*** and  ***Configure GPU Time-Slicing*** sections.
+
+Run the `install.sh` script with the `-w` flag on Node 2. This will install microk8s without the addons.
+
+Run on Node 1
+```
+microk8s add-node
+```
+
+Copy `microk8s join ` output and run that on Node 2
+```
+microk8s join 192.168.0.30:25000/40686455ffd0c75d5fc29acbf456de37/4a374e4012ef --worker
+```
+
+```
+Contacting cluster at 192.168.0.30
+
+The node has joined the cluster and will appear in the nodes list in a few seconds.
+
+This worker node gets automatically configured with the API server endpoints.
+If the API servers are behind a loadbalancer please set the '--refresh-interval' to '0s' in:
+    /var/snap/microk8s/current/args/apiserver-proxy
+and replace the API server endpoints with the one provided by the loadbalancer in:
+    /var/snap/microk8s/current/args/traefik/provider.yaml
+
+Successfully joined the cluster.
+```
+
+Verify Node Join
+```
+kubectl get nodes -A
+```
+
+Verify GPU Count
+If time-slicing was setup properly it should show `4` GPU instances per node.
+
+```
+kubectl get nodes -o json | jq '.items[] | {name: .metadata.name, gpus: .status.allocatable["nvidia.com/gpu"]}'
+```
+
+
+## Install Helm
+
+```
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4
+chmod 700 get_helm.sh
+./get_helm.sh
+helm version
+```
