@@ -298,7 +298,7 @@ cd spark-vllm-docker
 
 ### eugr/spark-vllm-docker recipe for deepseek-ai/DeepSeek-V4-Flash-0731
 
-Until this PR [#304](https://github.com/eugr/spark-vllm-docker/pull/304) gets merged you have to use the fork that contains the recipe and patches to use DFlash speculative decoding.
+Until this PR [#304](https://github.com/eugr/spark-vllm-docker/pull/304) gets merged you have to use the fork that contains the recipe and patches to use DSpark speculative decoding.
 
 ```
 cd ~/git
