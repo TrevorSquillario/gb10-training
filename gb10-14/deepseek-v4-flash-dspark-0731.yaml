@@ -25,7 +25,7 @@ defaults:
   block_size: 256
   max_num_seqs: 2 # If you want to increase the max_model_len this will have to go down to 1. Not enough memory to support 2 sequences at 256k. 1 sequence is enough for most use cases, and allows for a larger max_model_len.
   max_num_batched_tokens: 8192
-  num_speculative_tokens: 7   # design point: vendor dspark_block_size=5 (head trained for blocks of 5); 5 beat 4 on eff t/s; 6 predicted flat/negative (pos-6 accept ~0.5 for a full extra Markov step).
+  num_speculative_tokens: 5   # design point: vendor dspark_block_size=5 (head trained for blocks of 5); 5 beat 4 on eff t/s; 6 predicted flat/negative (pos-6 accept ~0.5 for a full extra Markov step).
 env:
   DG_JIT_USE_NVRTC: "0"
   HF_HUB_ENABLE_HF_TRANSFER: "1"
