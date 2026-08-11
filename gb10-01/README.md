@@ -136,6 +136,14 @@ python3 -m venv ~/venv/gb10-training
 source ~/venv/gb10-training/bin/activate
 ```
 
+### Fix for HuggingFace model downloads causing connection dropouts when using the RJ-45 network interface (enP7s7)
+```bash
+vi ~/.bashrc
+
+# Add to end of file
+export HF_XET_HIGH_PERFORMANCE=1
+```
+
 ### (Optional) Customize `~/.bashrc` by adding commands to the end of the file:
 
 ```bash

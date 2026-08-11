@@ -19,7 +19,7 @@ Setup the connection in VSCode
 
 1. Go to the Extensions view (`Ctrl + Shift + X`) and install **Github Copilot Chat**.
 2. Select View > Chat if the chat window doesn't show up on the right pane.
-3. Go to the Accounts button in the bottom left above the Settings icon. Sign-in using a Github account. This will give you access to the free tier which provides 50 requests Premium Requests per month (all requests are treated as Premium with the free tier). With the Github Copilot Pro membership ($100/yr) you get unlimited access to the basic models like GPT-4o and GPT5-mini as well as additional Premium Requests for models like Claude Sonnet, Codex, etc.
+3. Go to the Accounts button in the bottom left above the Settings icon. Sign-in using a Github account. This will give you access to the free tier which provides 50 requests Premium Requests per month (all requests are treated as Premium with the free tier). With the Github Copilot Pro membership ($100/yr) you get access to the basic models like GPT-4o and GPT5-mini as well as additional Premium Requests for models like Claude Sonnet, Codex, etc.
 
 ## Hands-on Lab: Auto-Completion
 
@@ -73,7 +73,7 @@ None of the VSCode extensions are even close to Github Copilot but that was kind
 
 Ranking of current VSCode extensions:
 
-1. Github Copilot: This is my personal favorite. I prefer the Chat panel in VSCode. It's very feature rich and well designed. However, Ollama integration doesn't work, the models are populated but chats fail. There is a free tier for Cloud models. The subscription is $100/year and well worth it if you code a lot.
+1. Github Copilot: This is my personal favorite. I prefer the Chat panel in VSCode. It's very feature rich and well designed. There is a free tier for Cloud models. The subscription is $100/year and well worth it if you code a lot.
 2. Claude Code: Terminal focused but has a Chat panel that seems to work. The Chat panel is less feature rich compared to Github Copilot. Uses a fixed Ollama model. 
 3. Roo Code: Works okay, bare bones chat and editing capabilities. This is a fork of Cline with more features. Uses a fixed Ollama model. 
 4. Cline: Works okay but limited features
@@ -88,18 +88,40 @@ These are separate IDEs that have better support for AI coding assistants:
 - SublimeText through the OllamaSublime or Yollama packages
 - NeoVim for you vim psychopaths
 
-### Configuring Cline or Roo Code
+### VSCode Copilot BYOM
 
-1. Go to the Extensions view (`Ctrl + Shift + X`) and install **Cline** or **Roo Code**.
-2. Click the Cline icon on the left bar and drag it to the right Chat panel if you'd prefer.
-3. Click the gear icon at the top of the Cline sidebar. Select API Configuration
+The Copilot extention of VSCode has improved their Bring-Your-Own-Model (BYOM) support that allows you to use the chat extention with local models. 
+
+I provided a `compose.yaml` that will run vLLM with `gemma-4-26B-A4B-it`. 
+
+1. `cd gb10-05/vllm-gemma4`
+2. `docker compose up` and wait for the log message `INFO:     Application startup complete.`
+3. In VSCode hit `Ctrl+Shift+P` and search for `Chat: Open Language Models (JSON)`. 
+4. Update the json below with the IP of your GB10 and paste that into the tab opened in the previous step.
+5. You should then have a listing in the model picker located at the bottom of the Copilot Chat window.
+
 ```
-API Provider: ollama
-Use custom base URL: http://<gb10-ip>:11434
-API Key: ollama
-Model: Select a model
+[
+	{
+		"name": "vLLM",
+		"vendor": "customendpoint",
+		"apiType": "chat-completions",
+        "models": [
+            {
+                "id": "google/gemma-4-26B-A4B-it",
+                "name": "google/gemma-4-26B-A4B-it",
+                "url": "http://192.168.0.30:8090/v1",
+                "toolCalling": true,
+                "vision": true,
+                "maxInputTokens": 256144,
+                "maxOutputTokens": 16000
+            }
+        ]
+	}
+]
 ```
-4. Follow a similar process for **Roo Code** if you want to try that extension as well. Compare them and see which you prefer. 
+
+- The `Model Runners` section of [Lesson 14](../gb10-14/README.md) has additional methods of running coding models on your GB10
 
 **Task:** Create a new React or HTML component without "writing" any logic manually.
 

@@ -15,8 +15,8 @@ services:
     volumes:
       - ${HOME}/.cache/huggingface:/root/.cache/huggingface
       - ${HOME}/gb10/vllm_cache/vllm_gemma4:/root/.cache/vllm
-    #environment:
-    #  - VLLM_NVFP4_GEMM_BACKEND=marlin
+    environment:
+      - HF_XET_HIGH_PERFORMANCE=1
     command: >
       google/gemma-4-26B-A4B-it
       --tensor-parallel-size 1
