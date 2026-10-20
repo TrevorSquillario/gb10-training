@@ -7,35 +7,38 @@
 
 services:
   vllm-gemma4:
-    image: vllm/vllm-openai:v0.22.1
+    #image: vllm/vllm-openai:v0.28.0
+    # We need to use a custom build to bump the transformers version and add in support for InstantTensor
+    build:
+      context: .
+      dockerfile: Dockerfile.vllm
     container_name: vllm-gemma4
     network_mode: host # Run on host network
     ipc: host
     environment:
-      - VLLM_NVFP4_GEMM_BACKEND=marlin
-      - VLLM_ATTENTION_BACKEND=FLASHINFER
+      - HF_XET_HIGH_PERFORMANCE=1
     ulimits:
       memlock: -1
       stack: 67108864
     volumes:
+      # Shared HuggingFace model cache
       - ${HOME}/.cache/huggingface:/root/.cache/huggingface
+      # Persist Triton cache for faster model startup
       - ${HOME}/gb10/vllm_cache/vllm_gemma4:/root/.cache/vllm
     command: >
-      bg-digitalservices/Gemma-4-26B-A4B-it-NVFP4
+      google/gemma-4-26B-A4B-it
       --port 8090
-      --quantization modelopt
       --kv-cache-dtype fp8
-      --gpu-memory-utilization 0.5
-      --max-model-len 131072
+      --gpu-memory-utilization 0.75
+      --max-model-len 262144
       --max-num-seqs 4
       --max-num-batched-tokens 16384
-      --moe-backend marlin
       --enable-auto-tool-choice
       --enable-prefix-caching
       --enable-chunked-prefill
       --tool-call-parser gemma4
       --reasoning-parser gemma4
-      --load-format fastsafetensors
+      --load-format instanttensor
       --trust-remote-code
       --default-chat-template-kwargs '{"enable_thinking": true}'
       --mm-processor-kwargs '{"max_soft_tokens":1120}'
@@ -52,7 +55,6 @@ services:
             - driver: nvidia
               capabilities: [gpu]
 
-
   hermes:
     #image: nousresearch/hermes-agent:latest
     build:
@@ -66,10 +68,13 @@ services:
       - "9119:9119" # Dashboard
     volumes:
       - hermes_data:/opt/data
-      - ./skills:/skills:ro # Hermes will automatically update skills, I don't want it touching my skills. Mount read-only
+      - ./skills:/skills/local:ro # Hermes will automatically update skills, I don't want it touching my skills. Mount read-only
       # - ../<skills_directory>:/skills/<skills_directory>:ro # Alternative if you want to mount specific skill directories
+      - /home/trevor/git/hermes-project/idrac-hermes-skills:/skills/idrac:ro
       # - ../<mcp_server_directory>:/mcp/<mcp_server_directory>:ro # Mount MCP servers, required .env mapping
-      - ./config.yaml:/opt/data/config.yaml:ro # Mount read-only, this does disable editing config values in the Hermes Dashboard
+      - /home/trevor/git/hermes-project/idrac-redfish-mcp:/mcp/idrac-redfish-mcp:ro
+      - /home/trevor/git/hermes-project/ome-mcp:/mcp/ome-mcp:ro
+      - ./config.yaml:/opt/data/config.yaml:ro # Mount read-only, this does disable editing config values in the Hermes Dashboard. 
       #- ./hindsight.config.json:/opt/data/hindsight/config.json:ro # Mount read-only
       - ./SOUL.md:/opt/data/SOUL.md:ro
       - ./.env:/opt/data/.hermes/.env:ro # Mount read-only, required for mcp servers. See config.yaml for env mapping
@@ -83,8 +88,11 @@ services:
       - HERMES_DASHBOARD=1
       - HERMES_DASHBOARD_HOST=0.0.0.0
       - HERMES_DASHBOARD_PORT=9119
-      - HERMES_DASHBOARD_INSECURE=1
+      - HERMES_DASHBOARD_BASIC_AUTH_USERNAME=admin
+      - HERMES_DASHBOARD_BASIC_AUTH_PASSWORD=${HERMES_PASSWORD}
     shm_size: '2gb' # Required for Playwright/Chromium scraper tools
+    extra_hosts: # Only required for networks without proper DNS resolution
+      - "ome.home.arpa:192.168.0.28"
     networks:
       - hermes-net
     depends_on:
@@ -101,7 +109,7 @@ services:
       - "9999:9999" # Dashboard
     environment:
       - HINDSIGHT_API_LLM_PROVIDER=openai
-      - HINDSIGHT_API_LLM_MODEL=bg-digitalservices/Gemma-4-26B-A4B-it-NVFP4
+      - HINDSIGHT_API_LLM_MODEL=google/gemma-4-26B-A4B-it
       - HINDSIGHT_API_LLM_BASE_URL=http://192.168.0.30:8090/v1
       - HINDSIGHT_API_LLM_TIMEOUT=9000
       - HINDSIGHT_API_LLM_MAX_CONCURRENT=4

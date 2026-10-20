@@ -271,7 +271,7 @@ https://github.com/eugr/llama-benchy
 # Install UV (Like python-pip but better)
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-uvx llama-benchy --base-url http://localhost:8090/v1 --model bg-digitalservices/Gemma-4-26B-A4B-it-NVFP4 --enable-prefix-caching --latency-mode generation --depth 32768 --concurrency 1 2 4 --runs 1
+uvx llama-benchy --base-url http://localhost:8090/v1 --model google/gemma-4-26B-A4B-it --enable-prefix-caching --latency-mode generation --depth 32768 --concurrency 1 2 4 --runs 1
 ```
 
 ## Model Runners

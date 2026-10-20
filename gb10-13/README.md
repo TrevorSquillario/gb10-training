@@ -148,6 +148,10 @@ Restart the `hermes` container with `docker compose up -d hermes`. This will rec
 
 ## iDRAC Skills
 
+"Official" iDRAC MCP Server https://github.com/dell/iDRAC-MCP-Reference-Server-and-Tools
+
+The steps below are for the MCP server I maintain https://github.com/TrevorSquillario/idrac-redfish-mcp
+
 ```
 cd ~/git
 git clone https://github.com/TrevorSquillario/idrac-hermes-skills
@@ -162,8 +166,13 @@ volumes:
 hermes will automatically pickup the new/updated skill the next prompt
 
 ## OME MCP
+
+I maintain an OME MCP server which is available https://github.com/TrevorSquillario/ome-mcp
+
+The steps below are for the official OME MCP Server which is served from your OME 4.7+ instance.
+
 Note:
-*If you're GB10 can't resolve the FQDN of the OME server. You can update the hosts file in the `compose.yaml`
+*If your GB10 can't resolve the FQDN of the OME server. You can update the hosts file in the `compose.yaml`
 ```
   hermes:
     extra_hosts:
@@ -214,4 +223,10 @@ make build
 docker image ls | grep camo
 
 docker compose --profile camofox up -d
+```
+
+## NemoClaw
+
+Container isolation use in this guide sanboxes cli access but not network access. Use NemoClaw for more advanced hermes isolation.
+https://docs.nvidia.com/nemoclaw/user-guide/hermes/get-started/quickstart
 ```

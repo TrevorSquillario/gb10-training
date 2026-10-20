@@ -1,0 +1,34 @@
+{
+  "mcpServers": {
+    "idrac": {
+      "command": "/opt/venv/bin/python",
+      "args": ["/mcp/idrac-redfish-mcp/src/fastmcp_server.py"],
+      "env": {
+        "IDRAC_USERNAME": "${IDRAC_USERNAME}",
+        "IDRAC_PASSWORD": "${IDRAC_PASSWORD}",
+        "IDRAC_SSL_VERIFY": "${IDRAC_SSL_VERIFY}",
+        "IDRAC_MCP_TRANSPORT_MODE": "${IDRAC_MCP_TRANSPORT_MODE}"
+      }
+    },
+    "ome": {
+      "command": "/opt/venv/bin/python",
+      "args": ["/mcp/ome-mcp/src/ome_mcp_server.py"],
+      "env": {
+        "OME_IP": "${OME_IP}",
+        "OME_PORT": "${OME_PORT}",
+        "OME_USER": "${OME_USER}",
+        "OME_PASSWORD": "${OME_PASSWORD}",
+        "OME_VERIFY_SSL": "${OME_VERIFY_SSL}",
+        "OME_MCP_TRANSPORT_MODE": "${OME_MCP_TRANSPORT_MODE}"
+      }
+    },
+    "camofox": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "camofox-mcp@latest"],
+      "env": {
+        "CAMOFOX_URL": "${CAMOFOX_URL}"
+      }
+    }
+  }
+}

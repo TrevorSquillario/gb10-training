@@ -1,4 +1,4 @@
-FROM nousresearch/hermes-agent:v2026.6.5
+FROM nousresearch/hermes-agent:latest
 
 # Switch to root to install system packages
 USER root
@@ -35,7 +35,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Add the hermes command to the PATH for the hermes user
 ENV PATH="/opt/hermes/.venv/bin:$PATH"
 
-RUN uv pip install hindsight-client discord.py
+RUN pip install hindsight-client discord.py
 
 # Switch back to the default unprivileged user for security
 USER hermes

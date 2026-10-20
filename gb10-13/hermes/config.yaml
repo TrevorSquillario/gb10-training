@@ -1,6 +1,6 @@
 model:
   provider: custom
-  model: bg-digitalservices/Gemma-4-26B-A4B-it-NVFP4
+  model: google/gemma-4-26B-A4B-it
   base_url: http://192.168.0.30:8090/v1 # vLLM instance or any OpenAI-compatible API endpoint
   api_key: "none" # vLLM doesn't enforce API keys internally
 
@@ -16,14 +16,17 @@ custom_providers: # Use this to be able to switch between multiple LLM backends 
 auxiliary:
   vision:
     provider: custom
-    model: bg-digitalservices/Gemma-4-26B-A4B-it-NVFP4 
+    model: google/gemma-4-26B-A4B-it 
     timeout: 9000          # LLM API call timeout (seconds)
     download_timeout: 60   # Image HTTP download timeout (seconds)
                            # Increase for slow connections or self-hosted image servers
 
 agent: 
-  default_model: bg-digitalservices/Gemma-4-26B-A4B-it-NVFP4 
+  default_model: google/gemma-4-26B-A4B-it 
   system_prompt: "You are a professional operations assistant capable of precise tool execution, autonomous web scraping, and Python development."
+
+telemetry:
+  mode: disabled
 
 approvals:
   destructive_slash_confirm: false # Disable confirmation. We're running in a docker container so it's less of a risk here.
@@ -70,4 +73,27 @@ skills:
   external_dirs:
     - /skills # This cooresponds to the docker volume in compose.yaml
 
-mcp_servers: []
+mcp_servers: 
+  idrac:
+    command: "/opt/venv/bin/python"
+    args: ["/mcp/idrac-redfish-mcp/src/fastmcp_server.py"]
+    env:
+      IDRAC_USERNAME: ${IDRAC_USERNAME}
+      IDRAC_PASSWORD: ${IDRAC_PASSWORD}
+      IDRAC_SSL_VERIFY: ${IDRAC_SSL_VERIFY}
+      IDRAC_MCP_TRANSPORT_MODE: ${IDRAC_MCP_TRANSPORT_MODE}
+  ome:
+    command: "/opt/venv/bin/python"
+    args: ["/mcp/ome-mcp/src/ome_mcp_server.py"]
+    env:
+      OME_IP: ${OME_IP}
+      OME_PORT: ${OME_PORT}
+      OME_USER: ${OME_USER}
+      OME_PASSWORD: ${OME_PASSWORD}
+      OME_VERIFY_SSL: ${OME_VERIFY_SSL}
+      OME_MCP_TRANSPORT_MODE: ${OME_MCP_TRANSPORT_MODE}
+  # OME Official
+  #ome:
+  #  url: https://192.168.0.28/mcp
+  #  auth: oauth
+  #  ssl_verify: false

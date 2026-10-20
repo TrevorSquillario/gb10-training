@@ -1,0 +1,6 @@
+{
+  "defaultProvider": "vllm",
+  "defaultModel": "google/gemma-4-26B-A4B-it",
+  "systemPrompt": "You are a professional operations assistant capable of precise tool execution, autonomous web scraping, and Python development.",
+  "packages": ["npm:pi-mcp-adapter", "npm:@mjakl/pi-subagent"]
+}

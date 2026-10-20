@@ -1,0 +1,86 @@
+services:
+  vllm-gemma4:
+    image: vllm/vllm-openai:v0.28.0
+    container_name: vllm-gemma4
+    network_mode: host # Run on host network
+    ipc: host
+    environment:
+      - HF_XET_HIGH_PERFORMANCE=1
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    volumes:
+      - ${HOME}/.cache/huggingface:/root/.cache/huggingface
+      - ${HOME}/gb10/vllm_cache/vllm_gemma4:/root/.cache/vllm
+    command: >
+      google/Gemma-4-26B-A4B-it
+      --port 8090
+      --kv-cache-dtype fp8
+      --gpu-memory-utilization 0.75
+      --max-model-len 262144
+      --max-num-seqs 4
+      --max-num-batched-tokens 16384
+      --enable-auto-tool-choice
+      --enable-prefix-caching
+      --enable-chunked-prefill
+      --tool-call-parser gemma4
+      --reasoning-parser gemma4
+      --trust-remote-code
+      --default-chat-template-kwargs '{"enable_thinking": true}'
+      --mm-processor-kwargs '{"max_soft_tokens":1120}'
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+
+  pi-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pi-agent
+    restart: unless-stopped
+    stdin_open: true   # Keep stdin open for interactive CLI
+    tty: true          # Allocate a pseudo-TTY for interactive use
+    env_file:
+      - .env
+    environment:
+      - TZ=America/Denver
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+      # MCP Server env vars (resolved from .env for mcp.json substitutions)
+      # Camofox browser REST API
+      - CAMOFOX_URL=${CAMOFOX_URL:-http://camofox:9377}
+    volumes:
+      # Skills directories (mount individually to avoid nested duplicates)
+      - /home/trevor/git/hermes-project/idrac-hermes-skills:/skills/idrac:ro
+      # MCP Servers
+      - /home/trevor/git/hermes-project/idrac-redfish-mcp:/mcp/idrac-redfish-mcp:ro
+      - /home/trevor/git/hermes-project/ome-mcp:/mcp/ome-mcp:ro
+      # Agent config files (mount individually to avoid clobbering skills/ subdir)
+      - ./agent/models.json:/home/pi/.pi/agent/models.json:ro
+      - ./agent/settings.json:/home/pi/.pi/agent/settings.json:ro
+      # Agent profiles directory (optional custom agents)
+      - ./agent/agents:/home/pi/.pi/agent/agents:ro
+      # MCP config
+      - ./config/mcp/mcp.json:/home/pi/.config/mcp/mcp.json:ro
+      # Persist npm packages and Camoufox binary cache across rebuilds
+      - ./.node_modules:/home/pi/.pi/agent/npm/node_modules
+    extra_hosts:
+      - "ome.home.arpa:192.168.0.28"
+      - "redfish-mockup-14g:192.168.0.200"
+      - "redfish-mockup-15g:192.168.0.201"
+      - "redfish-mockup-16g:192.168.0.202"
+      - "redfish-mockup-17g:192.168.0.203" 
+    networks:
+      - hermes-net
+
+networks:
+  hermes-net:
+    driver: bridge

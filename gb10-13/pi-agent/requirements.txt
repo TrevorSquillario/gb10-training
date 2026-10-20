@@ -1,0 +1,17 @@
+httpx>=0.23.0
+python-dotenv>=1.0.0
+fastmcp>=0.1.0
+requests>=2.31.0
+bs4
+
+# Finance
+pandas
+yfinance
+edgartools
+
+# iDRAC
+redfish
+pillow
+
+pytest
+pytest-asyncio
