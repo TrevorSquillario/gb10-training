@@ -121,6 +121,10 @@ The `Dockerfile` adds a patch to the hindsight integration in hermes. It allows 
 
 ## iDRAC MCP
 
+"Official" iDRAC MCP Server https://github.com/dell/iDRAC-MCP-Reference-Server-and-Tools
+
+The steps below are for the MCP server I maintain https://github.com/TrevorSquillario/idrac-redfish-mcp
+
 ```
 cd ~/git
 git clone https://github.com/TrevorSquillario/idrac-redfish-mcp.git
@@ -147,10 +151,6 @@ mcp_servers:
 Restart the `hermes` container with `docker compose up -d hermes`. This will recreate the container, if it doesn't use `docker compose restart hermes`
 
 ## iDRAC Skills
-
-"Official" iDRAC MCP Server https://github.com/dell/iDRAC-MCP-Reference-Server-and-Tools
-
-The steps below are for the MCP server I maintain https://github.com/TrevorSquillario/idrac-redfish-mcp
 
 ```
 cd ~/git
