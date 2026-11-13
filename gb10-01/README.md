@@ -121,6 +121,23 @@ sudo apt update
 sudo apt upgrade
 sudo fwupdmgr refresh
 sudo fwupdmgr upgrade
+sudo reboot
+```
+
+If you reboot and `nvidia-smi` errors out of you. You have to rebuild the nvidia driver for the new kernel
+
+These two versions should match
+```
+uname -r
+modinfo -F vermagic nvidia
+```
+
+Reinstall Nvidia driver and update the kernel boot image
+```
+sudo apt update
+sudo apt install --reinstall nvidia-driver-580-open linux-modules-nvidia-580-open-nvidia-hwe-24.04
+sudo update-initramfs -u -k $(uname -r)
+sudo reboot
 ```
 
 ### Install useful Linux utilities
